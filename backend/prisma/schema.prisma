@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  passwordHash  String
+  mfaSecret     String?
+  emailVerified Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  sites         SiteRole[]
+}
+
+model Site {
+  id           String   @id @default(uuid())
+  ownerId      String
+  name         String
+  category     String   // portfolio | ecommerce | salon | restaurant
+  subdomain    String   @unique
+  customDomain String?  @unique
+  status       String   @default("draft") // draft | published
+  createdAt    DateTime @default(now())
+  roles        SiteRole[]
+  credentials  SiteCredential[]
+}
+
+model SiteRole {
+  id     String @id @default(uuid())
+  siteId String
+  userId String
+  role   String // owner | editor | viewer
+  site   Site   @relation(fields: [siteId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model SiteCredential {
+  id            String   @id @default(uuid())
+  siteId        String
+  keyType       String   // jwt_secret | imagekit_public | imagekit_private | imagekit_url_endpoint | ai_api_key | payment_publishable_key | payment_secret_key | email_service_key
+  encryptedValue String
+  maskedPreview  String
+  verifiedAt     DateTime?
+  updatedAt      DateTime @updatedAt
+  site           Site     @relation(fields: [siteId], references: [id])
+}
