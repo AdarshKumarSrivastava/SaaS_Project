@@ -12,29 +12,31 @@ export const saveCredentials = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Keys array is required' });
     }
 
-    const savedKeys = [];
+    const existingCreds = await prisma.siteCredential.findMany({ where: { siteId } });
 
-    // Using transaction for all or nothing
-    await prisma.$transaction(
-      keys.map(k => {
-        return prisma.siteCredential.upsert({
-          where: {
-            siteId_keyName: {
-              siteId: siteId,
-              keyName: k.keyName
-            }
-          },
-          update: {
-            encryptedValue: encrypt(k.keyValue)
-          },
-          create: {
-            siteId: siteId,
-            keyName: k.keyName,
-            encryptedValue: encrypt(k.keyValue)
+    const operations = keys.map(k => {
+      const existing = existingCreds.find(ec => ec.keyType === k.keyName);
+      const encryptedValue = encrypt(k.keyValue);
+      const maskedPreview = maskKey(k.keyValue);
+      
+      if (existing) {
+        return prisma.siteCredential.update({
+          where: { id: existing.id },
+          data: { encryptedValue, maskedPreview }
+        });
+      } else {
+        return prisma.siteCredential.create({
+          data: {
+            siteId,
+            keyType: k.keyName,
+            encryptedValue,
+            maskedPreview
           }
         });
-      })
-    );
+      }
+    });
+
+    await prisma.$transaction(operations);
 
     res.json({ message: 'Credentials securely saved' });
   } catch (error) {
@@ -52,20 +54,12 @@ export const listCredentials = async (req: Request, res: Response) => {
     });
 
     // We MUST NEVER send the raw encrypted string to the frontend, nor the decrypted one.
-    // We decrypt in memory, mask it, and send the masked preview.
+    // We send the stored masked preview.
     const maskedPreviews = credentials.map(c => {
-      try {
-        const decrypted = decrypt(c.encryptedValue);
-        return {
-          keyName: c.keyName,
-          preview: maskKey(decrypted)
-        };
-      } catch (err) {
-        return {
-          keyName: c.keyName,
-          preview: 'INVALID'
-        };
-      }
+      return {
+        keyName: c.keyType,
+        preview: c.maskedPreview
+      };
     });
 
     res.json(maskedPreviews);

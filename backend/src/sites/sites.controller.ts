@@ -113,6 +113,69 @@ export const updateSchema = async (req: Request, res: Response) => {
   }
 };
 
+// PATCH /api/sites/:siteId/domain
+export const updateDomain = async (req: Request, res: Response) => {
+  try {
+    const siteId = req.params.siteId as string;
+    const { customDomain } = req.body;
+
+    if (!customDomain) {
+      return res.status(400).json({ error: 'Custom domain is required' });
+    }
+
+    // Check if domain is already claimed by someone else
+    const existing = await prisma.site.findUnique({
+      where: { customDomain }
+    });
+
+    if (existing && existing.id !== siteId) {
+      return res.status(409).json({ error: 'Domain is already in use by another site' });
+    }
+
+    const site = await prisma.site.update({
+      where: { id: siteId },
+      data: { customDomain }
+    });
+
+    res.json(site);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// GET /api/sites/search?q=xyz
+export const searchSites = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.id;
+    const query = req.query.q as string;
+    
+    if (!query || query.trim() === '') return res.json([]);
+
+    const sites = await prisma.site.findMany({
+      where: {
+        AND: [
+          {
+            roles: {
+              some: { userId }
+            }
+          },
+          {
+            OR: [
+              { name: { contains: query, mode: 'insensitive' } },
+              { subdomain: { contains: query, mode: 'insensitive' } }
+            ]
+          }
+        ]
+      },
+      take: 5 // Limit to top 5 results for speed
+    });
+
+    res.json(sites);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 // Test endpoint for verifying authorize middleware (from Phase 3)
 export const testAuth = async (req: Request, res: Response) => {
   const siteRole = (req as any).siteRole;

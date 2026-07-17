@@ -32,20 +32,30 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const sitesController = __importStar(require("./sites.controller"));
+const credentials_routes_1 = __importDefault(require("../credentials/credentials.routes"));
 const authenticate_1 = require("../middleware/authenticate");
 const authorize_1 = require("../middleware/authorize");
 const router = (0, express_1.Router)();
 // Base routes (list/create) only require authentication
 router.get('/', authenticate_1.authenticate, sitesController.listSites);
 router.post('/', authenticate_1.authenticate, sitesController.createSite);
+// CRITICAL: /search MUST be defined before /:siteId to prevent the parameter from swallowing it
+router.get('/search', authenticate_1.authenticate, sitesController.searchSites);
 // Parameterized routes require BOTH authenticate and authorize
 router.get('/:siteId', authenticate_1.authenticate, (0, authorize_1.authorize)(['owner', 'editor', 'viewer']), sitesController.getSite);
 router.patch('/:siteId', authenticate_1.authenticate, (0, authorize_1.authorize)(['owner', 'editor']), sitesController.updateSite);
+router.patch('/:siteId/schema', authenticate_1.authenticate, (0, authorize_1.authorize)(['owner', 'editor']), sitesController.updateSchema);
+router.patch('/:siteId/domain', authenticate_1.authenticate, (0, authorize_1.authorize)(['owner']), sitesController.updateDomain);
 router.delete('/:siteId', authenticate_1.authenticate, (0, authorize_1.authorize)(['owner']), sitesController.deleteSite);
 router.post('/:siteId/roles', authenticate_1.authenticate, (0, authorize_1.authorize)(['owner']), sitesController.inviteRole);
 // Test endpoint
 router.get('/:siteId/test-auth', authenticate_1.authenticate, (0, authorize_1.authorize)(['owner', 'editor', 'viewer']), sitesController.testAuth);
+// Nested credentials routes
+router.use('/:siteId/credentials', credentials_routes_1.default);
 exports.default = router;

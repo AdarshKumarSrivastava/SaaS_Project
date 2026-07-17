@@ -10,6 +10,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const auth_routes_1 = __importDefault(require("./auth/auth.routes"));
 const sites_routes_1 = __importDefault(require("./sites/sites.routes"));
+const public_routes_1 = __importDefault(require("./public/public.routes"));
 const prisma_1 = require("./lib/prisma");
 const sanitizeInput_1 = require("./middleware/sanitizeInput");
 dotenv_1.default.config();
@@ -23,6 +24,7 @@ app.use(sanitizeInput_1.sanitizeInput);
 // Routes
 app.use('/api/auth', auth_routes_1.default);
 app.use('/api/sites', sites_routes_1.default);
+app.use('/api/public', public_routes_1.default);
 // Connect to MongoDB
 const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/buildspace';
 mongoose_1.default.connect(mongoUri)

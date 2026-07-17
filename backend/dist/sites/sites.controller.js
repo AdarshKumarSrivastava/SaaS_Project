@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.testAuth = exports.inviteRole = exports.deleteSite = exports.updateSite = exports.getSite = exports.createSite = exports.listSites = void 0;
+exports.testAuth = exports.searchSites = exports.updateDomain = exports.updateSchema = exports.inviteRole = exports.deleteSite = exports.updateSite = exports.getSite = exports.createSite = exports.listSites = void 0;
 const prisma_1 = require("../lib/prisma");
 const crypto_1 = __importDefault(require("crypto"));
 // GET /api/sites
@@ -102,6 +102,80 @@ const inviteRole = async (req, res) => {
     res.status(501).json({ message: 'Not implemented for MVP' });
 };
 exports.inviteRole = inviteRole;
+// PATCH /api/sites/:siteId/schema
+const updateSchema = async (req, res) => {
+    try {
+        const siteId = req.params.siteId;
+        const { schema } = req.body;
+        const site = await prisma_1.prisma.site.update({
+            where: { id: siteId },
+            data: { schema }
+        });
+        res.json(site);
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+exports.updateSchema = updateSchema;
+// PATCH /api/sites/:siteId/domain
+const updateDomain = async (req, res) => {
+    try {
+        const siteId = req.params.siteId;
+        const { customDomain } = req.body;
+        if (!customDomain) {
+            return res.status(400).json({ error: 'Custom domain is required' });
+        }
+        // Check if domain is already claimed by someone else
+        const existing = await prisma_1.prisma.site.findUnique({
+            where: { customDomain }
+        });
+        if (existing && existing.id !== siteId) {
+            return res.status(409).json({ error: 'Domain is already in use by another site' });
+        }
+        const site = await prisma_1.prisma.site.update({
+            where: { id: siteId },
+            data: { customDomain }
+        });
+        res.json(site);
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+exports.updateDomain = updateDomain;
+// GET /api/sites/search?q=xyz
+const searchSites = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const query = req.query.q;
+        if (!query || query.trim() === '')
+            return res.json([]);
+        const sites = await prisma_1.prisma.site.findMany({
+            where: {
+                AND: [
+                    {
+                        roles: {
+                            some: { userId }
+                        }
+                    },
+                    {
+                        OR: [
+                            { name: { contains: query, mode: 'insensitive' } },
+                            { subdomain: { contains: query, mode: 'insensitive' } }
+                        ]
+                    }
+                ]
+            },
+            take: 5 // Limit to top 5 results for speed
+        });
+        res.json(sites);
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+exports.searchSites = searchSites;
 // Test endpoint for verifying authorize middleware (from Phase 3)
 const testAuth = async (req, res) => {
     const siteRole = req.siteRole;
