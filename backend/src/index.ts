@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import authRoutes from './auth/auth.routes';
 import sitesRoutes from './sites/sites.routes';
 import publicRoutes from './public/public.routes';
+import hireRoutes from './hire/hire.routes';
 import { prisma } from './lib/prisma';
 import { sanitizeInput } from './middleware/sanitizeInput';
 
@@ -24,6 +25,7 @@ app.use(sanitizeInput);
 app.use('/api/auth', authRoutes);
 app.use('/api/sites', sitesRoutes);
 app.use('/api/public', publicRoutes);
+app.use('/api/hire', hireRoutes);
 
 // Connect to MongoDB
 const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/buildspace';

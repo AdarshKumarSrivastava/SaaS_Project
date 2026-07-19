@@ -7,6 +7,7 @@ import { prisma } from '../lib/prisma';
 
 // In-memory store for OTPs (for MVP)
 const otpStore = new Map<string, string>();
+const pendingSignups = new Map<string, any>();
 
 const JWT_SECRET = process.env.JWT_PLATFORM_SECRET || 'fallback_secret';
 
@@ -18,25 +19,23 @@ function generateTokens(userId: string) {
 
 export const signup = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    const { name, email, password } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) return res.status(400).json({ error: 'User already exists' });
 
     const passwordHash = await bcrypt.hash(password, 12);
-    await prisma.user.create({
-      data: { email, passwordHash }
-    });
-
+    
     // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     otpStore.set(email, otp);
+    pendingSignups.set(email, { name, email, passwordHash });
     
     // Mock email send
     console.log(`[MOCK EMAIL] OTP for ${email} is: ${otp}`);
 
-    res.status(201).json({ message: 'User created. Please verify OTP.' });
+    res.status(201).json({ message: 'OTP sent. Please verify to complete registration.' });
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -51,12 +50,25 @@ export const verifyOtp = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid or expired OTP' });
     }
 
-    await prisma.user.update({
-      where: { email },
-      data: { emailVerified: true }
-    });
-    otpStore.delete(email);
+    const pending = pendingSignups.get(email);
+    if (pending) {
+      await prisma.user.create({
+        data: {
+          name: pending.name,
+          email: pending.email,
+          passwordHash: pending.passwordHash,
+          emailVerified: true
+        }
+      });
+      pendingSignups.delete(email);
+    } else {
+      await prisma.user.update({
+        where: { email },
+        data: { emailVerified: true }
+      });
+    }
 
+    otpStore.delete(email);
     res.json({ message: 'Email verified successfully.' });
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
