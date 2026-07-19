@@ -69,7 +69,7 @@ const testCredential = async (req, res) => {
     try {
         const { keyName, keyValue } = req.body;
         // In a full production environment, this would physically instantiate the external SDKs
-        // e.g. new Stripe(keyValue) and call stripe.paymentIntents.list()
+        // e.g. instantiating Razorpay SDK with Key ID and Secret to test authentication.
         // For MVP, we mock the network verification.
         // Fake 500ms delay to simulate network call
         await new Promise(resolve => setTimeout(resolve, 500));

@@ -11,6 +11,7 @@ const qrcode_1 = __importDefault(require("qrcode"));
 const prisma_1 = require("../lib/prisma");
 // In-memory store for OTPs (for MVP)
 const otpStore = new Map();
+const pendingSignups = new Map();
 const JWT_SECRET = process.env.JWT_PLATFORM_SECRET || 'fallback_secret';
 function generateTokens(userId) {
     const accessToken = jsonwebtoken_1.default.sign({ userId }, JWT_SECRET, { expiresIn: '15m' });
@@ -19,22 +20,20 @@ function generateTokens(userId) {
 }
 const signup = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { name, email, password } = req.body;
         if (!email || !password)
             return res.status(400).json({ error: 'Email and password required' });
         const existingUser = await prisma_1.prisma.user.findUnique({ where: { email } });
         if (existingUser)
             return res.status(400).json({ error: 'User already exists' });
         const passwordHash = await bcrypt_1.default.hash(password, 12);
-        await prisma_1.prisma.user.create({
-            data: { email, passwordHash }
-        });
         // Generate OTP
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         otpStore.set(email, otp);
+        pendingSignups.set(email, { name, email, passwordHash });
         // Mock email send
         console.log(`[MOCK EMAIL] OTP for ${email} is: ${otp}`);
-        res.status(201).json({ message: 'User created. Please verify OTP.' });
+        res.status(201).json({ message: 'OTP sent. Please verify to complete registration.' });
     }
     catch (error) {
         res.status(500).json({ error: 'Internal server error' });
@@ -48,10 +47,24 @@ const verifyOtp = async (req, res) => {
         if (!storedOtp || storedOtp !== otp) {
             return res.status(400).json({ error: 'Invalid or expired OTP' });
         }
-        await prisma_1.prisma.user.update({
-            where: { email },
-            data: { emailVerified: true }
-        });
+        const pending = pendingSignups.get(email);
+        if (pending) {
+            await prisma_1.prisma.user.create({
+                data: {
+                    name: pending.name,
+                    email: pending.email,
+                    passwordHash: pending.passwordHash,
+                    emailVerified: true
+                }
+            });
+            pendingSignups.delete(email);
+        }
+        else {
+            await prisma_1.prisma.user.update({
+                where: { email },
+                data: { emailVerified: true }
+            });
+        }
         otpStore.delete(email);
         res.json({ message: 'Email verified successfully.' });
     }
