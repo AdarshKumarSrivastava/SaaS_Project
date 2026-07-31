@@ -89,3 +89,121 @@ export const testCredential = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+import bcrypt from 'bcrypt';
+
+const byokOtpStore = new Map<string, { otp: string, expiresAt: number }>();
+
+export const getPinStatus = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.userId;
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    res.json({ hasPin: !!user?.byokPinHash });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const setupPin = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.userId;
+    const { pin } = req.body;
+    
+    if (!pin || pin.length < 4 || pin.length > 8) {
+      return res.status(400).json({ error: 'PIN must be 4-8 characters' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(pin, salt);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { byokPinHash: hash }
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const verifyPin = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.userId;
+    const { pin } = req.body;
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user || !user.byokPinHash) {
+      return res.status(400).json({ error: 'PIN not set up' });
+    }
+
+    const isValid = await bcrypt.compare(pin, user.byokPinHash);
+    if (!isValid) {
+      return res.status(401).json({ error: 'Incorrect PIN' });
+    }
+
+    res.json({ valid: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const forgotPin = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.userId;
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
+    
+    byokOtpStore.set(user.email, { otp, expiresAt });
+    console.log(`[MOCK EMAIL] BYOK Reset OTP for ${user.email} is: ${otp}`);
+    
+    res.json({ message: 'OTP sent to registered email' });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const resetPin = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.userId;
+    const { otp, newPin } = req.body;
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const storeData = byokOtpStore.get(user.email);
+    if (!storeData) {
+      return res.status(400).json({ error: 'No OTP requested or expired' });
+    }
+
+    if (Date.now() > storeData.expiresAt) {
+      byokOtpStore.delete(user.email);
+      return res.status(400).json({ error: 'OTP expired' });
+    }
+
+    if (storeData.otp !== otp) {
+      return res.status(400).json({ error: 'Invalid OTP' });
+    }
+
+    if (!newPin || newPin.length < 4 || newPin.length > 8) {
+      return res.status(400).json({ error: 'New PIN must be 4-8 characters' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(newPin, salt);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { byokPinHash: hash }
+    });
+
+    byokOtpStore.delete(user.email);
+    res.json({ success: true, message: 'PIN reset successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
