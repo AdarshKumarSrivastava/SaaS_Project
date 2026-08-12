@@ -21,13 +21,23 @@ const sanitizeObject = (obj: any): any => {
 
 export const sanitizeInput = (req: Request, res: Response, next: NextFunction) => {
   if (req.body) {
+    // req.body is usually safe to reassign, but mutating might be safer if it's an object.
+    // We will reassign it as it is standard in many middlewares (like body-parser).
     req.body = sanitizeObject(req.body);
   }
   if (req.query) {
-    req.query = sanitizeObject(req.query);
+    const sanitizedQuery = sanitizeObject(req.query);
+    for (const key of Object.keys(req.query)) {
+      delete req.query[key];
+    }
+    Object.assign(req.query, sanitizedQuery);
   }
   if (req.params) {
-    req.params = sanitizeObject(req.params);
+    const sanitizedParams = sanitizeObject(req.params);
+    for (const key of Object.keys(req.params)) {
+      delete req.params[key];
+    }
+    Object.assign(req.params, sanitizedParams);
   }
   next();
 };

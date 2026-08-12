@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 const { authenticator } = require('otplib');
 import qrcode from 'qrcode';
 import { prisma } from '../lib/prisma';
+import nodemailer from 'nodemailer';
 
 // In-memory store for OTPs (for MVP)
 const otpStore = new Map<string, string>();
@@ -32,8 +33,35 @@ export const signup = async (req: Request, res: Response) => {
     otpStore.set(email, otp);
     pendingSignups.set(email, { name, email, passwordHash });
     
-    // Mock email send
-    console.log(`[MOCK EMAIL] OTP for ${email} is: ${otp}`);
+    // Send actual email if SMTP config is present, otherwise fallback to mock
+    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || "sandbox.smtp.mailtrap.io",
+        port: parseInt(process.env.SMTP_PORT || "2525"),
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+
+      await transporter.sendMail({
+        from: `"BuildSpace" <${process.env.SMTP_FROM || 'noreply@buildspace.com'}>`,
+        to: email,
+        subject: 'Your BuildSpace Verification Code',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2>Welcome to BuildSpace!</h2>
+            <p>Your authentication code is:</p>
+            <h1 style="font-size: 32px; letter-spacing: 5px; color: #d946ef;">${otp}</h1>
+            <p>Enter this code to complete your registration. This code will expire soon.</p>
+          </div>
+        `,
+      });
+      console.log(`[EMAIL SENT] OTP sent to ${email}`);
+    } else {
+      // Mock email send
+      console.log(`[MOCK EMAIL] OTP for ${email} is: ${otp}`);
+    }
 
     res.status(201).json({ message: 'OTP sent. Please verify to complete registration.' });
   } catch (error) {
