@@ -26,7 +26,8 @@
     "nodemailer": "^9.0.3",
     "otplib": "^13.4.1",
     "qrcode": "^1.5.4",
-    "xss": "^1.0.15"
+    "xss": "^1.0.15",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

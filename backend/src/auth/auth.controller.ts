@@ -5,10 +5,7 @@ const { authenticator } = require('otplib');
 import qrcode from 'qrcode';
 import { prisma } from '../lib/prisma';
 import nodemailer from 'nodemailer';
-
-// In-memory store for OTPs (for MVP)
-const otpStore = new Map<string, string>();
-const pendingSignups = new Map<string, any>();
+import { z } from 'zod';
 
 const JWT_SECRET = process.env.JWT_PLATFORM_SECRET || 'fallback_secret';
 
@@ -18,10 +15,28 @@ function generateTokens(userId: string) {
   return { accessToken, refreshToken };
 }
 
+// Zod schemas
+const signupSchema = z.object({
+  name: z.string().optional(),
+  email: z.string().email(),
+  password: z.string().min(6)
+});
+
+const verifyOtpSchema = z.object({
+  email: z.string().email(),
+  otp: z.string().length(6)
+});
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string()
+});
+
 export const signup = async (req: Request, res: Response) => {
   try {
-    const { name, email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+    const parsed = signupSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: 'Invalid input', details: parsed.error.issues });
+    const { name, email, password } = parsed.data;
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) return res.status(400).json({ error: 'User already exists' });
@@ -30,36 +45,34 @@ export const signup = async (req: Request, res: Response) => {
     
     // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    otpStore.set(email, otp);
-    pendingSignups.set(email, { name, email, passwordHash });
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
     
-    // Send actual email if SMTP config is present, otherwise fallback to mock
+    await prisma.pendingSignup.upsert({
+      where: { email },
+      create: { email, name, passwordHash, otp, expiresAt },
+      update: { name, passwordHash, otp, expiresAt, createdAt: new Date() }
+    });
+    
     if (process.env.SMTP_USER && process.env.SMTP_PASS) {
       const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST || "sandbox.smtp.mailtrap.io",
         port: parseInt(process.env.SMTP_PORT || "2525"),
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
+        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
       });
 
       await transporter.sendMail({
         from: `"BuildSpace" <${process.env.SMTP_FROM || 'noreply@buildspace.com'}>`,
         to: email,
         subject: 'Your BuildSpace Verification Code',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2>Welcome to BuildSpace!</h2>
-            <p>Your authentication code is:</p>
-            <h1 style="font-size: 32px; letter-spacing: 5px; color: #d946ef;">${otp}</h1>
-            <p>Enter this code to complete your registration. This code will expire soon.</p>
-          </div>
-        `,
+        html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>Welcome to BuildSpace!</h2>
+          <p>Your authentication code is:</p>
+          <h1 style="font-size: 32px; letter-spacing: 5px; color: #d946ef;">${otp}</h1>
+          <p>Enter this code to complete your registration. This code will expire soon.</p>
+        </div>`,
       });
       console.log(`[EMAIL SENT] OTP sent to ${email}`);
     } else {
-      // Mock email send
       console.log(`[MOCK EMAIL] OTP for ${email} is: ${otp}`);
     }
 
@@ -71,32 +84,28 @@ export const signup = async (req: Request, res: Response) => {
 
 export const verifyOtp = async (req: Request, res: Response) => {
   try {
-    const { email, otp } = req.body;
-    const storedOtp = otpStore.get(email);
+    const parsed = verifyOtpSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: 'Invalid input' });
+    const { email, otp } = parsed.data;
+
+    const pending = await prisma.pendingSignup.findUnique({ where: { email } });
     
-    if (!storedOtp || storedOtp !== otp) {
+    if (!pending || pending.otp !== otp) {
       return res.status(400).json({ error: 'Invalid or expired OTP' });
     }
-
-    const pending = pendingSignups.get(email);
-    if (pending) {
-      await prisma.user.create({
-        data: {
-          name: pending.name,
-          email: pending.email,
-          passwordHash: pending.passwordHash,
-          emailVerified: true
-        }
-      });
-      pendingSignups.delete(email);
-    } else {
-      await prisma.user.update({
-        where: { email },
-        data: { emailVerified: true }
-      });
+    
+    if (pending.expiresAt < new Date()) {
+      await prisma.pendingSignup.delete({ where: { email } });
+      return res.status(400).json({ error: 'OTP has expired. Please sign up again.' });
     }
 
-    otpStore.delete(email);
+    await prisma.user.upsert({
+      where: { email },
+      create: { name: pending.name, email: pending.email, passwordHash: pending.passwordHash, emailVerified: true },
+      update: { emailVerified: true }
+    });
+
+    await prisma.pendingSignup.delete({ where: { email } });
     res.json({ message: 'Email verified successfully.' });
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
@@ -105,7 +114,10 @@ export const verifyOtp = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    const parsed = loginSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: 'Invalid credentials format' });
+    const { email, password } = parsed.data;
+
     const user = await prisma.user.findUnique({ where: { email } });
     
     if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
@@ -117,7 +129,6 @@ export const login = async (req: Request, res: Response) => {
     }
 
     if (user.mfaSecret) {
-      // Issue a temporary token for MFA verification
       const mfaToken = jwt.sign({ userId: user.id, mfaPending: true }, JWT_SECRET, { expiresIn: '5m' });
       return res.json({ mfaRequired: true, mfaToken });
     }
@@ -131,7 +142,7 @@ export const login = async (req: Request, res: Response) => {
 
 export const enableMfa = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.userId; // Set by authenticate middleware
+    const userId = (req as any).user.userId;
     const secret = authenticator.generateSecret();
     
     const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -140,12 +151,7 @@ export const enableMfa = async (req: Request, res: Response) => {
     const otpauthUrl = authenticator.keyuri(user.email, 'BuildSpace', secret);
     const qrCodeDataUrl = await qrcode.toDataURL(otpauthUrl);
 
-    // Save temporarily or directly? We'll just save it directly for MVP
-    await prisma.user.update({
-      where: { id: userId },
-      data: { mfaSecret: secret }
-    });
-
+    await prisma.user.update({ where: { id: userId }, data: { mfaSecret: secret } });
     res.json({ qrCodeUrl: qrCodeDataUrl, secret });
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
@@ -196,6 +202,5 @@ export const logout = (req: Request, res: Response) => {
   res.json({ message: 'Logged out successfully' });
 };
 
-// Mocks for OAuth
 export const oauthGoogle = async (req: Request, res: Response) => { res.status(501).json({ message: 'Not implemented' }); };
 export const oauthGithub = async (req: Request, res: Response) => { res.status(501).json({ message: 'Not implemented' }); };
