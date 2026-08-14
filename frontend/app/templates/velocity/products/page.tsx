@@ -121,12 +121,12 @@ function ProductsContent() {
 
   useEffect(() => {
     const cat = searchParams.get('category');
-    if (cat) setSelectedCategory(cat);
-    else setSelectedCategory("All");
+    if (cat) setTimeout(() => setSelectedCategory(cat), 0);
+    else setTimeout(() => setSelectedCategory("All"), 0);
 
     const wt = searchParams.get('wearType');
-    if (wt) setSelectedWearType(wt);
-    else setSelectedWearType("All");
+    if (wt) setTimeout(() => setSelectedWearType(wt), 0);
+    else setTimeout(() => setSelectedWearType("All"), 0);
   }, [searchParams]);
 
   const customData = useCustomization();

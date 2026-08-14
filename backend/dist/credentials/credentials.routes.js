@@ -32,6 +32,9 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const credentialsController = __importStar(require("./credentials.controller"));
@@ -43,4 +46,16 @@ const router = (0, express_1.Router)({ mergeParams: true });
 router.get('/', authenticate_1.authenticate, (0, authorize_1.authorize)(['owner']), credentialsController.listCredentials);
 router.post('/', authenticate_1.authenticate, (0, authorize_1.authorize)(['owner']), credentialsController.saveCredentials);
 router.post('/test', authenticate_1.authenticate, (0, authorize_1.authorize)(['owner']), credentialsController.testCredential);
+// Global BYOK PIN Routes
+const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
+const pinLimiter = (0, express_rate_limit_1.default)({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // Limit each IP to 5 requests per windowMs
+    message: { error: 'Too many attempts, please try again after 15 minutes' }
+});
+router.get('/pin/status', authenticate_1.authenticate, credentialsController.getPinStatus);
+router.post('/pin/setup', authenticate_1.authenticate, credentialsController.setupPin);
+router.post('/pin/verify', authenticate_1.authenticate, pinLimiter, credentialsController.verifyPin);
+router.post('/pin/forgot', authenticate_1.authenticate, credentialsController.forgotPin);
+router.post('/pin/reset', authenticate_1.authenticate, credentialsController.resetPin);
 exports.default = router;

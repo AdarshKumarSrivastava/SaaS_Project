@@ -1,32 +1,36 @@
 @import "tailwindcss";
 
 @theme {
-  --background: #000000;
-  --foreground: #ffffff;
+  --color-bg-base: #F5F3ED;
+  --color-bg-elevated: #FCFBFA;
+  --color-bg-subtle: #EAE6DF;
+  --color-ink: #0D0D0D;
+  --color-ink-soft: #6E6D6B;
+  --color-accent: #E55225;
+  --color-line: #DCD8D2;
+  --color-success: #1DAA6E;
+
+  --background: var(--color-bg-base);
+  --foreground: var(--color-ink);
+
+  --font-sans: "Inter", sans-serif;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms ease, transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes gradient-x {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+.page-transitioning {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 300ms ease, transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.animate-gradient-x {
-  animation: gradient-x 8s ease infinite;
-  background-size: 200% 200%;
-}
-
-/* Fix browser autofill changing input backgrounds to white */
-input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus, 
-input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px #0c0c11 inset !important;
-  -webkit-text-fill-color: white !important;
-  transition: background-color 5000s ease-in-out 0s;
+*:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
 }

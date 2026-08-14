@@ -147,7 +147,7 @@ exports.updateDomain = updateDomain;
 // GET /api/sites/search?q=xyz
 const searchSites = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user.userId;
         const query = req.query.q;
         if (!query || query.trim() === '')
             return res.json([]);

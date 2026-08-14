@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
+import { decrypt } from '../lib/encryption';
 
 // GET /api/sites
 export const listSites = async (req: Request, res: Response) => {
@@ -146,7 +148,7 @@ export const updateDomain = async (req: Request, res: Response) => {
 // GET /api/sites/search?q=xyz
 export const searchSites = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).user.userId;
     const query = req.query.q as string;
     
     if (!query || query.trim() === '') return res.json([]);
@@ -184,4 +186,44 @@ export const testAuth = async (req: Request, res: Response) => {
     siteId: req.params.siteId as string,
     role: siteRole.role 
   });
+};
+
+// POST /api/sites/:siteId/admin/login
+export const adminLogin = async (req: Request, res: Response) => {
+  try {
+    const siteId = req.params.siteId;
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({ error: 'Password is required' });
+    }
+
+    const cred = await prisma.siteCredential.findFirst({
+      where: { siteId, keyType: 'admin_password' }
+    });
+
+    let isValid = false;
+    if (cred) {
+      const decrypted = decrypt(cred.encryptedValue);
+      isValid = decrypted === password;
+    } else {
+      // Default fallback if not set
+      isValid = password === 'admin123';
+    }
+
+    if (!isValid) {
+      return res.status(401).json({ error: 'Invalid password' });
+    }
+
+    const token = jwt.sign(
+      { siteId, role: 'admin' },
+      process.env.JWT_PLATFORM_SECRET || 'secret',
+      { expiresIn: '24h' }
+    );
+
+    res.json({ token });
+  } catch (error) {
+    console.error('Admin Login Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };

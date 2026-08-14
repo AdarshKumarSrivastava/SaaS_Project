@@ -1,17 +1,21 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  extensions = [vector]
 }
 
 model User {
   id            String   @id @default(uuid())
   name          String?
   email         String   @unique
-  passwordHash  String
+  passwordHash  String?
+  googleId      String?  @unique
+  githubId      String?  @unique
   mfaSecret     String?
   byokPinHash   String?
   emailVerified Boolean  @default(false)
@@ -27,9 +31,11 @@ model Site {
   subdomain    String   @unique
   customDomain String?  @unique
   status       String   @default("draft") // draft | published
+  schema       Json?    // Added schema field
   createdAt    DateTime @default(now())
   roles        SiteRole[]
   credentials  SiteCredential[]
+  documents    SiteDocument[]
 }
 
 model SiteRole {
@@ -59,4 +65,13 @@ model PendingSignup {
   otp          String
   createdAt    DateTime @default(now())
   expiresAt    DateTime
+}
+
+model SiteDocument {
+  id        String   @id @default(uuid())
+  siteId    String
+  content   String
+  embedding Unsupported("vector(1536)")?
+  createdAt DateTime @default(now())
+  site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
 }

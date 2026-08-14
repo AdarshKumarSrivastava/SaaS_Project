@@ -12,7 +12,6 @@ export default function MfaPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // If no mfaToken in storage, they shouldn't be here
     if (!localStorage.getItem('mfaToken')) {
       router.push('/login');
     }
@@ -44,42 +43,47 @@ export default function MfaPage() {
   };
 
   return (
-    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}>
-      <div className="text-center mb-6">
-        <div className="mx-auto w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mb-4 text-emerald-400">
-          <ShieldCheck className="w-6 h-6" />
-        </div>
-        <h2 className="text-xl font-medium text-white">Two-Step Verification</h2>
-        <p className="text-sm text-zinc-400 mt-1">Enter the 6-digit code from your authenticator app.</p>
-      </div>
+    <div className="w-full relative">
+      <div className="p-10 relative z-10">
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>
+          <div className="text-center mb-8">
+            <div className="mx-auto w-12 h-12 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-center mb-5 text-emerald-600">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl font-semibold text-ink">Two-Step Verification</h2>
+            <p className="text-sm text-ink-soft mt-1.5">Enter the 6-digit code from your authenticator app.</p>
+          </div>
 
-      <form onSubmit={handleVerify} className="space-y-4">
-        {error && <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg">{error}</div>}
-        
-        <div>
-          <input 
-            type="text" 
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
-            className="w-full text-center tracking-[0.5em] font-mono bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
-            required
-            maxLength={6}
-            placeholder="000000"
-          />
-        </div>
-        
-        <button 
-          type="submit" 
-          disabled={loading}
-          className="w-full bg-emerald-500 text-white font-medium py-2.5 rounded-lg text-sm flex items-center justify-center hover:bg-emerald-600 transition-colors disabled:opacity-50 mt-2"
-        >
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Secure Login'}
-        </button>
-      </form>
-      
-      <p className="text-center text-xs text-zinc-500 mt-6">
-        Lost access to your authenticator? <br/> Contact support for recovery.
-      </p>
-    </motion.div>
+          <form onSubmit={handleVerify} className="space-y-5">
+            {error && <div className="p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl">{error}</div>}
+            
+            <div>
+              <input 
+                type="text" 
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                className="w-full text-center tracking-[0.5em] font-mono bg-bg-base border border-line rounded-xl px-4 py-4 text-ink text-xl focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink/20 transition-all placeholder:text-ink-soft/30 placeholder:tracking-normal placeholder:text-sm"
+                required
+                maxLength={6}
+                placeholder="Enter code"
+                autoFocus
+              />
+            </div>
+            
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full bg-ink text-bg-elevated font-medium py-3 rounded-xl text-sm flex items-center justify-center hover:bg-ink/90 transition-colors disabled:opacity-50 shadow-sm"
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify & Continue'}
+            </button>
+          </form>
+          
+          <p className="text-center text-xs text-ink-soft mt-6">
+            Lost access to your authenticator?<br/>Contact support for recovery.
+          </p>
+        </motion.div>
+      </div>
+    </div>
   );
 }

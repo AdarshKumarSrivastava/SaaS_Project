@@ -24,6 +24,9 @@ router.post('/:siteId/roles', authenticate, authorize(['owner']), sitesControlle
 // Test endpoint
 router.get('/:siteId/test-auth', authenticate, authorize(['owner', 'editor', 'viewer']), sitesController.testAuth);
 
+// Admin Login (public for the site's admins)
+router.post('/:siteId/admin/login', sitesController.adminLogin);
+
 // Nested credentials routes
 router.use('/:siteId/credentials', credentialsRoutes);
 

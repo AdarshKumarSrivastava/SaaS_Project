@@ -1,6 +1,9 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.testCredential = exports.listCredentials = exports.saveCredentials = void 0;
+exports.resetPin = exports.forgotPin = exports.verifyPin = exports.setupPin = exports.getPinStatus = exports.testCredential = exports.listCredentials = exports.saveCredentials = void 0;
 const prisma_1 = require("../lib/prisma");
 const encryption_1 = require("../lib/encryption");
 // POST /api/sites/:siteId/credentials
@@ -68,13 +71,30 @@ exports.listCredentials = listCredentials;
 const testCredential = async (req, res) => {
     try {
         const { keyName, keyValue } = req.body;
-        // In a full production environment, this would physically instantiate the external SDKs
-        // e.g. instantiating Razorpay SDK with Key ID and Secret to test authentication.
-        // For MVP, we mock the network verification.
-        // Fake 500ms delay to simulate network call
         await new Promise(resolve => setTimeout(resolve, 500));
-        if (keyValue.length < 10) {
-            return res.status(400).json({ valid: false, message: 'Key length must be at least 10 characters' });
+        if (!keyValue) {
+            return res.status(400).json({ valid: false, message: 'Key value is required' });
+        }
+        if (keyName === 'payment_publishable_key' && !keyValue.startsWith('pk_')) {
+            return res.status(400).json({ valid: false, message: 'Publishable keys typically start with pk_' });
+        }
+        if (keyName === 'payment_secret_key' && !keyValue.startsWith('sk_')) {
+            return res.status(400).json({ valid: false, message: 'Secret keys typically start with sk_' });
+        }
+        if (keyName.includes('jwt') && keyValue.length < 32) {
+            return res.status(400).json({ valid: false, message: 'JWT Secret must be at least 32 characters' });
+        }
+        if (keyName === 'imagekit_public' && !keyValue.startsWith('public_')) {
+            return res.status(400).json({ valid: false, message: 'ImageKit public key should start with public_' });
+        }
+        if (keyName === 'imagekit_private' && !keyValue.startsWith('private_')) {
+            return res.status(400).json({ valid: false, message: 'ImageKit private key should start with private_' });
+        }
+        if (keyName === 'imagekit_url_endpoint' && !keyValue.startsWith('http')) {
+            return res.status(400).json({ valid: false, message: 'ImageKit endpoint must be a valid URL' });
+        }
+        if (keyValue.length < 5) {
+            return res.status(400).json({ valid: false, message: 'Key length must be at least 5 characters' });
         }
         res.json({ valid: true, message: 'Verification passed' });
     }
@@ -83,3 +103,107 @@ const testCredential = async (req, res) => {
     }
 };
 exports.testCredential = testCredential;
+const bcrypt_1 = __importDefault(require("bcrypt"));
+const byokOtpStore = new Map();
+const getPinStatus = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const user = await prisma_1.prisma.user.findUnique({ where: { id: userId } });
+        res.json({ hasPin: !!user?.byokPinHash });
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+exports.getPinStatus = getPinStatus;
+const setupPin = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { pin } = req.body;
+        if (!pin || pin.length < 4 || pin.length > 8) {
+            return res.status(400).json({ error: 'PIN must be 4-8 characters' });
+        }
+        const salt = await bcrypt_1.default.genSalt(10);
+        const hash = await bcrypt_1.default.hash(pin, salt);
+        await prisma_1.prisma.user.update({
+            where: { id: userId },
+            data: { byokPinHash: hash }
+        });
+        res.json({ success: true });
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+exports.setupPin = setupPin;
+const verifyPin = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { pin } = req.body;
+        const user = await prisma_1.prisma.user.findUnique({ where: { id: userId } });
+        if (!user || !user.byokPinHash) {
+            return res.status(400).json({ error: 'PIN not set up' });
+        }
+        const isValid = await bcrypt_1.default.compare(pin, user.byokPinHash);
+        if (!isValid) {
+            return res.status(401).json({ error: 'Incorrect PIN' });
+        }
+        res.json({ valid: true });
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+exports.verifyPin = verifyPin;
+const forgotPin = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const user = await prisma_1.prisma.user.findUnique({ where: { id: userId } });
+        if (!user)
+            return res.status(404).json({ error: 'User not found' });
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
+        byokOtpStore.set(user.email, { otp, expiresAt });
+        console.log(`[MOCK EMAIL] BYOK Reset OTP for ${user.email} is: ${otp}`);
+        res.json({ message: 'OTP sent to registered email' });
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+exports.forgotPin = forgotPin;
+const resetPin = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { otp, newPin } = req.body;
+        const user = await prisma_1.prisma.user.findUnique({ where: { id: userId } });
+        if (!user)
+            return res.status(404).json({ error: 'User not found' });
+        const storeData = byokOtpStore.get(user.email);
+        if (!storeData) {
+            return res.status(400).json({ error: 'No OTP requested or expired' });
+        }
+        if (Date.now() > storeData.expiresAt) {
+            byokOtpStore.delete(user.email);
+            return res.status(400).json({ error: 'OTP expired' });
+        }
+        if (storeData.otp !== otp) {
+            return res.status(400).json({ error: 'Invalid OTP' });
+        }
+        if (!newPin || newPin.length < 4 || newPin.length > 8) {
+            return res.status(400).json({ error: 'New PIN must be 4-8 characters' });
+        }
+        const salt = await bcrypt_1.default.genSalt(10);
+        const hash = await bcrypt_1.default.hash(newPin, salt);
+        await prisma_1.prisma.user.update({
+            where: { id: userId },
+            data: { byokPinHash: hash }
+        });
+        byokOtpStore.delete(user.email);
+        res.json({ success: true, message: 'PIN reset successfully' });
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+exports.resetPin = resetPin;

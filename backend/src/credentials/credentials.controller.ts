@@ -73,15 +73,32 @@ export const testCredential = async (req: Request, res: Response) => {
   try {
     const { keyName, keyValue } = req.body;
     
-    // In a full production environment, this would physically instantiate the external SDKs
-    // e.g. instantiating Razorpay SDK with Key ID and Secret to test authentication.
-    // For MVP, we mock the network verification.
-    
-    // Fake 500ms delay to simulate network call
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    if (keyValue.length < 10) {
-      return res.status(400).json({ valid: false, message: 'Key length must be at least 10 characters' });
+    if (!keyValue) {
+      return res.status(400).json({ valid: false, message: 'Key value is required' });
+    }
+
+    if (keyName === 'payment_publishable_key' && !keyValue.startsWith('pk_')) {
+      return res.status(400).json({ valid: false, message: 'Publishable keys typically start with pk_' });
+    }
+    if (keyName === 'payment_secret_key' && !keyValue.startsWith('sk_')) {
+      return res.status(400).json({ valid: false, message: 'Secret keys typically start with sk_' });
+    }
+    if (keyName.includes('jwt') && keyValue.length < 32) {
+      return res.status(400).json({ valid: false, message: 'JWT Secret must be at least 32 characters' });
+    }
+    if (keyName === 'imagekit_public' && !keyValue.startsWith('public_')) {
+      return res.status(400).json({ valid: false, message: 'ImageKit public key should start with public_' });
+    }
+    if (keyName === 'imagekit_private' && !keyValue.startsWith('private_')) {
+      return res.status(400).json({ valid: false, message: 'ImageKit private key should start with private_' });
+    }
+    if (keyName === 'imagekit_url_endpoint' && !keyValue.startsWith('http')) {
+      return res.status(400).json({ valid: false, message: 'ImageKit endpoint must be a valid URL' });
+    }
+    if (keyValue.length < 5) {
+      return res.status(400).json({ valid: false, message: 'Key length must be at least 5 characters' });
     }
 
     res.json({ valid: true, message: 'Verification passed' });

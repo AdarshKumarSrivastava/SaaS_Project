@@ -8,24 +8,27 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen w-full relative flex items-center justify-center font-sans overflow-hidden bg-[#030014] selection:bg-fuchsia-500/30">
+    <div className="min-h-screen w-full relative flex items-center justify-center font-sans overflow-hidden bg-ink selection:bg-bg-elevated selection:text-ink">
+      
+      {/* Premium Background */}
+      <div className="absolute inset-0 z-0">
+        <img 
+          src="/images/shapes_bg.jpg" 
+          alt="Premium Background" 
+          className="w-full h-full object-cover opacity-80"
+        />
+        <div className="absolute inset-0 bg-ink/20 mix-blend-overlay"></div>
+      </div>
       
       {/* Back to Home Button */}
-      <Link href="/" className="absolute top-8 left-8 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-all backdrop-blur-md group">
+      <Link href="/" className="absolute top-8 left-8 z-50 flex items-center gap-2 px-6 py-3 rounded-full bg-bg-elevated/40 backdrop-blur-2xl border border-white/40 text-ink hover:bg-bg-elevated/80 transition-all group shadow-lg">
         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-        <span className="text-sm font-medium tracking-wide">Return to Engine</span>
+        <span className="text-sm font-medium">Back</span>
       </Link>
       
-      {/* Insane Animated Background Gradients from the Landing Page */}
-      <div className="fixed inset-0 z-0 pointer-events-none opacity-60">
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-cyan-500/30 rounded-full blur-[150px] mix-blend-screen animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute top-[20%] right-[-10%] w-[60%] h-[60%] bg-fuchsia-500/20 rounded-full blur-[150px] mix-blend-screen animate-pulse" style={{ animationDuration: '12s' }} />
-        <div className="absolute bottom-[-20%] left-[20%] w-[40%] h-[40%] bg-violet-600/30 rounded-full blur-[150px] mix-blend-screen animate-pulse" style={{ animationDuration: '10s' }} />
-      </div>
-
-      {/* Floating UI Container */}
-      <div className="relative z-10 w-full max-w-[500px] p-6">
-        <div className="bg-[#030014]/60 backdrop-blur-2xl border border-white/10 rounded-[40px] shadow-[0_0_100px_rgba(217,70,239,0.15)] overflow-visible relative">
+      {/* Clean UI Container - Glassmorphism */}
+      <div className="relative z-10 w-full max-w-[460px] p-6">
+        <div className="bg-bg-elevated/80 backdrop-blur-3xl border border-white/60 rounded-[2rem] shadow-[0_20px_40px_rgba(0,0,0,0.1)] overflow-hidden relative">
            {children}
         </div>
       </div>

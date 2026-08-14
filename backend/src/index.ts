@@ -1,14 +1,15 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import authRoutes from './auth/auth.routes';
 import sitesRoutes from './sites/sites.routes';
 import publicRoutes from './public/public.routes';
 import hireRoutes from './hire/hire.routes';
+import aiRoutes from './ai/ai.routes';
 import { prisma } from './lib/prisma';
 import { sanitizeInput } from './middleware/sanitizeInput';
+import { errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
 
@@ -26,25 +27,17 @@ app.use('/api/auth', authRoutes);
 app.use('/api/sites', sitesRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api/hire', hireRoutes);
-
-// Connect to MongoDB
-const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/buildspace';
-mongoose.connect(mongoUri)
-  .then(() => console.log('MongoDB connected successfully.'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+app.use('/api/ai', aiRoutes);
 
 // Health check route
 app.get('/health', async (req, res) => {
   try {
     // Check Prisma connection
     await prisma.$queryRaw`SELECT 1`;
-    // Check Mongoose connection
-    const mongoStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
     
     res.status(200).json({
       status: 'ok',
-      postgres: 'connected',
-      mongodb: mongoStatus
+      postgres: 'connected'
     });
   } catch (error) {
     console.error(error);
@@ -55,6 +48,9 @@ app.get('/health', async (req, res) => {
     });
   }
 });
+
+// Global Error Handler must be the last middleware
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`Backend server running on port ${port}`);

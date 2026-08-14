@@ -24,8 +24,8 @@ export function CustomCursor() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
     const updateMousePosition = (e: MouseEvent) => {
-      cursorX.set(e.clientX);
-      cursorY.set(e.clientY);
+      cursorX.set(e.pageX);
+      cursorY.set(e.pageY);
     };
     
     window.addEventListener('mousemove', updateMousePosition, { passive: true });
@@ -37,7 +37,7 @@ export function CustomCursor() {
   return (
     <>
       <motion.div
-        className="fixed top-0 left-0 w-8 h-8 rounded-full border border-fuchsia-500/50 pointer-events-none z-[9999]"
+        className="absolute top-0 left-0 w-8 h-8 rounded-full border border-ink/30 pointer-events-none z-[9999]"
         style={{
           x: cursorXOuter,
           y: cursorYOuter,
@@ -46,7 +46,7 @@ export function CustomCursor() {
         }}
       />
       <motion.div
-        className="fixed top-0 left-0 w-2 h-2 rounded-full bg-cyan-400 pointer-events-none z-[9999]"
+        className="absolute top-0 left-0 w-2 h-2 rounded-full bg-ink/80 pointer-events-none z-[9999]"
         style={{
           x: cursorXInner,
           y: cursorYInner,
