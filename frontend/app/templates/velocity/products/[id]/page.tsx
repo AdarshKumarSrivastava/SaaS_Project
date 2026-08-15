@@ -99,7 +99,7 @@ export default function VelocityProductDetails() {
           >
             <div className="flex items-center gap-3 mb-6">
               <Zap className="w-5 h-5 text-[#ff003c]" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#ff003c] font-space">{product.brand} // {product.category}</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#ff003c] font-space">{product.brand} {"//"} {product.category}</span>
             </div>
             
             <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4 font-orbitron leading-none text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
