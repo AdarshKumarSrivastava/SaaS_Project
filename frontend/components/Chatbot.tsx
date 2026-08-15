@@ -20,6 +20,8 @@ export function Chatbot({ siteId }: { siteId?: string }) {
     }
   }, [messages, isOpen]);
 
+  const conversationIdRef = useRef<string | null>(null);
+
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -30,25 +32,67 @@ export function Chatbot({ siteId }: { siteId?: string }) {
     setLoading(true);
 
     try {
-      // Typically this would be a real streaming SSE or regular fetch to /api/ai/chat
-      // Wait a short moment to simulate network
-      await new Promise(r => setTimeout(r, 600));
-
       const res = await fetch('http://localhost:3001/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: userMessage, siteId: siteId || 'global' })
+        body: JSON.stringify({ 
+          query: userMessage, 
+          siteId: siteId || 'global',
+          conversationId: conversationIdRef.current,
+          sessionId: 'client-' + Math.random().toString(36).substring(7) // Basic mock session
+        })
       });
 
-      const data = await res.json();
-      if (data.role && data.content) {
-        setMessages(prev => [...prev, { role: data.role, content: data.content }]);
-      } else {
-        setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error.' }]);
+      if (!res.ok) throw new Error('Failed to fetch');
+      if (!res.body) throw new Error('No readable stream');
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      
+      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+      setLoading(false);
+
+      let isDone = false;
+      while (!isDone) {
+        const { value, done } = await reader.read();
+        if (done) {
+          isDone = true;
+          break;
+        }
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const dataStr = line.substring(6);
+            if (dataStr.trim() === '') continue;
+            
+            try {
+              const data = JSON.parse(dataStr);
+              if (data.type === 'init') {
+                conversationIdRef.current = data.conversationId;
+              } else if (data.type === 'chunk') {
+                setMessages(prev => {
+                  const newMsgs = [...prev];
+                  newMsgs[newMsgs.length - 1].content += data.content;
+                  return newMsgs;
+                });
+              } else if (data.type === 'error') {
+                setMessages(prev => {
+                  const newMsgs = [...prev];
+                  newMsgs[newMsgs.length - 1].content += '\n[Error: ' + data.message + ']';
+                  return newMsgs;
+                });
+              }
+            } catch (e) {
+              console.error('Error parsing SSE data:', e, dataStr);
+            }
+          }
+        }
       }
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I am currently offline.' }]);
-    } finally {
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I am currently offline or encountered an error.' }]);
       setLoading(false);
     }
   };

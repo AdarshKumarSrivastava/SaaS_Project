@@ -11,7 +11,12 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
 
   const token = authHeader.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded: any = jwt.verify(token, JWT_SECRET);
+    
+    if (decoded.type === 'refresh') {
+      return res.status(401).json({ error: 'Refresh token cannot be used as an access token' });
+    }
+    
     (req as any).user = decoded;
     next();
   } catch (error) {

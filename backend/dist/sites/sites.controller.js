@@ -3,9 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.testAuth = exports.searchSites = exports.updateDomain = exports.updateSchema = exports.inviteRole = exports.deleteSite = exports.updateSite = exports.getSite = exports.createSite = exports.listSites = void 0;
+exports.adminLogin = exports.testAuth = exports.searchSites = exports.updateDomain = exports.updateSchema = exports.inviteRole = exports.deleteSite = exports.updateSite = exports.getSite = exports.createSite = exports.listSites = void 0;
 const prisma_1 = require("../lib/prisma");
 const crypto_1 = __importDefault(require("crypto"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const encryption_1 = require("../lib/encryption");
 // GET /api/sites
 const listSites = async (req, res) => {
     try {
@@ -186,3 +188,35 @@ const testAuth = async (req, res) => {
     });
 };
 exports.testAuth = testAuth;
+// POST /api/sites/:siteId/admin/login
+const adminLogin = async (req, res) => {
+    try {
+        const siteId = req.params.siteId;
+        const { password } = req.body;
+        if (!password) {
+            return res.status(400).json({ error: 'Password is required' });
+        }
+        const cred = await prisma_1.prisma.siteCredential.findFirst({
+            where: { siteId, keyType: 'admin_password' }
+        });
+        let isValid = false;
+        if (cred) {
+            const decrypted = (0, encryption_1.decrypt)(cred.encryptedValue);
+            isValid = decrypted === password;
+        }
+        else {
+            // Default fallback if not set
+            isValid = password === 'admin123';
+        }
+        if (!isValid) {
+            return res.status(401).json({ error: 'Invalid password' });
+        }
+        const token = jsonwebtoken_1.default.sign({ siteId, role: 'admin' }, process.env.JWT_PLATFORM_SECRET || 'secret', { expiresIn: '24h' });
+        res.json({ token });
+    }
+    catch (error) {
+        console.error('Admin Login Error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+exports.adminLogin = adminLogin;

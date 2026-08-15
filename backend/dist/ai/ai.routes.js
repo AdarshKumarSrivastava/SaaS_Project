@@ -34,20 +34,10 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const authController = __importStar(require("./auth.controller"));
+const aiController = __importStar(require("./ai.controller"));
 const authenticate_1 = require("../middleware/authenticate");
-const rateLimit_1 = require("../middleware/rateLimit");
 const router = (0, express_1.Router)();
-router.post('/signup', rateLimit_1.authLimiter, authController.signup);
-router.post('/verify-otp', rateLimit_1.authLimiter, authController.verifyOtp);
-router.post('/resend-otp', rateLimit_1.authLimiter, authController.resendOtp);
-router.post('/login', rateLimit_1.authLimiter, authController.login);
-router.post('/oauth/google', authController.oauthGoogle);
-router.get('/oauth/google/callback', authController.oauthGoogleCallback);
-router.post('/oauth/github', authController.oauthGithub);
-router.get('/oauth/github/callback', authController.oauthGithubCallback);
-router.post('/mfa/enable', authenticate_1.authenticate, authController.enableMfa);
-router.post('/mfa/verify', authController.verifyMfa); // if validating mfa during login
-router.post('/refresh', authController.refresh);
-router.post('/logout', authController.logout);
+// Endpoints
+router.post('/chat', aiController.chat);
+router.post('/ingest', authenticate_1.authenticate, aiController.ingest);
 exports.default = router;

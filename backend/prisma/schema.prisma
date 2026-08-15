@@ -36,6 +36,7 @@ model Site {
   roles        SiteRole[]
   credentials  SiteCredential[]
   documents    SiteDocument[]
+  conversations Conversation[]
 }
 
 model SiteRole {
@@ -74,4 +75,24 @@ model SiteDocument {
   embedding Unsupported("vector(1536)")?
   createdAt DateTime @default(now())
   site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+}
+
+model Conversation {
+  id        String    @id @default(uuid())
+  siteId    String
+  userId    String?   // Optional: if logged in user, else anonymous
+  sessionId String?   // For anonymous visitors
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  messages  Message[]
+  site      Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  role           String       // 'user' or 'assistant'
+  content        String
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 }

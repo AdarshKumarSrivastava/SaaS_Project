@@ -13,9 +13,10 @@ export const generateEmbedding = async (text: string) => {
   return response.data[0].embedding;
 };
 
-export const generateCompletion = async (prompt: string, context: string[]) => {
+export const generateCompletion = async (prompt: string, context: string[], stream = false) => {
   const response = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
+    stream: stream,
     messages: [
       {
         role: 'system',
@@ -27,5 +28,5 @@ export const generateCompletion = async (prompt: string, context: string[]) => {
       }
     ],
   });
-  return response.choices[0].message.content;
+  return stream ? response : (response as any).choices[0].message.content;
 };

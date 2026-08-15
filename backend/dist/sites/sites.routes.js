@@ -56,6 +56,8 @@ router.delete('/:siteId', authenticate_1.authenticate, (0, authorize_1.authorize
 router.post('/:siteId/roles', authenticate_1.authenticate, (0, authorize_1.authorize)(['owner']), sitesController.inviteRole);
 // Test endpoint
 router.get('/:siteId/test-auth', authenticate_1.authenticate, (0, authorize_1.authorize)(['owner', 'editor', 'viewer']), sitesController.testAuth);
+// Admin Login (public for the site's admins)
+router.post('/:siteId/admin/login', sitesController.adminLogin);
 // Nested credentials routes
 router.use('/:siteId/credentials', credentials_routes_1.default);
 exports.default = router;

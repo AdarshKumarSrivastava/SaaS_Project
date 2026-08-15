@@ -11,8 +11,10 @@ const auth_routes_1 = __importDefault(require("./auth/auth.routes"));
 const sites_routes_1 = __importDefault(require("./sites/sites.routes"));
 const public_routes_1 = __importDefault(require("./public/public.routes"));
 const hire_routes_1 = __importDefault(require("./hire/hire.routes"));
+const ai_routes_1 = __importDefault(require("./ai/ai.routes"));
 const prisma_1 = require("./lib/prisma");
 const sanitizeInput_1 = require("./middleware/sanitizeInput");
+const errorHandler_1 = require("./middleware/errorHandler");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3001;
@@ -26,6 +28,7 @@ app.use('/api/auth', auth_routes_1.default);
 app.use('/api/sites', sites_routes_1.default);
 app.use('/api/public', public_routes_1.default);
 app.use('/api/hire', hire_routes_1.default);
+app.use('/api/ai', ai_routes_1.default);
 // Health check route
 app.get('/health', async (req, res) => {
     try {
@@ -45,6 +48,8 @@ app.get('/health', async (req, res) => {
         });
     }
 });
+// Global Error Handler must be the last middleware
+app.use(errorHandler_1.errorHandler);
 app.listen(port, () => {
     console.log(`Backend server running on port ${port}`);
 });

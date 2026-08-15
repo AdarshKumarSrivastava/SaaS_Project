@@ -11,10 +11,11 @@ const hirePendingData = new Map();
 // Nodemailer transporter (will only work if env vars are set)
 const getTransporter = () => {
     return nodemailer_1.default.createTransport({
-        service: 'gmail',
+        host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+        port: parseInt(process.env.SMTP_PORT || '587'),
         auth: {
-            user: process.env.SMTP_EMAIL,
-            pass: process.env.SMTP_APP_PASSWORD,
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
         },
     });
 };
@@ -29,10 +30,10 @@ const sendOtp = async (req, res) => {
         hirePendingData.set(email, { role, stipend, message, email });
         console.log(`[HIRE OTP GENERATED] For ${email}: ${otp}`);
         // Try to send email if SMTP is configured
-        if (process.env.SMTP_EMAIL && process.env.SMTP_APP_PASSWORD) {
+        if (process.env.SMTP_USER && process.env.SMTP_PASS) {
             const transporter = getTransporter();
             await transporter.sendMail({
-                from: process.env.SMTP_EMAIL,
+                from: process.env.SMTP_FROM || process.env.SMTP_USER,
                 to: email,
                 subject: 'Verify your email to contact Adarsh Srivastava',
                 text: `Your verification code is: ${otp}\n\nUse this code to verify your identity and send your job offer to Adarsh.`,
@@ -59,10 +60,10 @@ const submitOffer = async (req, res) => {
         }
         const receivingEmail = process.env.RECEIVING_EMAIL || 'adarshsrivastava1524@gmail.com';
         // Send the final offer email to Adarsh
-        if (process.env.SMTP_EMAIL && process.env.SMTP_APP_PASSWORD) {
+        if (process.env.SMTP_USER && process.env.SMTP_PASS) {
             const transporter = getTransporter();
             await transporter.sendMail({
-                from: process.env.SMTP_EMAIL,
+                from: process.env.SMTP_FROM || process.env.SMTP_USER,
                 to: receivingEmail,
                 subject: `New Job Offer: ${pendingData.role}`,
                 html: `
