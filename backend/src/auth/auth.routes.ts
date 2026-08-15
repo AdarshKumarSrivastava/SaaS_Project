@@ -7,6 +7,7 @@ const router = Router();
 
 router.post('/signup', authLimiter, authController.signup);
 router.post('/verify-otp', authLimiter, authController.verifyOtp);
+router.post('/resend-otp', authLimiter, authController.resendOtp);
 router.post('/login', authLimiter, authController.login);
 router.post('/oauth/google', authController.oauthGoogle);
 router.get('/oauth/google/callback', authController.oauthGoogleCallback);

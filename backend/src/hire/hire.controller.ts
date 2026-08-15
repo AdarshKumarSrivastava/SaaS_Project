@@ -8,10 +8,11 @@ const hirePendingData = new Map<string, any>();
 // Nodemailer transporter (will only work if env vars are set)
 const getTransporter = () => {
   return nodemailer.createTransport({
-    service: 'gmail',
+    host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+    port: parseInt(process.env.SMTP_PORT || '587'),
     auth: {
-      user: process.env.SMTP_EMAIL,
-      pass: process.env.SMTP_APP_PASSWORD,
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
     },
   });
 };
@@ -31,10 +32,10 @@ export const sendOtp = async (req: Request, res: Response) => {
     console.log(`[HIRE OTP GENERATED] For ${email}: ${otp}`);
 
     // Try to send email if SMTP is configured
-    if (process.env.SMTP_EMAIL && process.env.SMTP_APP_PASSWORD) {
+    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
       const transporter = getTransporter();
       await transporter.sendMail({
-        from: process.env.SMTP_EMAIL,
+        from: process.env.SMTP_FROM || process.env.SMTP_USER,
         to: email,
         subject: 'Verify your email to contact Adarsh Srivastava',
         text: `Your verification code is: ${otp}\n\nUse this code to verify your identity and send your job offer to Adarsh.`,
@@ -65,10 +66,10 @@ export const submitOffer = async (req: Request, res: Response) => {
     const receivingEmail = process.env.RECEIVING_EMAIL || 'adarshsrivastava1524@gmail.com';
 
     // Send the final offer email to Adarsh
-    if (process.env.SMTP_EMAIL && process.env.SMTP_APP_PASSWORD) {
+    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
       const transporter = getTransporter();
       await transporter.sendMail({
-        from: process.env.SMTP_EMAIL,
+        from: process.env.SMTP_FROM || process.env.SMTP_USER,
         to: receivingEmail,
         subject: `New Job Offer: ${pendingData.role}`,
         html: `

@@ -191,7 +191,7 @@ export const testAuth = async (req: Request, res: Response) => {
 // POST /api/sites/:siteId/admin/login
 export const adminLogin = async (req: Request, res: Response) => {
   try {
-    const siteId = req.params.siteId;
+    const siteId = req.params.siteId as string;
     const { password } = req.body;
 
     if (!password) {

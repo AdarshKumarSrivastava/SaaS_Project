@@ -53,11 +53,11 @@ export const signup = async (req: Request, res: Response) => {
       update: { name, passwordHash, otp, expiresAt, createdAt: new Date() }
     });
     
-    if (process.env.SMTP_EMAIL && process.env.SMTP_APP_PASSWORD) {
+    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
       const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST || "sandbox.smtp.mailtrap.io",
         port: parseInt(process.env.SMTP_PORT || "2525"),
-        auth: { user: process.env.SMTP_EMAIL, pass: process.env.SMTP_APP_PASSWORD },
+        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
       });
 
       await transporter.sendMail({
@@ -112,6 +112,56 @@ export const verifyOtp = async (req: Request, res: Response) => {
   }
 };
 
+export const resendOtp = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    if (!email || typeof email !== 'string') {
+      return res.status(400).json({ error: 'Valid email is required' });
+    }
+
+    const pending = await prisma.pendingSignup.findUnique({ where: { email } });
+    if (!pending) {
+      return res.status(400).json({ error: 'No pending signup found for this email' });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+
+    await prisma.pendingSignup.update({
+      where: { email },
+      data: { otp, expiresAt }
+    });
+
+    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || "sandbox.smtp.mailtrap.io",
+        port: parseInt(process.env.SMTP_PORT || "2525"),
+        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+      });
+
+      await transporter.sendMail({
+        from: `"BuildSpace" <${process.env.SMTP_FROM || 'noreply@buildspace.com'}>`,
+        to: email,
+        subject: 'Your BuildSpace Verification Code (Resent)',
+        html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>Welcome to BuildSpace!</h2>
+          <p>Your new authentication code is:</p>
+          <h1 style="font-size: 32px; letter-spacing: 5px; color: #d946ef;">${otp}</h1>
+          <p>Enter this code to complete your registration. This code will expire soon.</p>
+        </div>`,
+      });
+      console.log(`[EMAIL RESENT] OTP sent to ${email}`);
+    } else {
+      console.log(`[MOCK EMAIL RESENT] OTP for ${email} is: ${otp}`);
+    }
+
+    res.status(200).json({ message: 'OTP resent successfully.' });
+  } catch (error) {
+    console.error('Error resending OTP:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 export const login = async (req: Request, res: Response) => {
   try {
     const parsed = loginSchema.safeParse(req.body);
@@ -120,7 +170,7 @@ export const login = async (req: Request, res: Response) => {
 
     const user = await prisma.user.findUnique({ where: { email } });
     
-    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+    if (!user || !user.passwordHash || !(await bcrypt.compare(password, user.passwordHash))) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 

@@ -54,6 +54,24 @@ export default function SignupPage() {
     }
   };
 
+  const handleResendOtp = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('http://localhost:3001/api/auth/resend-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to resend code');
+      toast.success("Verification code resent to your email.");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -211,6 +229,17 @@ export default function SignupPage() {
               >
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify & Continue'}
               </button>
+
+              <div className="text-center pt-2">
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={loading}
+                  className="text-sm text-ink-soft hover:text-ink transition-colors disabled:opacity-50 font-medium"
+                >
+                  Didn't receive a code? Resend
+                </button>
+              </div>
             </motion.form>
           )}
         </AnimatePresence>
