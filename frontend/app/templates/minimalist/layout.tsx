@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ShoppingBag, Search, Menu, ArrowLeft, Plus, X, Heart, User, Hexagon } from "lucide-react";
-import { CartProvider, useCart, ALL_PRODUCTS } from "./CartContext";
+import { CartProvider, useCart } from "./CartContext";
 import { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";

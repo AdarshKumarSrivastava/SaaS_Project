@@ -1,18 +1,27 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { ALL_PRODUCTS, useCart } from "../../CartContext";
+import { useCart } from "../../CartContext";
 import Link from "next/link";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart } from "lucide-react";
 
-export default function CanvasProductDetailPage() {
+export default function CanvasProductDetailPage({ initialProducts }: { initialProducts?: any[] }) {
   const params = useParams();
   const id = params?.id as string;
-  const product = ALL_PRODUCTS.find((p) => p.id === id);
-  const { addToCart, toggleWishlist, isInWishlist, reviews, addReview } = useCart();
-  const [isAdding, setIsAdding] = useState(false);
+  const rawProduct = (initialProducts || []).find((p: any) => p.id === id || p.product_id === id);
+  const product = rawProduct ? {
+    id: rawProduct.product_id || rawProduct.id,
+    name: rawProduct.product_name || rawProduct.name,
+    category: rawProduct.categories?.category_name || rawProduct.category || "Service",
+    description: rawProduct.description || "Detailed service description goes here.",
+    image: rawProduct.product_images?.[0]?.image_url || rawProduct.three_d_model_url || rawProduct.image || "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2000&auto=format&fit=crop",
+    price: rawProduct.base_price || rawProduct.price || 0
+  } : null;
+
+  const { currencySymbol, toggleWishlist, isInWishlist, reviews, addReview } = useCart();
+
   const [activeTab, setActiveTab] = useState("details");
 
   const [reviewName, setReviewName] = useState("");
@@ -24,8 +33,8 @@ export default function CanvasProductDetailPage() {
       <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white px-6">
         <h1 className="font-serif text-6xl italic tracking-tighter mb-8">Not Found.</h1>
         <p className="text-[10px] uppercase tracking-[0.2em] text-white/50 mb-12">The object you seek is unavailable.</p>
-        <Link 
-          href="/templates/canvas/products"
+        <Link
+          href="/templates/canvas/services"
           className="border border-white/20 px-8 py-4 text-[10px] uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-colors"
         >
           Return to Archive
@@ -34,11 +43,7 @@ export default function CanvasProductDetailPage() {
     );
   }
 
-  const handleAdd = () => {
-    setIsAdding(true);
-    addToCart(product, 1);
-    setTimeout(() => setIsAdding(false), 1000);
-  };
+
 
   const productReviews = reviews.filter(r => r.productId === product.id);
 
@@ -58,7 +63,7 @@ export default function CanvasProductDetailPage() {
       {/* Left: Cinematic Image Viewer */}
       <div className="w-full lg:w-1/2 lg:h-screen lg:sticky top-0 border-b lg:border-b-0 lg:border-r border-white/10 relative overflow-hidden group">
         <Link 
-          href="/templates/canvas/products"
+          href="/templates/canvas/services"
           className="absolute top-8 left-8 z-20 text-[10px] uppercase tracking-[0.2em] text-white/70 hover:text-white transition-colors mix-blend-difference"
         >
           [ Back ]
@@ -139,7 +144,7 @@ export default function CanvasProductDetailPage() {
                   transition={{ duration: 0.3 }}
                 >
                   <p>
-                    Global dispatch within 48 hours. Returns accepted within a 14-day window, provided the artifact remains untouched.
+                    Appointments require a 24-hour cancellation notice. Late cancellations may incur a fee.
                   </p>
                 </motion.div>
               )}
@@ -147,19 +152,14 @@ export default function CanvasProductDetailPage() {
           </div>
 
           <div className="flex gap-4 w-full">
-            <button 
-              onClick={handleAdd}
-              disabled={isAdding}
-              className={`flex-1 border py-6 text-[10px] uppercase tracking-[0.2em] transition-all duration-500 ${
-                isAdding 
-                  ? "bg-white text-black border-white" 
-                  : "border-white/30 hover:border-white hover:bg-white hover:text-black"
-              }`}
+            <a 
+              href="mailto:bookings@salon.com?subject=Booking Inquiry"
+              className="flex-1 text-center border py-6 text-[10px] uppercase tracking-[0.2em] transition-all duration-500 border-white/30 hover:border-white hover:bg-white hover:text-black"
             >
-              {isAdding ? "Acquired" : "Acquire Object"}
-            </button>
+              Book Service
+            </a>
             <button 
-              onClick={() => toggleWishlist(product)}
+              onClick={() => toggleWishlist(product as any)}
               className="border border-white/30 w-[72px] flex items-center justify-center hover:border-white hover:bg-white hover:text-black transition-all duration-500"
             >
               <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'fill-current' : ''}`} />

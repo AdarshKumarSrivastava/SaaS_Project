@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { useCart, ALL_PRODUCTS } from "./CartContext";
+import { useCart } from "./CartContext";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { useCustomization } from "@/hooks/useCustomization";
 
-export default function CanvasHomePage() {
+export default function CanvasHomePage({ initialCustomData, initialProducts }: { initialCustomData?: any, initialProducts?: any[] }) {
   const { currencySymbol } = useCart();
-  const featuredProducts = ALL_PRODUCTS.slice(0, 4);
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -76,7 +75,7 @@ export default function CanvasHomePage() {
                 {heroSubtext}
               </p>
               <Link 
-                href="/templates/canvas/products"
+                href="/templates/canvas/services"
                 className="text-[10px] md:text-xs uppercase tracking-[0.2em] flex items-center gap-4 hover:text-white/50 transition-colors"
               >
                 <span>{primaryCta}</span>
@@ -111,39 +110,48 @@ export default function CanvasHomePage() {
             <h2 className="font-serif text-5xl md:text-7xl uppercase tracking-tighter whitespace-pre-line">
               {shopTitle.replace(" ", "\n")}
             </h2>
-            <Link href="/templates/canvas/products" className="text-[10px] uppercase tracking-[0.2em] hover:text-white/50 transition-colors">
+            <Link href="/templates/canvas/services" className="text-[10px] uppercase tracking-[0.2em] hover:text-white/50 transition-colors">
               [ View All ]
             </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 border-l border-white/10">
-            {featuredProducts.map((product, index) => (
+            {(initialProducts || []).slice(0, 4).map((p, index) => {
+              const service = {
+                id: p.product_id || p.id,
+                name: p.product_name || p.name,
+                image: p.product_images?.[0]?.image_url || p.three_d_model_url || p.image || "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2000&auto=format&fit=crop",
+                category: p.categories?.category_name || p.category || "Service",
+                price: p.base_price || p.price || 0
+              };
+              
+              return (
               <Link 
-                key={product.id} 
-                href={`/templates/canvas/products/${product.id}`}
+                key={service.id} 
+                href={`/templates/canvas/services/${service.id}`}
                 className="group block border-r border-b border-white/10 relative overflow-hidden"
               >
                 <div className="aspect-[3/4] overflow-hidden relative">
                   <div className="absolute top-6 left-6 z-10">
                     <span className="text-[10px] uppercase tracking-[0.2em] text-white mix-blend-difference">
-                      [{product.id}]
+                      [{service.id.substring(0, 4)}]
                     </span>
                   </div>
                   <img 
-                    src={product.image} 
-                    alt={product.name}
+                    src={service.image} 
+                    alt={service.name}
                     className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-[1.5s] ease-out opacity-80 group-hover:opacity-100"
                   />
                 </div>
                 <div className="p-6 bg-black flex flex-col justify-between h-32">
-                  <h3 className="font-serif text-xl tracking-tight truncate text-white">{product.name}</h3>
+                  <h3 className="font-serif text-xl tracking-tight truncate text-white">{service.name}</h3>
                   <div className="flex justify-between items-end">
-                    <p className="text-[10px] tracking-[0.2em] uppercase text-white/50">{product.category}</p>
-                    <p className="font-mono text-xs tracking-widest text-white">{currencySymbol}{product.price.toFixed(2)}</p>
+                    <p className="text-[10px] tracking-[0.2em] uppercase text-white/50">{service.category}</p>
+                    <p className="font-mono text-xs tracking-widest text-white">{currencySymbol}{Number(service.price).toFixed(2)}</p>
                   </div>
                 </div>
               </Link>
-            ))}
+            )})}
           </div>
         </div>
       </section>

@@ -29,6 +29,23 @@ function invalidateCacheForEndpoint(endpoint: string) {
   }
 }
 
+function getToken() {
+  if (typeof window === 'undefined') return '';
+  return localStorage.getItem('accessToken') || localStorage.getItem('token') || '';
+}
+
+function handleAuthError(res: Response) {
+  if (res.status === 401) {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+    }
+    throw new Error('Unauthorized');
+  }
+}
+
 export const apiClient = {
   async get(endpoint: string) {
     // 1. Check in-memory cache
@@ -42,11 +59,22 @@ export const apiClient = {
 
     // 2. Network request if cache is stale or missing
     const res = await fetch(endpoint, {
+      credentials: 'include',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Authorization': `Bearer ${getToken()}`
       }
     });
-    if (!res.ok) throw new Error(await res.text());
+    if (!res.ok) {
+      handleAuthError(res);
+      const text = await res.text();
+      try {
+        const json = JSON.parse(text);
+        throw new Error(json.error || json.message || text);
+      } catch (e: any) {
+        if (e.message !== text) throw e;
+        throw new Error(text);
+      }
+    }
     const data = await res.json();
     
     // 3. Save to cache
@@ -59,13 +87,24 @@ export const apiClient = {
     invalidateCacheForEndpoint(endpoint);
     const res = await fetch(endpoint, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Authorization': `Bearer ${getToken()}`
       },
       body: JSON.stringify(body)
     });
-    if (!res.ok) throw new Error(await res.text());
+    if (!res.ok) {
+      handleAuthError(res);
+      const text = await res.text();
+      try {
+        const json = JSON.parse(text);
+        throw new Error(json.error || json.message || text);
+      } catch (e: any) {
+        if (e.message !== text) throw e;
+        throw new Error(text);
+      }
+    }
     return res.json();
   },
 
@@ -73,13 +112,24 @@ export const apiClient = {
     invalidateCacheForEndpoint(endpoint);
     const res = await fetch(endpoint, {
       method: 'PATCH',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Authorization': `Bearer ${getToken()}`
       },
       body: JSON.stringify(body)
     });
-    if (!res.ok) throw new Error(await res.text());
+    if (!res.ok) {
+      handleAuthError(res);
+      const text = await res.text();
+      try {
+        const json = JSON.parse(text);
+        throw new Error(json.error || json.message || text);
+      } catch (e: any) {
+        if (e.message !== text) throw e;
+        throw new Error(text);
+      }
+    }
     return res.json();
   },
 
@@ -87,11 +137,22 @@ export const apiClient = {
     invalidateCacheForEndpoint(endpoint);
     const res = await fetch(endpoint, {
       method: 'DELETE',
+      credentials: 'include',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Authorization': `Bearer ${getToken()}`
       }
     });
-    if (!res.ok) throw new Error(await res.text());
+    if (!res.ok) {
+      handleAuthError(res);
+      const text = await res.text();
+      try {
+        const json = JSON.parse(text);
+        throw new Error(json.error || json.message || text);
+      } catch (e: any) {
+        if (e.message !== text) throw e;
+        throw new Error(text);
+      }
+    }
     return res.json();
   }
 };

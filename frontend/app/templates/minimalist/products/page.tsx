@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Plus, Heart, PackageOpen } from "lucide-react";
-import { useCart, ALL_PRODUCTS } from "../CartContext";
+import { useCart } from "../CartContext";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -28,7 +28,7 @@ export default function StarterProductsPage({ initialProducts }: { initialProduc
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
-  const productSource = (initialProducts || ALL_PRODUCTS).map(p => ({
+  const productSource = (initialProducts || []).map(p => ({
     id: p.product_id || p.id,
     name: p.product_name || p.name,
     price: Number(p.base_price || p.price),

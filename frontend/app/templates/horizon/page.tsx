@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { motion, useScroll, useTransform, useSpring, useVelocity, useAnimationFrame } from "framer-motion";
 import Link from "next/link";
 import { MoveRight } from "lucide-react";
-import { useHorizon, HORIZON_PRODUCTS } from "./HorizonContext";
+import { useHorizon } from "./HorizonContext";
 import { useCustomization } from "@/hooks/useCustomization";
 
 function KineticMarquee({ text, direction = 1 }: { text: string, direction?: number }) {
@@ -147,8 +147,7 @@ function KineticHero() {
   );
 }
 
-function ProductCard({ product, index }: { product: any; index: number }) {
-  const { currencySymbol } = useHorizon();
+function ProjectCard({ project, index }: { project: any; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();
   const scrollVelocity = useVelocity(scrollY);
@@ -172,11 +171,11 @@ function ProductCard({ product, index }: { product: any; index: number }) {
       transition={{ duration: 1.2, delay: (index % 2) * 0.2, ease: [0.16, 1, 0.3, 1] }}
       className={`group relative pointer-events-auto ${index % 2 === 1 ? 'md:mt-48' : ''}`}
     >
-      <Link href={`/templates/horizon/products/${product.id}`} className="block cursor-none pointer-events-auto">
+      <Link href={`/templates/horizon/products/${project.id}`} className="block cursor-none pointer-events-auto">
         <div className="relative aspect-[3/4] overflow-hidden bg-[#F5F5F5] mb-8">
           <img 
-            src={product.image} 
-            alt={product.name}
+            src={project.image} 
+            alt={project.name}
             className="w-full h-full object-cover opacity-90 group-hover:scale-105 group-hover:opacity-100 transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]"
           />
         </div>
@@ -184,17 +183,16 @@ function ProductCard({ product, index }: { product: any; index: number }) {
       <div className="flex justify-between items-start">
         <div>
           <h3 className="font-cormorant text-3xl font-medium text-[#111] mb-2 group-hover:opacity-70 transition-opacity">
-            {product.name}
+            {project.name}
           </h3>
-          <p className="font-outfit text-[10px] font-medium text-[#111]/40 tracking-[0.2em] uppercase">{product.category}</p>
+          <p className="font-outfit text-[10px] font-medium text-[#111]/40 tracking-[0.2em] uppercase">{project.category}</p>
         </div>
-        <span className="font-outfit font-medium text-[#111]/80">{currencySymbol}{product.price.toFixed(2)}</span>
       </div>
     </motion.div>
   );
 }
 
-export default function HorizonHome() {
+export default function HorizonHome({ initialCustomData, initialProducts }: { initialCustomData?: any, initialProducts?: any[] }) {
   const { currencySymbol } = useHorizon();
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -237,9 +235,15 @@ export default function HorizonHome() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-32">
-            {HORIZON_PRODUCTS.slice(0, 4).map((product, idx) => (
-              <ProductCard key={product.id} product={product} index={idx} />
-            ))}
+            {(initialProducts || []).slice(0, 4).map((p, idx) => {
+              const project = {
+                id: p.product_id || p.id,
+                name: p.product_name || p.name,
+                image: p.product_images?.[0]?.image_url || p.three_d_model_url || p.image || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop",
+                category: p.categories?.category_name || p.category || "Case Study"
+              };
+              return <ProjectCard key={project.id} project={project} index={idx} />;
+            })}
           </div>
         </div>
       </section>

@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import { CommandPalette } from "@/components/ui/CommandPalette";
-import { CustomCursor } from "@/components/ui/CustomCursor";
 import { StarBackground } from "@/components/ui/StarBackground";
 import { SmoothScrollProvider } from "@/components/ui/SmoothScrollProvider";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
+const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-serif' });
 
 export const metadata: Metadata = {
   title: 'BuildSpace',
@@ -21,10 +21,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} antialiased selection:bg-accent/30 selection:text-ink`}>
+    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+      <body className={`font-sans antialiased selection:bg-accent/30 selection:text-ink`}>
         <SmoothScrollProvider>
-          <CustomCursor />
           {children}
           <CommandPalette />
           <Chatbot />

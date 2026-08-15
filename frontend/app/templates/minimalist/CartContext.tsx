@@ -11,16 +11,6 @@ export type Product = {
   category: string;
 };
 
-export const ALL_PRODUCTS: Product[] = [
-  { id: "1", name: "The Perfect Tee", price: 35.00, image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=2000&auto=format&fit=crop", category: "Tops" },
-  { id: "2", name: "Everyday Denim", price: 98.00, image: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=2000&auto=format&fit=crop", category: "Bottoms" },
-  { id: "3", name: "Minimalist Watch", price: 145.00, image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=2000&auto=format&fit=crop", category: "Accessories" },
-  { id: "4", name: "Leather Tote", price: 210.00, image: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=2000&auto=format&fit=crop", category: "Bags" },
-  { id: "5", name: "Linen Button-Down", price: 85.00, image: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?q=80&w=2000&auto=format&fit=crop", category: "Tops" },
-  { id: "6", name: "Classic Sneakers", price: 125.00, image: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?q=80&w=2000&auto=format&fit=crop", category: "Shoes" },
-  { id: "7", name: "Cashmere Sweater", price: 195.00, image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=2000&auto=format&fit=crop", category: "Tops" },
-  { id: "8", name: "Tailored Trousers", price: 115.00, image: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?q=80&w=2000&auto=format&fit=crop", category: "Bottoms" },
-];
 
 type CartItem = {
   product: Product;

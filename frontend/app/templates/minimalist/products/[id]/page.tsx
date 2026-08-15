@@ -2,12 +2,12 @@
 
 import { motion } from "framer-motion";
 import { Plus, Star, ArrowLeft, Heart } from "lucide-react";
-import { useCart, ALL_PRODUCTS } from "../../CartContext";
+import { useCart } from "../../CartContext";
 import Link from "next/link";
 import { notFound, usePathname } from "next/navigation";
 import { useState, use } from "react";
 
-export default function ProductDetailsPage({ params, initialProduct }: { params: Promise<{ id: string }>, initialProduct?: any }) {
+export default function ProductDetailsPage({ params, initialProducts }: { params: Promise<{ id: string }>, initialProducts?: any[] }) {
   const unwrappedParams = use(params);
   const { addToCart, currencySymbol, toggleWishlist, isInWishlist, reviews, addReview, basePath } = useCart();
   const [isAdding, setIsAdding] = useState(false);
@@ -17,14 +17,15 @@ export default function ProductDetailsPage({ params, initialProduct }: { params:
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
 
-  const product = initialProduct ? {
-    id: initialProduct.product_id,
-    name: initialProduct.product_name,
-    price: initialProduct.base_price,
-    image: initialProduct.product_images?.[0]?.image_url || initialProduct.three_d_model_url || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=2000&auto=format&fit=crop",
-    category: initialProduct.categories?.category_name || "Uncategorized",
-    description: initialProduct.description,
-  } : ALL_PRODUCTS.find((p) => p.id === unwrappedParams.id);
+  const product = (initialProducts || []).find((p: any) => p.id === unwrappedParams.id || p.product_id === unwrappedParams.id);
+  
+  if (product) {
+    product.id = product.product_id || product.id;
+    product.name = product.product_name || product.name;
+    product.price = product.base_price || product.price;
+    product.image = product.product_images?.[0]?.image_url || product.three_d_model_url || product.image || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=2000&auto=format&fit=crop";
+    product.category = product.categories?.category_name || product.category || "Uncategorized";
+  }
 
   if (!product) {
     notFound();
@@ -36,8 +37,8 @@ export default function ProductDetailsPage({ params, initialProduct }: { params:
     : 5;
 
   // Get similar products (same category, excluding current)
-  const similarProducts = ALL_PRODUCTS.filter(
-    (p) => p.category === product.category && p.id !== product.id
+  const similarProducts = (initialProducts || []).filter(
+    (p: any) => p.category === product.category && p.id !== product.id
   ).slice(0, 4);
 
   const handleAddToCart = () => {

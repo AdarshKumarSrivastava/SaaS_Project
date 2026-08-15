@@ -5,7 +5,7 @@ import { ArrowRight, Plus, PackageOpen } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { useCart, ALL_PRODUCTS } from "./CartContext";
+import { useCart } from "./CartContext";
 
 export default function StarterTemplateHome({ initialCustomData, initialProducts }: { initialCustomData?: any, initialProducts?: any[] }) {
   const { items, addToCart, currencySymbol, toggleWishlist, isInWishlist, basePath } = useCart();
@@ -87,7 +87,7 @@ export default function StarterTemplateHome({ initialCustomData, initialProducts
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
-              {(initialProducts || ALL_PRODUCTS).slice(0, 4).map((product, i) => {
+              {(initialProducts || []).slice(0, 4).map((product, i) => {
                 const mappedProduct = {
                   id: product.product_id || product.id,
                   name: product.product_name || product.name,

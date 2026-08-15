@@ -35,25 +35,45 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
     
-    if (token && storedUser) {
+    if (storedUser) {
       try {
-        // eslint-disable-next-line
         setUser(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
+      } catch (e) {
+        console.error('Failed to parse stored user:', e);
       }
     }
-    setLoading(false);
+
+    if (token) {
+      fetch('http://localhost:3001/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then((res) => {
+          if (res.ok) return res.json();
+          return null;
+        })
+        .then((data) => {
+          if (data && data.user) {
+            setUser(data.user);
+            localStorage.setItem('user', JSON.stringify(data.user));
+          }
+        })
+        .catch((err) => {
+          console.warn('Could not sync user profile:', err);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   const login = (token: string, refreshToken: string, userData: User) => {
     localStorage.setItem('accessToken', token);
-    localStorage.setItem('refreshToken', refreshToken);
+    localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
     router.push('/dashboard');
@@ -61,7 +81,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = () => {
     localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
     router.push('/login');

@@ -6,6 +6,9 @@ import { Shield, Layout, Globe, Command, ArrowRight } from 'lucide-react';
 import { TransitionLink } from '@/components/TransitionLink';
 import { MagneticButton } from '@/components/ui/MagneticButton';
 import { TextReveal } from '@/components/ui/TextReveal';
+import { ContactSection } from '@/components/ContactSection';
+import { Navbar } from '@/components/Navbar';
+import { ThreeDHero } from '@/components/builder/ThreeDHero';
 
 export default function LandingPage() {
   const containerRef = useRef(null);
@@ -21,30 +24,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-bg-base text-ink font-sans selection:bg-accent/20 selection:text-ink relative" ref={containerRef}>
       
       {/* Dynamic Island Nav */}
-      <motion.nav 
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed top-6 inset-x-0 z-50 flex justify-center"
-      >
-        <div className="bg-bg-elevated/60 backdrop-blur-2xl border border-line/50 rounded-2xl px-6 py-3 flex items-center gap-8 shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
-          <TransitionLink href="/" className="flex items-center gap-2 group">
-            <div className="w-6 h-6 rounded-full bg-ink flex items-center justify-center group-hover:scale-110 transition-transform">
-              <span className="text-bg-elevated font-bold text-xs">B</span>
-            </div>
-            <span className="font-semibold text-sm tracking-tight">BuildSpace</span>
-          </TransitionLink>
-          <div className="h-4 w-px bg-line"></div>
-          <div className="flex items-center gap-6 text-sm font-medium">
-            <TransitionLink href="/login" className="text-ink-soft hover:text-ink transition-colors">Log In</TransitionLink>
-            <TransitionLink href="/login">
-              <MagneticButton className="bg-ink text-bg-elevated px-5 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 hover:bg-ink/90 transition-colors">
-                Start Building <ArrowRight className="w-3.5 h-3.5" />
-              </MagneticButton>
-            </TransitionLink>
-          </div>
-        </div>
-      </motion.nav>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
@@ -53,11 +33,7 @@ export default function LandingPage() {
           style={{ y: yHero, opacity: opacityHero }}
           className="absolute inset-0 z-0"
         >
-          <img 
-            src="/images/hero_bg.jpg" 
-            alt="Abstract Architecture" 
-            className="w-full h-full object-cover opacity-90 scale-105"
-          />
+          <ThreeDHero />
           <div className="absolute inset-0 bg-gradient-to-b from-bg-base/30 via-bg-base/10 to-bg-base"></div>
         </motion.div>
 
@@ -190,6 +166,8 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      <ContactSection />
 
       {/* Ultra Premium Footer */}
       <footer className="relative py-24 bg-bg-base overflow-hidden border-t border-line/50">

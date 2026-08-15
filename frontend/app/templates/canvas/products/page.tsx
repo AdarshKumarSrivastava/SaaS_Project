@@ -2,27 +2,34 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useCart, ALL_PRODUCTS } from "../CartContext";
-import { motion, AnimatePresence } from "framer-motion";
 import { Heart } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useCustomization } from "@/hooks/useCustomization";
+import { useCart } from "../CartContext";
 
-export default function CanvasShopPage() {
-  const { currencySymbol } = useCart();
-  const { toggleWishlist, isInWishlist } = useCart();
+export default function CanvasShopPage({ initialCustomData, initialProducts }: { initialCustomData?: any, initialProducts?: any[] }) {
+  const { currencySymbol, toggleWishlist, isInWishlist } = useCart();
   const [activeCategory, setActiveCategory] = useState("All");
   
   const customData = useCustomization();
   const shopTitle = customData?.formData?.shopTitle || "Collection.";
   const rawCategories = customData?.formData?.shopCategories;
   
+  const mappedProducts = (initialProducts || []).map(p => ({
+    id: p.product_id || p.id,
+    name: p.product_name || p.name,
+    image: p.product_images?.[0]?.image_url || p.three_d_model_url || p.image || "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2000&auto=format&fit=crop",
+    category: p.categories?.category_name || p.category || "Service",
+    price: p.base_price || p.price || 0
+  }));
+
   const categories = rawCategories 
     ? rawCategories.split(",").map((c: string) => c.trim()).filter(Boolean)
-    : ["All", ...Array.from(new Set(ALL_PRODUCTS.map((p) => p.category)))];
+    : ["All", ...Array.from(new Set(mappedProducts.map((p: any) => p.category)))];
 
   const filteredProducts = activeCategory === "All"
-    ? ALL_PRODUCTS
-    : ALL_PRODUCTS.filter((p) => p.category === activeCategory);
+    ? mappedProducts
+    : mappedProducts.filter((p: any) => p.category === activeCategory);
 
   return (
     <div className="flex flex-col w-full bg-black text-white min-h-screen pt-32">
@@ -38,7 +45,7 @@ export default function CanvasShopPage() {
           </h1>
         </div>
         <div className="text-[10px] uppercase tracking-[0.2em] text-white/50">
-          {filteredProducts.length} Objects Found
+          {filteredProducts.length} Services Found
         </div>
       </section>
 
@@ -77,7 +84,7 @@ export default function CanvasShopPage() {
                 className="group border-r border-b border-white/10"
               >
                 <Link 
-                  href={`/templates/canvas/products/${product.id}`}
+                  href={`/templates/canvas/services/${product.id}`}
                   className="block relative overflow-hidden"
                 >
                   <div className="aspect-[3/4] overflow-hidden relative">

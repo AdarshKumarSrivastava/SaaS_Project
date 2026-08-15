@@ -4,14 +4,33 @@ import { motion, AnimatePresence } from "framer-motion";
 import { HORIZON_PRODUCTS, useHorizon, HorizonReview } from "../../HorizonContext";
 import { ArrowLeft, ChevronLeft, ChevronRight, Heart, Maximize2, Star } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import { useState } from "react";
 
-export default function HorizonProductDetail() {
+export default function HorizonProductDetail({ initialProducts }: { initialProducts?: any[] }) {
   const params = useParams();
-  const { addToCart, toggleWishlist, wishlist } = useHorizon();
+  const { toggleWishlist, wishlist } = useHorizon();
   const id = params?.id as string;
-  const product = HORIZON_PRODUCTS.find(p => p.id === id) || HORIZON_PRODUCTS[0];
+
+  const rawProduct = (initialProducts || []).find((p: any) => p.id === id || p.product_id === id);
+  if (!rawProduct && initialProducts && initialProducts.length > 0) {
+    notFound();
+  }
+
+  const product = rawProduct ? {
+    id: rawProduct.product_id || rawProduct.id,
+    name: rawProduct.product_name || rawProduct.name,
+    category: rawProduct.categories?.category_name || rawProduct.category || "Case Study",
+    description: rawProduct.description || "Detailed case study description goes here.",
+    image: rawProduct.product_images?.[0]?.image_url || rawProduct.three_d_model_url || rawProduct.image || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop",
+    gallery: rawProduct.product_images?.map((i: any) => i.image_url) || [rawProduct.image || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop"],
+    reviews: [],
+    format: rawProduct.categories?.category_name || "Digital",
+    fileSize: "N/A",
+    rating: 5.0,
+    price: rawProduct.base_price || rawProduct.price || 0,
+    isNew: false
+  } : HORIZON_PRODUCTS.find(p => p.id === id) || HORIZON_PRODUCTS[0];
   
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -112,31 +131,17 @@ export default function HorizonProductDetail() {
               {product.description}
             </p>
 
-            <div className="grid grid-cols-2 gap-12 mb-20 border-y border-black/5 py-10 max-w-md">
-               <div>
-                  <h4 className="font-outfit text-[9px] uppercase tracking-[0.3em] text-black/40 mb-4 font-medium">Specification</h4>
-                  <p className="font-outfit font-light text-sm text-[#111]">{product.format}</p>
-               </div>
-               <div>
-                  <h4 className="font-outfit text-[9px] uppercase tracking-[0.3em] text-black/40 mb-4 font-medium">Archive Size</h4>
-                  <p className="font-outfit font-light text-sm text-[#111]">{product.fileSize}</p>
-               </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center gap-8 max-w-md pointer-events-auto">
-              <div className="font-outfit text-4xl font-light text-[#111]">
-                ${product.price.toFixed(2)}
-              </div>
+            <div className="flex flex-col sm:flex-row items-center gap-8 max-w-md pointer-events-auto mt-12">
               <div className="flex gap-4 w-full sm:w-auto flex-1">
-                <button 
-                  onClick={() => addToCart(product)}
+                <a 
+                  href="mailto:contact@agency.com?subject=Project Inquiry"
                   style={{ cursor: "none" }}
-                  className="flex-1 bg-black text-white py-5 px-8 font-outfit text-[10px] uppercase tracking-[0.3em] hover:bg-black/80 transition-colors duration-500 font-medium pointer-events-auto"
+                  className="flex-1 bg-black text-center text-white py-5 px-8 font-outfit text-[10px] uppercase tracking-[0.3em] hover:bg-black/80 transition-colors duration-500 font-medium pointer-events-auto"
                 >
-                  Acquire Asset
-                </button>
+                  Inquire
+                </a>
                 <button 
-                  onClick={() => toggleWishlist(product)}
+                  onClick={() => toggleWishlist(product as any)}
                   style={{ cursor: "none" }}
                   className="w-16 flex-shrink-0 bg-black/5 text-black flex items-center justify-center hover:bg-black/10 transition-colors duration-500 group pointer-events-auto"
                 >
@@ -197,7 +202,7 @@ export default function HorizonProductDetail() {
                   
                   {/* Indicators */}
                   <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-3">
-                    {gallery.map((_, idx) => (
+                    {gallery.map((_: string, idx: number) => (
                       <button
                         key={idx}
                         onClick={() => {

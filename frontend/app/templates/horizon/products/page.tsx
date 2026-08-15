@@ -7,7 +7,7 @@ import { Search, SlidersHorizontal, ChevronDown } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useCustomization } from "@/hooks/useCustomization";
 
-export default function HorizonProducts() {
+export default function HorizonProducts({ initialCustomData, initialProducts }: { initialCustomData?: any, initialProducts?: any[] }) {
   const { addToCart , currencySymbol } = useHorizon();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -35,13 +35,21 @@ export default function HorizonProducts() {
     if (rawCategories) {
       return rawCategories.split(",").map((c: string) => c.trim()).filter(Boolean);
     }
-    const cats = new Set(HORIZON_PRODUCTS.map(p => p.category));
+    const cats = new Set((initialProducts || []).map(p => p.categories?.category_name || p.category || "Case Study"));
     return ["All", ...Array.from(cats)];
-  }, [rawCategories]);
+  }, [rawCategories, initialProducts]);
 
   // Filter and sort products
   const filteredProducts = useMemo(() => {
-    let result = HORIZON_PRODUCTS;
+    let result = (initialProducts || []).map(p => ({
+      id: p.product_id || p.id,
+      name: p.product_name || p.name,
+      image: p.product_images?.[0]?.image_url || p.three_d_model_url || p.image || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop",
+      category: p.categories?.category_name || p.category || "Case Study",
+      description: p.description || "",
+      price: p.base_price || p.price || 0,
+      isNew: false
+    }));
 
     // Search
     if (searchQuery) {
@@ -238,17 +246,13 @@ export default function HorizonProducts() {
                       <p className="font-outfit text-[10px] font-medium text-black/40 tracking-[0.2em] uppercase mb-6">{product.category}</p>
                     </div>
                     <div className="flex justify-between items-center pt-6 border-t border-black/5">
-                      <span className="font-outfit font-medium text-[#111]">{currencySymbol}{product.price.toFixed(2)}</span>
-                      <button 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          addToCart(product);
-                        }}
+                      <Link 
+                        href={`/templates/horizon/products/${product.id}`}
                         style={{ cursor: "none" }}
                         className="text-[10px] font-medium uppercase tracking-[0.2em] font-outfit text-black/50 hover:text-black transition-colors pointer-events-auto"
                       >
-                        Add to Cart
-                      </button>
+                        View Project
+                      </Link>
                     </div>
                   </div>
                 </motion.div>

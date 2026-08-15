@@ -13,7 +13,8 @@
   --background: var(--color-bg-base);
   --foreground: var(--color-ink);
 
-  --font-sans: "Inter", sans-serif;
+  --font-sans: var(--font-sans), "Inter", sans-serif;
+  --font-serif: var(--font-serif), "Playfair Display", serif;
 }
 
 body {
@@ -33,4 +34,9 @@ body {
 *:focus-visible {
   outline: 2px solid var(--color-ink);
   outline-offset: 2px;
+}
+
+input:focus-visible, textarea:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
 }

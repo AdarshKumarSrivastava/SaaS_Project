@@ -22,10 +22,11 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { 
   LayoutTemplate, Image as ImageIcon, Mail, Settings, Save, GripVertical, Trash2, ArrowLeft, Loader2,
-  DollarSign, MessageSquare, HelpCircle
+  DollarSign, MessageSquare, HelpCircle, ShoppingBag, LayoutGrid
 } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { BlockType, Section, RenderBlock } from '@/components/builder/Registry';
+import ProductsManager from '@/components/builder/ProductsManager';
 
 // --- SORTABLE WRAPPER ---
  
@@ -71,6 +72,7 @@ export default function BuilderPage() {
   const [saving, setSaving] = useState(false);
   const [sections, setSections] = useState<Section[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'layout' | 'catalog'>('layout');
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -185,16 +187,34 @@ export default function BuilderPage() {
   return (
     <div className="h-screen bg-bg-base text-ink flex overflow-hidden">
       
-      {/* LEFT SIDEBAR - Blocks */}
+      {/* LEFT SIDEBAR - Blocks & Navigation */}
       <div className="w-64 border-r border-line bg-bg-elevated flex flex-col h-full shrink-0">
-        <div className="p-4 border-b border-line flex items-center gap-3">
-          <button onClick={() => router.push('/dashboard')} className="p-2 hover:bg-bg-subtle rounded-lg transition-colors">
-            <ArrowLeft className="w-4 h-4 text-ink-soft" />
+        <div className="p-4 border-b border-line flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button onClick={() => router.push('/dashboard')} className="p-2 hover:bg-bg-subtle rounded-lg transition-colors">
+              <ArrowLeft className="w-4 h-4 text-ink-soft" />
+            </button>
+            <span className="font-semibold text-sm">Builder</span>
+          </div>
+        </div>
+
+        <div className="p-4 border-b border-line flex gap-2">
+          <button 
+            onClick={() => setActiveTab('layout')}
+            className={`flex-1 py-2 text-xs font-medium rounded-lg transition-colors flex items-center justify-center gap-2 ${activeTab === 'layout' ? 'bg-ink text-bg-base' : 'bg-bg-subtle text-ink-soft hover:text-ink'}`}
+          >
+            <LayoutGrid className="w-3.5 h-3.5" /> Layout
           </button>
-          <span className="font-semibold text-sm">Builder</span>
+          <button 
+            onClick={() => setActiveTab('catalog')}
+            className={`flex-1 py-2 text-xs font-medium rounded-lg transition-colors flex items-center justify-center gap-2 ${activeTab === 'catalog' ? 'bg-ink text-bg-base' : 'bg-bg-subtle text-ink-soft hover:text-ink'}`}
+          >
+            <ShoppingBag className="w-3.5 h-3.5" /> Catalog
+          </button>
         </div>
         
-        <div className="p-4 flex-1 overflow-y-auto">
+        {activeTab === 'layout' && (
+          <div className="p-4 flex-1 overflow-y-auto">
           <h3 className="text-[11px] font-semibold text-ink-soft uppercase tracking-wider mb-3">Core Elements</h3>
           <div className="space-y-2 mb-6">
             {blockItems.map(item => {
@@ -221,6 +241,7 @@ export default function BuilderPage() {
             })}
           </div>
         </div>
+        )}
       </div>
 
       {/* CENTER CANVAS */}
@@ -240,27 +261,33 @@ export default function BuilderPage() {
 
         {/* Canvas Area */}
         <div className="flex-1 overflow-y-auto p-8 pt-22 bg-bg-subtle">
-          <div className="max-w-4xl mx-auto space-y-6 min-h-[50vh]">
-            {sections.length === 0 ? (
-              <div className="h-64 border border-dashed border-line rounded-2xl flex items-center justify-center text-ink-soft bg-bg-elevated">
-                Click a block in the sidebar to add it to your canvas.
-              </div>
-            ) : (
-              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                <SortableContext items={sections.map(s => s.id)} strategy={verticalListSortingStrategy}>
-                  {sections.map(section => (
-                    <SortableSection 
-                      key={section.id} 
-                      section={section} 
-                      isSelected={selectedId === section.id}
-                      onSelect={(s: Section) => setSelectedId(s.id)}
-                      onDelete={deleteBlock}
-                    />
-                  ))}
-                </SortableContext>
-              </DndContext>
-            )}
-          </div>
+          {activeTab === 'layout' ? (
+            <div className="max-w-4xl mx-auto space-y-6 min-h-[50vh]">
+              {sections.length === 0 ? (
+                <div className="h-64 border border-dashed border-line rounded-2xl flex items-center justify-center text-ink-soft bg-bg-elevated">
+                  Click a block in the sidebar to add it to your canvas.
+                </div>
+              ) : (
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                  <SortableContext items={sections.map(s => s.id)} strategy={verticalListSortingStrategy}>
+                    {sections.map(section => (
+                      <SortableSection 
+                        key={section.id} 
+                        section={section} 
+                        isSelected={selectedId === section.id}
+                        onSelect={(s: Section) => setSelectedId(s.id)}
+                        onDelete={deleteBlock}
+                      />
+                    ))}
+                  </SortableContext>
+                </DndContext>
+              )}
+            </div>
+          ) : (
+            <div className="pt-4">
+              <ProductsManager siteId={siteId} />
+            </div>
+          )}
         </div>
       </div>
 

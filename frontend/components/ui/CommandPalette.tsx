@@ -112,27 +112,27 @@ export const CommandPalette = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }} 
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
             transition={{ duration: 0.15 }}
-            className="fixed top-[20%] left-1/2 -translate-x-1/2 w-full max-w-2xl bg-zinc-950 border border-white/10 shadow-2xl rounded-2xl overflow-hidden z-[101]"
+            className="fixed top-[20%] left-1/2 -translate-x-1/2 w-full max-w-2xl bg-bg-elevated border border-line shadow-2xl rounded-2xl overflow-hidden z-[101]"
           >
-            <div className="flex items-center px-4 py-4 border-b border-white/10">
-              <Search className="w-5 h-5 text-zinc-500 mr-3" />
+            <div className="flex items-center px-4 py-4 border-b border-line">
+              <Search className="w-5 h-5 text-ink-soft mr-3" />
               <input 
                 autoFocus
                 type="text" 
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search sites by name or subdomain..."
-                className="w-full bg-transparent text-lg text-white focus:outline-none placeholder:text-zinc-600"
+                className="w-full bg-transparent text-lg text-ink focus:outline-none placeholder:text-ink-soft"
               />
-              {loading && <Loader2 className="w-5 h-5 text-zinc-500 animate-spin" />}
-              <div className="flex items-center gap-1 ml-4 bg-white/10 px-2 py-1 rounded text-xs text-zinc-400 font-medium tracking-widest">
+              {loading && <Loader2 className="w-5 h-5 text-ink-soft animate-spin" />}
+              <div className="flex items-center gap-1 ml-4 bg-bg-subtle px-2 py-1 rounded text-xs text-ink-soft font-medium tracking-widest">
                 <span>ESC</span>
               </div>
             </div>
 
             <div className="max-h-[60vh] overflow-y-auto">
               {query && results.length === 0 && !loading && (
-                <div className="p-8 text-center text-zinc-500">
+                <div className="p-8 text-center text-ink-soft">
                   No sites found matching &quot;{query}&quot;
                 </div>
               )}
@@ -142,16 +142,16 @@ export const CommandPalette = () => {
                   key={site.id} 
                   onClick={() => handleSelect(site)}
                   onMouseEnter={() => setSelectedIndex(index)}
-                  className={`flex items-center justify-between px-4 py-4 cursor-pointer transition-colors ${index === selectedIndex ? 'bg-blue-600/20 text-white' : 'text-zinc-400 hover:bg-white/5'}`}
+                  className={`flex items-center justify-between px-4 py-4 cursor-pointer transition-colors ${index === selectedIndex ? 'bg-accent/10 text-accent' : 'text-ink hover:bg-bg-subtle'}`}
                 >
                   <div className="flex items-center gap-4">
-                    <Globe className={`w-5 h-5 ${index === selectedIndex ? 'text-blue-400' : 'text-zinc-600'}`} />
+                    <Globe className={`w-5 h-5 ${index === selectedIndex ? 'text-accent' : 'text-ink-soft'}`} />
                     <div>
-                      <div className={`font-medium ${index === selectedIndex ? 'text-white' : 'text-zinc-200'}`}>{site.name}</div>
-                      <div className="text-sm opacity-60">{site.subdomain}.localhost:3000</div>
+                      <div className={`font-medium ${index === selectedIndex ? 'text-accent' : 'text-ink'}`}>{site.name}</div>
+                      <div className="text-sm opacity-60 text-ink-soft">{site.subdomain}.localhost:3000</div>
                     </div>
                   </div>
-                  {index === selectedIndex && <ArrowRight className="w-5 h-5 text-blue-400" />}
+                  {index === selectedIndex && <ArrowRight className="w-5 h-5 text-accent" />}
                 </div>
               ))}
             </div>
