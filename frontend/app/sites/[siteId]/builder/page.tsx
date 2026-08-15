@@ -28,7 +28,7 @@ import { apiClient } from '@/lib/api-client';
 import { BlockType, Section, RenderBlock } from '@/components/builder/Registry';
 
 // --- SORTABLE WRAPPER ---
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const SortableSection = ({ section, isSelected, onSelect, onDelete }: any) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: section.id });
   

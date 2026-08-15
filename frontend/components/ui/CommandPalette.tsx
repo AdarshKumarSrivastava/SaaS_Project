@@ -9,7 +9,7 @@ import { apiClient } from '@/lib/api-client';
 export const CommandPalette = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);

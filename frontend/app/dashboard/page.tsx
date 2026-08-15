@@ -29,7 +29,7 @@ const templatesList = [
 
 export default function DashboardPage() {
   const router = useRouter();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const [sites, setSites] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);

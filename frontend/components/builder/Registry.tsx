@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import React from 'react';
 import { Image as ImageIcon, MessageCircle } from 'lucide-react';
 import { OptimizedImage } from '../ui/OptimizedImage';

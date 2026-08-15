@@ -12,7 +12,7 @@ export default function SetupWizard() {
   const params = useParams();
   const siteId = params.siteId as string;
   
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const [site, setSite] = useState<any>(null);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(true);

@@ -9,7 +9,7 @@ interface User {
   name?: string;
   first_name?: string;
   last_name?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   [key: string]: any;
 }
 

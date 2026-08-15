@@ -11,7 +11,7 @@ export default function SettingsPage() {
   const params = useParams();
   const siteId = params.siteId as string;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const [site, setSite] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

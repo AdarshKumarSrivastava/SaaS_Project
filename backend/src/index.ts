@@ -13,6 +13,19 @@ import { errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
 
+const requiredEnvVars = [
+  'DATABASE_URL',
+  'JWT_PLATFORM_SECRET',
+  'PLATFORM_AI_API_KEY'
+];
+
+for (const envVar of requiredEnvVars) {
+  if (!process.env[envVar]) {
+    console.error(`[FATAL] Missing required environment variable: ${envVar}`);
+    process.exit(1);
+  }
+}
+
 const app = express();
 const port = process.env.PORT || 3001;
 

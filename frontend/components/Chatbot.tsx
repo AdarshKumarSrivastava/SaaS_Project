@@ -21,6 +21,15 @@ export function Chatbot({ siteId }: { siteId?: string }) {
   }, [messages, isOpen]);
 
   const conversationIdRef = useRef<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,15 +40,21 @@ export function Chatbot({ siteId }: { siteId?: string }) {
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setLoading(true);
 
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+
     try {
       const res = await fetch('http://localhost:3001/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: abortControllerRef.current.signal,
         body: JSON.stringify({ 
           query: userMessage, 
           siteId: siteId || 'global',
           conversationId: conversationIdRef.current,
-          sessionId: 'client-' + Math.random().toString(36).substring(7) // Basic mock session
+          sessionId: 'client-' + Math.random().toString(36).substring(7)
         })
       });
 
@@ -91,9 +106,15 @@ export function Chatbot({ siteId }: { siteId?: string }) {
           }
         }
       }
-    } catch (err) {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I am currently offline or encountered an error.' }]);
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        console.log('Request aborted');
+      } else {
+        setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I am currently offline or encountered an error.' }]);
+      }
       setLoading(false);
+    } finally {
+      abortControllerRef.current = null;
     }
   };
 
