@@ -36,8 +36,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const aiController = __importStar(require("./ai.controller"));
 const authenticate_1 = require("../middleware/authenticate");
+const rateLimit_1 = require("../middleware/rateLimit");
 const router = (0, express_1.Router)();
 // Endpoints
-router.post('/chat', aiController.chat);
+router.post('/chat', rateLimit_1.aiChatLimiter, aiController.chat);
 router.post('/ingest', authenticate_1.authenticate, aiController.ingest);
 exports.default = router;

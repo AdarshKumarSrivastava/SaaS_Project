@@ -14,6 +14,9 @@ const authenticate = (req, res, next) => {
     const token = authHeader.split(' ')[1];
     try {
         const decoded = jsonwebtoken_1.default.verify(token, JWT_SECRET);
+        if (decoded.type === 'refresh') {
+            return res.status(401).json({ error: 'Refresh token cannot be used as an access token' });
+        }
         req.user = decoded;
         next();
     }

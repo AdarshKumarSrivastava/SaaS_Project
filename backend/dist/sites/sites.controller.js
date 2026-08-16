@@ -204,10 +204,6 @@ const adminLogin = async (req, res) => {
             const decrypted = (0, encryption_1.decrypt)(cred.encryptedValue);
             isValid = decrypted === password;
         }
-        else {
-            // Default fallback if not set
-            isValid = password === 'admin123';
-        }
         if (!isValid) {
             return res.status(401).json({ error: 'Invalid password' });
         }

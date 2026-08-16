@@ -93,11 +93,25 @@ export const chat = async (req: Request, res: Response) => {
 
 export const ingest = async (req: Request, res: Response) => {
   const { content, siteId } = req.body;
+  const userId = (req as any).user?.userId || (req as any).user?.id;
+
   if (!content || !siteId) {
     return res.status(400).json({ error: 'Content and siteId are required' });
   }
+  
+  if (!userId) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
 
   try {
+    const siteRole = await prisma.siteRole.findFirst({
+      where: { siteId, userId, role: { in: ['owner', 'editor'] } }
+    });
+
+    if (!siteRole) {
+      return res.status(403).json({ error: 'Forbidden: You do not have permission to ingest content for this site' });
+    }
+
     const embedding = await generateEmbedding(content);
     const vectorStr = `[${embedding.join(',')}]`;
 

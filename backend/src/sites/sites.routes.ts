@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as sitesController from './sites.controller';
+import * as productsController from './products.controller';
 import credentialsRoutes from '../credentials/credentials.routes';
 import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
@@ -20,6 +21,12 @@ router.patch('/:siteId/schema', authenticate, authorize(['owner', 'editor']), si
 router.patch('/:siteId/domain', authenticate, authorize(['owner']), sitesController.updateDomain);
 router.delete('/:siteId', authenticate, authorize(['owner']), sitesController.deleteSite);
 router.post('/:siteId/roles', authenticate, authorize(['owner']), sitesController.inviteRole);
+
+// Products Routes
+router.get('/:siteId/products', authenticate, authorize(['owner', 'editor', 'viewer']), productsController.listProducts);
+router.post('/:siteId/products', authenticate, authorize(['owner', 'editor']), productsController.createProduct);
+router.patch('/:siteId/products/:productId', authenticate, authorize(['owner', 'editor']), productsController.updateProduct);
+router.delete('/:siteId/products/:productId', authenticate, authorize(['owner', 'editor']), productsController.deleteProduct);
 
 // Test endpoint
 router.get('/:siteId/test-auth', authenticate, authorize(['owner', 'editor', 'viewer']), sitesController.testAuth);

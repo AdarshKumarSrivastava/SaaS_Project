@@ -1,0 +1,241 @@
+<USER_REQUEST>
+# BuildSpace — Final Build Prompt v2 (Gemini 3.1 Pro / High)
+
+> Model & working mode: this is written for Gemini 3.1 Pro at High thinking in Antigravity. Load the entire repository (AdarshKumarSrivastava/whole_prime_project) into context at once rather than exploring file-by-file — the 2M token window supports this, and whole-codebase context prevents the kind of cross-file mismatch bugs already found in Section 1. Before writing any code, produce a complete task plan (use Antigravity's plan/task-list view) covering every phase in Section 5 — this model's strength is upfront architectural planning, use it. Spend High-tier reasoning on Section 1's security audit and Section 6's builder/schema work specifically; the visual/motion phases in Section 3 need less deliberation and more iteration. This supersedes all earlier versions of this prompt — the repo has changed substantially. Work phase by phase, in order. After each phase, write a one-paragraph entry to PHASE_NOTES.md so context survives across sessions even with a large context window.
+
+---
+
+## 0. Role & Mandate
+
+Act as a senior full-stack engineer, security engineer, and creative director with the engineering rigor of a principal-level audit and the visual polish of Apple/Stripe/Linear/Vercel. This is a production hardening and redesign pass on a real, mostly-working codebase — not a greenfield build and not a superficial reskin.
+
+Do not start redesigning before the audit in Section 1 is addressed. A beautiful UI on top of an IDOR vulnerability or a hardcoded admin backdoor is not "done" — it's worse, because it now looks trustworthy.
+
+Non-negotiables carried through the whole project:
+- Light background throughout — no dark-theme-first design anywhere.
+- Original visual identity inspired by (not copied from) Apple/Stripe/Linear/Vercel.
+- The post-login dashboard is the most important screen — personalized, animated, real data, not a generic admin list.
+- Motion communicates hierarchy and interaction, never decoration for its own sake.
+- One consistent design system as reusable components, applied to every page.
+- Report findings honestly: Verified / Not verified / Known limitation / Fixed. Never claim "zero bugs" or "everything works" without having actually run and tested the flow.
+
+---
+
+## 1. Confirmed Findings — Fix Before Any Redesign Work
+
+### P0 — Critical, fix immediately
+1. sites.controller.ts's adminLogin falls back to a hardcoded 'admin123' password when a site has no admin_password credential set. Remove the fallback entirely — a site's admin panel must be unreachable until its owner explicitly sets a password, not protected by a default anyone can find by reading the source.
+2. ai.controller.ts's ingest endpoint has no ownership check on siteId. It only requires authenticate (any logged-in user), not that the requester owns the target site. Add an authorization check (verify a SiteRole for req.body.siteId and req.user.userId with an appropriate role) before allowing ingestion — otherwise any user can pollute any other site's AI knowledge base.
+3. OAuth callbacks (oauthGoogleCallback, oauthGithubCallback) redirect with accessToken/refreshToken as URL query parameters. These end up in browser history, server access logs, and the Referer header. Replace with either: (a) set the tokens as httpOnly, secure cookies directly in the redirect response, or (b) redirect with a short-lived, single-use exchange code that the frontend immediately trades for tokens via a POST request.
+4. Both access and refresh tokens are stored in localStorage (AuthContext.tsx), making them fully readable by any injected script. At minimum, move the refresh token to an httpOnly cookie set by the backend; keep only the short-lived access token client-side if it must stay in JS-accessible storage.
+5. If the Neon database password and JWT secret that were previously committed in an earlier version of .env.example have not yet been rotated, rotate them now — they remain recoverable from git history even though the current .env.example is clean.
+
+### P1 — Major, fix before feature/design work continues
+6. Fix the SMTP_USER/SMTP_PASS vs SMTP_EMAIL/SMTP_APP_PASSWORD mismatch between auth.controller.ts (signup, resendOtp) and .env.example/hire.controller.ts, so real signup OTP emails actually send.
+7. Add rate limiting to POST /api/ai/chat — it's an unauthenticated, unlimited endpoint that calls paid OpenAI completions on every request.
+8. testCredential currently validates key format (prefixes, length) but does not make a real call to the external service (ImageKit, Razorpay, etc.) to confirm the key actually works. Upgrade to a real verification call per keyType before calling this feature complete.
+9. logout doesn't revoke the refresh token — it remains valid for its full 7-day life after logout. Add a revocation/denylist mechanism, or explicitly document this as an accepted limitation if out of scope for now.
+10. Remove the stale MONGO_URI entry from .env.example — MongoDB has been fully removed from the code, this is dead leftover.
+
+### P2 — Confirm and note, fix if time allows
+- getSite, updateSite, deleteSite rely entirely on the route-level authorize middleware for ownership checks (confirmed correctly wired in sites.routes.ts) rather than checking ownerId inside the controller body — this is fine as implemented, but confirm test coverage exists for it directly (a wrong middleware order or a future new route that forgets to attach authorize would silently reopen this).
+- inviteRole is a 501 stub — acceptable for MVP, just don't let it silently look implemented in any UI.
+
+---
+
+## 2. Ground Truth — What Already Exists (verified by direct code read)
+
+Backend, real and working:
+- src/auth/ — signup with OTP via PendingSignup (no User row created until verified — good pattern), login, JWT access (15m) + refresh (7d), TOTP MFA (QR enrollment + verify), real Google/GitHub OAuth with account linking by email/provider ID, Zod-validated inputs.
+- src/middleware/ — authenticate (JWT), authorize (role-scoped per site, confirmed wired correctly across sites.routes.ts), rateLimit (auth + PIN endpoints), sanitizeInput (recursive XSS stripping), errorHandler (no stack leak in production).
+- src/lib/encryption.ts — real AES-256-GCM for credentials.
+- src/credentials/ — save/list/test credentials, plus a full BYOK PIN system (setup/verify/forgot-via-OTP/reset), correctly gated to authorize(['owner']).
+- src/sites/ — full CRUD, schema read/write (now schema-valid), custom domain claiming with conflict checks, search, and a separate site-scoped admin login (JWT with {siteId, role:'admin'}) — see P0 issue #1 above.
+- src/ai/ — real RAG pipeline: OpenAI embeddings, pgvector similarity search scoped by siteId (SiteDocument.embedding vector(1536)), SSE-streamed chat completions, conversation/message persistence (Conversation/Message models), supports both logged-in and anonymous (sessionId) visitors.
+- src/public/ — unauthenticated site rendering by ID, with an explicit select that avoids leaking ownerId; subdomain/custom-domain lookup.
+- src/hire/ — personal "hire me" contact form, separate from the core product — leave alone.
+- index.ts — fails fast on boot if DATABASE_URL/JWT_PLATFORM_SECRET/PLATFORM_AI_API_KEY are missing; clean middleware order (helmet, cors, sanitizeInput, routes, errorHandler last).
+
+Frontend, real and working (not a stub):
+- Full Next.js app/ router: (auth)/login, (auth)/signup, (auth)/mfa, dashboard, sites/[siteId]/setup, sites/[siteId]/byok, sites/[siteId]/builder, sites/[siteId]/settings, preview/[siteId], preview/[siteId]/admin, hire-me.
+- Shared infra: context/AuthContext.tsx (see P0 #4), components/TransitionLink.tsx, components/ProfileDropdown.tsx, components/Chatbot.tsx, components/builder/Registry.tsx, a UI kit (Button, MagneticButton, CustomCursor, ScrollReveal, SmoothScrollProvider, CommandPalette, StarBackground, TextReveal).
+- Real dependencies in use: @dnd-kit/* (builder drag/drop), @studio-freight/react-lenis (smooth scroll), framer-motion, sonner (toasts), lucide-react (icons), puppeteer (devDependency, likely for automated testing/screenshots).
+- 8 complete e-commerce templates (minimalist, essence, origin, canvas, nexus-pro, velocity, quantum, horizon), each with about/auth/cart/checkout/contact/products/profile/wishlist, most with orders. Content is still hardcoded per template (CartContext.tsx/ShopContext.tsx/etc. static arrays), not yet schema-driven.
+
+Not built anywhere — the real remaining gap list:
+- Portfolio, salon/services, and restaurant categories (only e-commerce exists, across 8 style variants).
+- Migrating template content from hardcoded arrays to Site.schema-driven rendering.
+- Any 3D/Three.js element.
+- Team roles beyond the 501 stub.
+
+---
+
+## 3. Design System
+
+### 3.1 Palette
+--bg-base: #FAFAF8 — Page background
+--bg-elevated: #FFFFFF — Cards, panels, nav
+--bg-subtle: #F2F1EC — Section alternation, hover fills
+--ink: #1D1D1F — Primary text
+--ink-soft: #6E6E73 — Secondary text
+--accent: evolve from the existing template accent, used sparingly, never as a large surface color
+--line: #E5E5E1 — Hairline borders
+--success: #1DAA6E — Status/positive state
+
+### 3.2 Typography & Spacing
+- Geometric/humanist sans (Inter or similar), matching or evolving the existing font-heading/font-body/font-accent Tailwind classes already in the codebase.
+- Display headlines: tight tracking (-0.02 to -0.04em), heavy weight.
+- Body: 16–19px, generous line-height, --ink-soft for secondary text.
+- 8px base grid; large card radii (16–24px); soft multi-layer shadows over hard borders.
+
+### 3.3 Motion Principles
+1. Page transitions: extend the existing TransitionLink component — don't build a second system.
+2. Scroll reveals: extend components/ui/ScrollReveal.tsx — reuse it everywhere rather than reimplementing per page.
+3. Reuse the existing Lenis smooth-scroll setup (SmoothScrollProvider.tsx) rather than introducing a second scroll library; audit it for conflicts with modals, forms, and the @dnd-kit builder drag interactions specifically (smooth-scroll libraries are a common source of drag-and-drop jank).
+4. Micro-interactions: buttons lift with shadow growth, cards scale 1.01–1.02 with shadow bloom, every interactive element has visible hover and focus states.
+5. Loading states: skeleton loaders for data-dependent content, not blank screens or bare spinners.
+6. Respect prefers-reduced-motion everywhere.
+
+---
+
+## 4. Post-Login Dashboard — Audit & Elevate, Not Rebuild
+
+frontend/app/dashboard/page.tsx already exists at 367 lines — treat this phase as review and elevate, not "build from nothing":
+- Confirm it already covers: personalized welcome, real stats from GET /api/sites, site cards, an empty state for zero sites.
+- Elevate whatever's there to the Section 3 design bar: animated stat counters, skeleton loaders while GET /api/sites resolves, quick-access actions per site card (open builder, open BYOK, view live site) surfaced directly rather than behind a menu, and confirm it's genuinely responsive (not desktop-shrunk) on 375px/768px/1440px widths.
+
+---
+
+## 5. Phase-by-Phase Plan
+
+### Phase 1 — Security & Correctness Audit (do this first, in full)
+1. Fix all P0 items in Section 1 (admin backdoor, ingest IDOR, OAuth token-in-URL, localStorage token storage, credential rotation if not already done).
+2. Fix all P1 items (SMTP mismatch, AI chat rate limiting, real credential verification, refresh token revocation, stale MONGO_URI cleanup).
+3. Run the actual application — npm run dev in both frontend/ and backend/, npm run build and npm run lint in both — fix whatever actually fails, don't just static-read the code.
+4. Adversarially test authentication: no token, invalid token, expired token, modified JWT, wrong role for a resource. Confirm each is correctly rejected.
+5. Acceptance: every P0/P1 item verified fixed by actually exercising the flow (not just reading the diff); both apps build and run cleanly; a written note per item states Fixed / Verified / Known limitation.
+
+### Phase 2 — Design System Foundation
+1. Extract/formalize the design tokens and motion primitives from Section 3 as reusable components, building on components/ui/* that already exists rather than duplicating it.
+2. Apply the elevated system to the template gallery (app/templates/page.tsx) first, since it's the most complete existing page.
+3. Acceptance: template gallery visibly reaches the new design bar with no functional regression; components are ready to reuse everywhere else.
+
+### Phase 3 — Auth Screens Redesign
+1. Rebuild login/signup/MFA visuals to the new system while keeping all existing flows (OTP, MFA, OAuth, refresh) intact and now using the hardened token-handling from Phase 1.
+2. Acceptance: all auth flows still function end-to-end; visuals match the new bar.
+
+### Phase 4 — Dashboard Elevation (per Section 4)
+1. Elevate the existing dashboard per Section 4.
+2. Acceptance: animated stats, skeleton loading, responsive at 375/768/1440px, quick actions on site cards.
+
+### Phase 5 — BYOK / Credentials Wizard Elevation
+1. Review sites/[siteId]/setup/ and sites/[siteId]/byok/ against the intended flow: explain → JWT secret → ImageKit keys with guided links → category-conditional payment/email keys → PIN setup/verify → real test (per Phase 1.2's fix) → save.
+2. Elevate visuals to the new design system.
+3. Acceptance: a first-time user completes the flow with only in-app guidance; an invalid key is now rejected by a real verification call, not just a format check.
+
+### Phase 6 — Schema-Driven Builder
+1. Review sites/[siteId]/builder/ and components/builder/Registry.tsx against the section-type reference (Section 6 below).
+2. Migrate the minimalist template from hardcoded content (CartContext.tsx) to schema-driven rendering as the first proof of pattern, before touching the remaining seven.
+3. Acceptance: editing schema in the builder changes what renders on the public site without redeploying template code.
+
+### Phase 7 — New Categories
+1. Add portfolio, salon/services, and restaurant categories using the section-type reference, styled to the new system.
+2. Acceptance: a user builds a portfolio site end-to-end through the same builder used for e-commerce.
+
+### Phase 8 — Per-Site Admin Panel Hardening & Design
+1. Review preview/[siteId]/admin/page.tsx against the intended per-schema dynamic-management pattern; ensure the admin login flow no longer has the P0 fallback password.
+2. Elevate visuals to the new system.
+3. Acceptance: a salon site and portfolio site show different management screens purely from schema differences; admin login cannot be bypassed with a default password.
+
+### Phase 9 — AI Chatbot Hardening & Design
+1. Confirm the ingest IDOR fix from Phase 1 and the new rate limiting on chat.
+2. Elevate components/Chatbot.tsx visuals; confirm streaming, cancellation, and error states all feel premium, not just functional.
+3. Acceptance: the chatbot on Site A never answers using Site B's content (retest after the IDOR fix); rate limiting confirmed active.
+
+### Phase 10 — 3D Layer (net-new)
+1. One configurable React Three Fiber hero element, styled for the light background, lazy-loaded.
+2. Acceptance: appears in preview and published site, configurable without code, no load-time penalty elsewhere.
+
+### Phase 11 — Full Application Redesign Pass
+1. Apply the design system to every remaining page across all 8 templates (cart, checkout, wishlist, orders, profile) — this is where "don't stop at the homepage" gets finished.
+2. Full responsive QA at 375/390/430/768/1024/1280/1440/1920px.
+3. Performance pass: image optimization, lazy loading, bundle size, animation frame budget.
+4. Acceptance: every page shares the same design language; Lighthouse/perf metrics haven't regressed.
+
+### Phase 12 — Regression, Testing, Documentation
+1. Retest every flow end to end after all changes: auth, dashboard, BYOK wizard, builder, templates, preview, admin panel, chatbot, hire form.
+2. Meaningful automated tests for at minimum: auth (signup/login/invalid/protected routes), authorization/IDOR (cross-user resource access denied), site CRUD, chatbot (send/error/cancel).
+3. README.md covering setup and the architectural decisions made (including the security fixes from Phase 1, so future contributors know why they're there).
+4. Acceptance: full demo script (signup → dashboard → create site → BYOK → builder → publish → admin panel → chatbot → 3D) runs with no manual DB edits; report findings honestly per the format in Section 0.
+
+---
+
+## 6. Section Type → data Shape Reference
+
+hero (all): heading, subheading, ctaText, backgroundImage, show3D
+about (portfolio): bio, photo
+projects (portfolio): items: [{title, description, image, link}]
+skills (portfolio): items: [{name, level}]
+resume (portfolio): fileUrl
+product_grid (ecommerce): products: [{name, price, image, productId}] — replaces hardcoded template arrays
+product_detail (ecommerce): productId, description, images, price, stock
+cart, checkout, wishlist, orders (ecommerce): already built per template — wire to real product data
+services (salon): items: [{name, price, durationMinutes}]
+gallery (salon, restaurant): images: [url]
+staff (salon): items: [{name, role, photo}]
+booking (salon): availableSlots, bookingFormFields
+menu (restaurant): categories: [{name, items: [{name, price, description}]}]
+reservations (restaurant): formFields, maxPartySize
+location_hours (restaurant): address, mapEmbedUrl, hours
+contact (all): email, phone, formFields
+
+---
+
+## 7. What NOT to Do
+- Do not use a dark background anywhere in the product shell.
+- Do not start the design pass before Section 1's P0/P1 items are fixed and verified.
+- Do not touch src/hire/ — it's a separate personal feature.
+- Do not leave the adminLogin default-password fallback in place under any framing.
+- Do not claim a flow "works" without actually running it.
+- Do not store tokens in localStorage without at minimum moving the refresh token to an httpOnly cookie.
+- Do not add features outside the gap list in Section 2 "to look bigger."
+- Do not stop after redesigning the homepage or dashboard — every page must reach the same bar.
+
+---
+
+## 8. Definition of Done
+- [ ] Admin-login default password backdoor removed
+- [ ] AI ingest IDOR fixed with real ownership check
+- [ ] OAuth tokens no longer passed via URL query params
+- [ ] Refresh token moved out of localStorage to an httpOnly cookie
+- [ ] Leaked historical Neon/JWT credentials rotated (if not already)
+- [ ] SMTP env var mismatch fixed
+- [ ] /api/ai/chat rate limited
+- [ ] Real per-keyType credential verification (not just format checks)
+- [ ] Refresh token revocation on logout, or explicitly documented as a known limitation
+- [ ] Design system elevated and applied to every page, not just the homepage
+- [ ] Dashboard reaches the Section 4 bar: animated, responsive, real data, skeleton loading
+- [ ] Schema-driven builder proven on at least the minimalist template
+- [ ] Portfolio, salon, and restaurant categories added
+- [ ] Per-site admin panel hardened and redesigned
+- [ ] AI chatbot verified scoped strictly per site after the IDOR fix
+- [ ] One configurable 3D element on a light background
+- [ ] Full responsive QA across all breakpoints in Section 5, Phase 11
+- [ ] README documents setup and the security fixes made, with reasoning
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-08-16T01:49:33+05:30.
+
+The user's current state is as follows:
+Active Document: c:\Users\lenovo\Downloads\PRIME PROJECT\frontend\components\ui\InteractiveTemplateCard.tsx (LANGUAGE_TSX)
+Cursor is on line: 1
+Other open documents:
+- c:\Users\lenovo\Downloads\PRIME PROJECT\frontend\components\ui\InteractiveTemplateCard.tsx (LANGUAGE_TSX)
+- c:\Users\lenovo\Downloads\PRIME PROJECT\frontend\components\ui\CustomCursor.tsx (LANGUAGE_TSX)
+- c:\Users\lenovo\Downloads\PRIME PROJECT\backend\src\ai\ai.controller.ts (LANGUAGE_TYPESCRIPT)
+Running terminal commands:
+- npm run dev (in c:\Users\lenovo\Downloads\PRIME PROJECT\frontend, running for 17m50s)
+</ADDITIONAL_METADATA>
+<USER_SETTINGS_CHANGE>
+The user changed setting `Model Selection` from Gemini 3.6 Flash (Medium) to Gemini 3.1 Pro (High). No need to comment on this change if the user doesn't ask about it. If reporting what model you are, please use a human readable name instead of the exact string.
+</USER_SETTINGS_CHANGE>

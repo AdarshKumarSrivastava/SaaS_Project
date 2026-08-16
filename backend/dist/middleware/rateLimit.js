@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.authLimiter = void 0;
+exports.aiChatLimiter = exports.authLimiter = void 0;
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 exports.authLimiter = (0, express_rate_limit_1.default)({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -12,5 +12,14 @@ exports.authLimiter = (0, express_rate_limit_1.default)({
     legacyHeaders: false,
     message: {
         error: 'Too many requests from this IP, please try again after 15 minutes.'
+    }
+});
+exports.aiChatLimiter = (0, express_rate_limit_1.default)({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 20, // 20 requests per 15 mins for AI chat
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        error: 'Too many AI chat requests from this IP, please try again after 15 minutes.'
     }
 });

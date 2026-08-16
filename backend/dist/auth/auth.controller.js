@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.oauthGithubCallback = exports.oauthGithub = exports.oauthGoogleCallback = exports.oauthGoogle = exports.logout = exports.refresh = exports.verifyMfa = exports.enableMfa = exports.login = exports.resendOtp = exports.verifyOtp = exports.signup = void 0;
+exports.oauthGithubCallback = exports.oauthGithub = exports.oauthGoogleCallback = exports.oauthGoogle = exports.logout = exports.refresh = exports.verifyMfa = exports.enableMfa = exports.me = exports.login = exports.resendOtp = exports.verifyOtp = exports.signup = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const { authenticator } = require('otplib');
@@ -16,6 +16,19 @@ function generateTokens(userId) {
     const accessToken = jsonwebtoken_1.default.sign({ userId }, JWT_SECRET, { expiresIn: '15m' });
     const refreshToken = jsonwebtoken_1.default.sign({ userId, type: 'refresh' }, JWT_SECRET, { expiresIn: '7d' });
     return { accessToken, refreshToken };
+}
+function setTokenCookies(res, tokens) {
+    res.cookie('refreshToken', tokens.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+    res.cookie('accessToken', tokens.accessToken, {
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 15 * 60 * 1000
+    });
 }
 // Zod schemas
 const signupSchema = zod_1.z.object({
@@ -49,11 +62,11 @@ const signup = async (req, res) => {
             create: { email, name, passwordHash, otp, expiresAt },
             update: { name, passwordHash, otp, expiresAt, createdAt: new Date() }
         });
-        if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+        if (process.env.SMTP_EMAIL && process.env.SMTP_APP_PASSWORD) {
             const transporter = nodemailer_1.default.createTransport({
                 host: process.env.SMTP_HOST || "sandbox.smtp.mailtrap.io",
                 port: parseInt(process.env.SMTP_PORT || "2525"),
-                auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+                auth: { user: process.env.SMTP_EMAIL, pass: process.env.SMTP_APP_PASSWORD },
             });
             await transporter.sendMail({
                 from: `"BuildSpace" <${process.env.SMTP_FROM || 'noreply@buildspace.com'}>`,
@@ -121,11 +134,11 @@ const resendOtp = async (req, res) => {
             where: { email },
             data: { otp, expiresAt }
         });
-        if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+        if (process.env.SMTP_EMAIL && process.env.SMTP_APP_PASSWORD) {
             const transporter = nodemailer_1.default.createTransport({
                 host: process.env.SMTP_HOST || "sandbox.smtp.mailtrap.io",
                 port: parseInt(process.env.SMTP_PORT || "2525"),
-                auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+                auth: { user: process.env.SMTP_EMAIL, pass: process.env.SMTP_APP_PASSWORD },
             });
             await transporter.sendMail({
                 from: `"BuildSpace" <${process.env.SMTP_FROM || 'noreply@buildspace.com'}>`,
@@ -169,13 +182,44 @@ const login = async (req, res) => {
             return res.json({ mfaRequired: true, mfaToken });
         }
         const tokens = generateTokens(user.id);
-        res.json({ ...tokens, user: { id: user.id, email: user.email } });
+        setTokenCookies(res, tokens);
+        res.json({
+            ...tokens,
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name
+            }
+        });
     }
     catch (error) {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
 exports.login = login;
+const me = async (req, res) => {
+    try {
+        const userId = req.user?.userId || req.user?.id;
+        if (!userId)
+            return res.status(401).json({ error: 'Unauthorized' });
+        const user = await prisma_1.prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                id: true,
+                email: true,
+                name: true,
+                createdAt: true,
+            }
+        });
+        if (!user)
+            return res.status(404).json({ error: 'User not found' });
+        return res.json({ user });
+    }
+    catch (err) {
+        return res.status(500).json({ error: err.message });
+    }
+};
+exports.me = me;
 const enableMfa = async (req, res) => {
     try {
         const userId = req.user.userId;
@@ -212,6 +256,7 @@ const verifyMfa = async (req, res) => {
         if (!isValid)
             return res.status(400).json({ error: 'Invalid MFA code' });
         const tokens = generateTokens(user.id);
+        setTokenCookies(res, tokens);
         res.json({ ...tokens, user: { id: user.id, email: user.email } });
     }
     catch (error) {
@@ -220,7 +265,7 @@ const verifyMfa = async (req, res) => {
 };
 exports.verifyMfa = verifyMfa;
 const refresh = (req, res) => {
-    const { refreshToken } = req.body;
+    const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
     if (!refreshToken)
         return res.status(400).json({ error: 'Refresh token required' });
     try {
@@ -228,6 +273,7 @@ const refresh = (req, res) => {
         if (decoded.type !== 'refresh')
             throw new Error('Invalid token type');
         const tokens = generateTokens(decoded.userId);
+        setTokenCookies(res, tokens);
         res.json(tokens);
     }
     catch (error) {
@@ -236,6 +282,8 @@ const refresh = (req, res) => {
 };
 exports.refresh = refresh;
 const logout = (req, res) => {
+    res.clearCookie('refreshToken');
+    res.clearCookie('accessToken');
     res.json({ message: 'Logged out successfully' });
 };
 exports.logout = logout;
@@ -287,7 +335,8 @@ const oauthGoogleCallback = async (req, res) => {
             user = await prisma_1.prisma.user.update({ where: { id: user.id }, data: { googleId } });
         }
         const tokens = generateTokens(user.id);
-        res.redirect(`http://localhost:3000/dashboard?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`);
+        setTokenCookies(res, tokens);
+        res.redirect(`http://localhost:3000/dashboard`);
     }
     catch (error) {
         console.error('Google OAuth Error:', error);
@@ -354,7 +403,8 @@ const oauthGithubCallback = async (req, res) => {
             user = await prisma_1.prisma.user.update({ where: { id: user.id }, data: { githubId } });
         }
         const tokens = generateTokens(user.id);
-        res.redirect(`http://localhost:3000/dashboard?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`);
+        setTokenCookies(res, tokens);
+        res.redirect(`http://localhost:3000/dashboard`);
     }
     catch (error) {
         console.error('GitHub OAuth Error:', error);

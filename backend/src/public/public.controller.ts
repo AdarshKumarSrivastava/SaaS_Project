@@ -15,6 +15,7 @@ export const getPublicSite = async (req: Request, res: Response) => {
         subdomain: true,
         customDomain: true,
         schema: true,
+        products: true,
       }
     });
 

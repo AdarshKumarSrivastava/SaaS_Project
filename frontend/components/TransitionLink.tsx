@@ -38,15 +38,78 @@ export const TransitionLink = ({ children, className, onClick, ...props }: Trans
       }
     }
 
-    const body = document.querySelector('body');
-    if (body) {
-      body.classList.add('page-transitioning');
-      await sleep(300);
-      router.push(props.href.toString());
-      await sleep(100);
-      body.classList.remove('page-transitioning');
-    } else {
-      router.push(props.href.toString());
+    const targetUrl = props.href.toString();
+    if (targetUrl === pathname) {
+       return;
+    }
+
+    // Get click coordinates for origin
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX || rect.left + rect.width / 2;
+    const y = e.clientY || rect.top + rect.height / 2;
+
+    const maxRadius = Math.hypot(
+        Math.max(x, window.innerWidth - x),
+        Math.max(y, window.innerHeight - y)
+    );
+    const targetSize = `${maxRadius * 2}px`;
+
+    // Elite Ripple Overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 z-[99999] pointer-events-none overflow-hidden transition-transform duration-[800ms] ease-[cubic-bezier(0.7,0,0.3,1)]';
+    
+    // Premium color layers: Cream -> Accent/Grey -> Ink
+    const colors = ['#EAE6DF', '#6E6D6B', '#0D0D0D'];
+    const circles: HTMLDivElement[] = [];
+
+    colors.forEach((color, i) => {
+        const circle = document.createElement('div');
+        circle.style.position = 'absolute';
+        circle.style.left = `${x}px`;
+        circle.style.top = `${y}px`;
+        circle.style.width = '0px';
+        circle.style.height = '0px';
+        circle.style.backgroundColor = color;
+        circle.style.borderRadius = '50%';
+        circle.style.transform = 'translate(-50%, -50%)';
+        // Ultra-smooth easing curve
+        circle.style.transition = `width 0.8s cubic-bezier(0.76, 0, 0.24, 1), height 0.8s cubic-bezier(0.76, 0, 0.24, 1)`;
+        circle.style.transitionDelay = `${i * 120}ms`;
+        
+        overlay.appendChild(circle);
+        circles.push(circle);
+    });
+
+    document.body.appendChild(overlay);
+
+    // Force reflow
+    void overlay.offsetWidth;
+
+    // Animate In: Expand circles from cursor
+    circles.forEach(circle => {
+        circle.style.width = targetSize;
+        circle.style.height = targetSize;
+    });
+
+    // Wait for the final black circle to fully cover
+    await sleep(800 + 240);
+
+    // Route change happens silently behind the black screen
+    router.push(targetUrl);
+
+    // Wait a brief moment for the new page DOM to mount
+    await sleep(200);
+
+    // Animate Out: The entire overlay elegantly slides up and fades slightly
+    overlay.style.transform = 'translateY(-100%)';
+    overlay.style.opacity = '0.9';
+
+    // Wait for slide up to finish
+    await sleep(800);
+    
+    // Cleanup
+    if (document.body.contains(overlay)) {
+      document.body.removeChild(overlay);
     }
   };
 

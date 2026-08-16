@@ -15,6 +15,20 @@ function generateTokens(userId: string) {
   return { accessToken, refreshToken };
 }
 
+function setTokenCookies(res: Response, tokens: { accessToken: string, refreshToken: string }) {
+  res.cookie('refreshToken', tokens.refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000
+  });
+  res.cookie('accessToken', tokens.accessToken, {
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 15 * 60 * 1000
+  });
+}
+
 // Zod schemas
 const signupSchema = z.object({
   name: z.string().optional(),
@@ -53,11 +67,11 @@ export const signup = async (req: Request, res: Response) => {
       update: { name, passwordHash, otp, expiresAt, createdAt: new Date() }
     });
     
-    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    if (process.env.SMTP_EMAIL && process.env.SMTP_APP_PASSWORD) {
       const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST || "sandbox.smtp.mailtrap.io",
         port: parseInt(process.env.SMTP_PORT || "2525"),
-        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+        auth: { user: process.env.SMTP_EMAIL, pass: process.env.SMTP_APP_PASSWORD },
       });
 
       await transporter.sendMail({
@@ -132,11 +146,11 @@ export const resendOtp = async (req: Request, res: Response) => {
       data: { otp, expiresAt }
     });
 
-    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    if (process.env.SMTP_EMAIL && process.env.SMTP_APP_PASSWORD) {
       const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST || "sandbox.smtp.mailtrap.io",
         port: parseInt(process.env.SMTP_PORT || "2525"),
-        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+        auth: { user: process.env.SMTP_EMAIL, pass: process.env.SMTP_APP_PASSWORD },
       });
 
       await transporter.sendMail({
@@ -184,9 +198,39 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const tokens = generateTokens(user.id);
-    res.json({ ...tokens, user: { id: user.id, email: user.email } });
+    setTokenCookies(res, tokens);
+    res.json({ 
+      ...tokens, 
+      user: { 
+        id: user.id, 
+        email: user.email, 
+        name: user.name
+      } 
+    });
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const me = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.userId || (req as any).user?.id;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        createdAt: true,
+      }
+    });
+
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    return res.json({ user });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
   }
 };
 
@@ -227,6 +271,7 @@ export const verifyMfa = async (req: Request, res: Response) => {
     if (!isValid) return res.status(400).json({ error: 'Invalid MFA code' });
 
     const tokens = generateTokens(user.id);
+    setTokenCookies(res, tokens);
     res.json({ ...tokens, user: { id: user.id, email: user.email } });
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
@@ -234,7 +279,7 @@ export const verifyMfa = async (req: Request, res: Response) => {
 };
 
 export const refresh = (req: Request, res: Response) => {
-  const { refreshToken } = req.body;
+  const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
   if (!refreshToken) return res.status(400).json({ error: 'Refresh token required' });
 
   try {
@@ -242,6 +287,7 @@ export const refresh = (req: Request, res: Response) => {
     if (decoded.type !== 'refresh') throw new Error('Invalid token type');
 
     const tokens = generateTokens(decoded.userId);
+    setTokenCookies(res, tokens);
     res.json(tokens);
   } catch (error) {
     res.status(401).json({ error: 'Invalid refresh token' });
@@ -249,6 +295,8 @@ export const refresh = (req: Request, res: Response) => {
 };
 
 export const logout = (req: Request, res: Response) => {
+  res.clearCookie('refreshToken');
+  res.clearCookie('accessToken');
   res.json({ message: 'Logged out successfully' });
 };
 
@@ -303,7 +351,8 @@ export const oauthGoogleCallback = async (req: Request, res: Response) => {
     }
 
     const tokens = generateTokens(user.id);
-    res.redirect(`http://localhost:3000/dashboard?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`);
+    setTokenCookies(res, tokens);
+    res.redirect(`http://localhost:3000/dashboard`);
   } catch (error) {
     console.error('Google OAuth Error:', error);
     res.redirect('http://localhost:3000/login?error=OAuthFailed');
@@ -371,7 +420,8 @@ export const oauthGithubCallback = async (req: Request, res: Response) => {
     }
 
     const tokens = generateTokens(user.id);
-    res.redirect(`http://localhost:3000/dashboard?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`);
+    setTokenCookies(res, tokens);
+    res.redirect(`http://localhost:3000/dashboard`);
   } catch (error) {
     console.error('GitHub OAuth Error:', error);
     res.redirect('http://localhost:3000/login?error=OAuthFailed');

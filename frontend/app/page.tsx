@@ -8,7 +8,6 @@ import { MagneticButton } from '@/components/ui/MagneticButton';
 import { TextReveal } from '@/components/ui/TextReveal';
 import { ContactSection } from '@/components/ContactSection';
 import { Navbar } from '@/components/Navbar';
-import { ThreeDHero } from '@/components/builder/ThreeDHero';
 
 export default function LandingPage() {
   const containerRef = useRef(null);
@@ -33,7 +32,11 @@ export default function LandingPage() {
           style={{ y: yHero, opacity: opacityHero }}
           className="absolute inset-0 z-0"
         >
-          <ThreeDHero />
+          <img 
+            src="/images/hero_bg.jpg" 
+            alt="Hero Architecture" 
+            className="absolute inset-0 w-full h-full object-cover opacity-80"
+          />
           <div className="absolute inset-0 bg-gradient-to-b from-bg-base/30 via-bg-base/10 to-bg-base"></div>
         </motion.div>
 
@@ -193,10 +196,12 @@ export default function LandingPage() {
               </ul>
             </div>
             <div>
-              <h4 className="font-medium text-ink mb-6 text-sm tracking-widest uppercase">Legal</h4>
+              <h4 className="font-medium text-ink mb-6 text-sm tracking-widest uppercase">Connect</h4>
               <ul className="space-y-4 text-ink-soft font-light">
-                <li><a href="#" className="hover:text-ink transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-ink transition-colors">Terms of Service</a></li>
+                <li><a href="mailto:hello@example.com" className="hover:text-ink transition-colors">Email</a></li>
+                <li><a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:text-ink transition-colors">LinkedIn</a></li>
+                <li><a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-ink transition-colors">GitHub</a></li>
+                <li><a href="https://yourportfolio.com" target="_blank" rel="noopener noreferrer" className="hover:text-ink transition-colors">Portfolio</a></li>
               </ul>
             </div>
           </div>

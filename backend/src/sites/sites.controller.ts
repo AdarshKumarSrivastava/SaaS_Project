@@ -206,9 +206,6 @@ export const adminLogin = async (req: Request, res: Response) => {
     if (cred) {
       const decrypted = decrypt(cred.encryptedValue);
       isValid = decrypted === password;
-    } else {
-      // Default fallback if not set
-      isValid = password === 'admin123';
     }
 
     if (!isValid) {

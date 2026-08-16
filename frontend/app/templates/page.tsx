@@ -69,7 +69,7 @@ export default function TemplatesPage() {
               transition={{ duration: 1, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
               className="text-6xl md:text-[90px] lg:text-[110px] leading-[0.9] tracking-tighter text-ink uppercase max-w-4xl font-medium"
             >
-              Mold The <br /> Web.
+              Architect <br /> Perfection.
             </motion.h1>
           </div>
 

@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const helmet_1 = __importDefault(require("helmet"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const auth_routes_1 = __importDefault(require("./auth/auth.routes"));
@@ -16,12 +17,28 @@ const prisma_1 = require("./lib/prisma");
 const sanitizeInput_1 = require("./middleware/sanitizeInput");
 const errorHandler_1 = require("./middleware/errorHandler");
 dotenv_1.default.config();
+const requiredEnvVars = [
+    'DATABASE_URL',
+    'JWT_PLATFORM_SECRET',
+    'PLATFORM_AI_API_KEY'
+];
+for (const envVar of requiredEnvVars) {
+    if (!process.env[envVar]) {
+        console.error(`[FATAL] Missing required environment variable: ${envVar}`);
+        process.exit(1);
+    }
+}
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3001;
 // Middlewares
 app.use((0, helmet_1.default)());
-app.use((0, cors_1.default)());
+app.use((0, cors_1.default)({
+    origin: true,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+}));
 app.use(express_1.default.json());
+app.use((0, cookie_parser_1.default)());
 app.use(sanitizeInput_1.sanitizeInput);
 // Routes
 app.use('/api/auth', auth_routes_1.default);

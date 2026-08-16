@@ -25,11 +25,7 @@ body {
   transition: opacity 300ms ease, transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.page-transitioning {
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 300ms ease, transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
-}
+
 
 *:focus-visible {
   outline: 2px solid var(--color-ink);

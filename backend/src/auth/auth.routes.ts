@@ -15,6 +15,7 @@ router.post('/oauth/github', authController.oauthGithub);
 router.get('/oauth/github/callback', authController.oauthGithubCallback);
 router.post('/mfa/enable', authenticate, authController.enableMfa);
 router.post('/mfa/verify', authController.verifyMfa); // if validating mfa during login
+router.get('/me', authenticate, authController.me);
 router.post('/refresh', authController.refresh);
 router.post('/logout', authController.logout);
 

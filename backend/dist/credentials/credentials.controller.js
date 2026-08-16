@@ -75,25 +75,49 @@ const testCredential = async (req, res) => {
         if (!keyValue) {
             return res.status(400).json({ valid: false, message: 'Key value is required' });
         }
-        if (keyName === 'payment_publishable_key' && !keyValue.startsWith('pk_')) {
+        if (keyName === 'ai_api_key') {
+            try {
+                const aiRes = await fetch('https://api.openai.com/v1/models', {
+                    headers: { Authorization: `Bearer ${keyValue}` }
+                });
+                if (!aiRes.ok)
+                    return res.status(400).json({ valid: false, message: 'Invalid OpenAI API Key' });
+            }
+            catch (e) {
+                return res.status(400).json({ valid: false, message: 'Failed to verify OpenAI API Key' });
+            }
+        }
+        else if (keyName === 'payment_secret_key') {
+            if (!keyValue.startsWith('sk_')) {
+                return res.status(400).json({ valid: false, message: 'Secret keys typically start with sk_' });
+            }
+            try {
+                const stripeRes = await fetch('https://api.stripe.com/v1/charges', {
+                    headers: { Authorization: `Bearer ${keyValue}` }
+                });
+                if (stripeRes.status === 401)
+                    return res.status(400).json({ valid: false, message: 'Invalid Stripe Secret Key' });
+            }
+            catch (e) {
+                return res.status(400).json({ valid: false, message: 'Failed to verify Stripe Key' });
+            }
+        }
+        else if (keyName === 'payment_publishable_key' && !keyValue.startsWith('pk_')) {
             return res.status(400).json({ valid: false, message: 'Publishable keys typically start with pk_' });
         }
-        if (keyName === 'payment_secret_key' && !keyValue.startsWith('sk_')) {
-            return res.status(400).json({ valid: false, message: 'Secret keys typically start with sk_' });
-        }
-        if (keyName.includes('jwt') && keyValue.length < 32) {
+        else if (keyName.includes('jwt') && keyValue.length < 32) {
             return res.status(400).json({ valid: false, message: 'JWT Secret must be at least 32 characters' });
         }
-        if (keyName === 'imagekit_public' && !keyValue.startsWith('public_')) {
+        else if (keyName === 'imagekit_public' && !keyValue.startsWith('public_')) {
             return res.status(400).json({ valid: false, message: 'ImageKit public key should start with public_' });
         }
-        if (keyName === 'imagekit_private' && !keyValue.startsWith('private_')) {
+        else if (keyName === 'imagekit_private' && !keyValue.startsWith('private_')) {
             return res.status(400).json({ valid: false, message: 'ImageKit private key should start with private_' });
         }
-        if (keyName === 'imagekit_url_endpoint' && !keyValue.startsWith('http')) {
+        else if (keyName === 'imagekit_url_endpoint' && !keyValue.startsWith('http')) {
             return res.status(400).json({ valid: false, message: 'ImageKit endpoint must be a valid URL' });
         }
-        if (keyValue.length < 5) {
+        else if (keyValue.length < 5) {
             return res.status(400).json({ valid: false, message: 'Key length must be at least 5 characters' });
         }
         res.json({ valid: true, message: 'Verification passed' });
