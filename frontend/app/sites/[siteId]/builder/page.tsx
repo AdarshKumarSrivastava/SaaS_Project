@@ -95,7 +95,6 @@ export default function BuilderPage() {
     fetchSite();
   }, [siteId, router]);
 
-  const activePage = siteData?.pages[currentStepIndex];
   const templateSlug = (siteData?.global as any)?.templateSlug || 'velocity';
 
   // Broadcast siteData to the iframe live preview
@@ -161,7 +160,7 @@ export default function BuilderPage() {
     });
   };
 
-  if (loading || !siteData || !activePage) return (
+  if (loading || !siteData) return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <Loader2 className="w-8 h-8 animate-spin text-white/40" />
@@ -170,8 +169,38 @@ export default function BuilderPage() {
     </div>
   );
 
-  const isLastStep = currentStepIndex === siteData.pages.length - 1;
   const isFinished = currentStepIndex >= siteData.pages.length;
+  const isLastStep = currentStepIndex === siteData.pages.length - 1;
+
+  if (isFinished) {
+    return (
+      <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white/5 border border-white/10 rounded-3xl p-10 text-center shadow-2xl">
+          <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle2 className="w-10 h-10 text-green-500" />
+          </div>
+          <h2 className="text-2xl font-bold mb-2">Setup Complete</h2>
+          <p className="text-white/60 mb-8">Your website has been successfully configured and saved.</p>
+          <div className="flex flex-col gap-3">
+            <button 
+              onClick={() => router.push(`/sites/${siteId}/admin`)}
+              className="w-full bg-white text-black font-bold py-3 rounded-xl hover:bg-white/90 transition-colors"
+            >
+              Manage Website (Admin)
+            </button>
+            <button 
+              onClick={() => router.push('/dashboard')}
+              className="w-full bg-white/10 text-white font-bold py-3 rounded-xl hover:bg-white/20 transition-colors"
+            >
+              Return to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const activePage = siteData.pages[currentStepIndex];
 
   return (
     <div className="h-screen bg-[#050505] text-white flex overflow-hidden font-sans selection:bg-white/20">

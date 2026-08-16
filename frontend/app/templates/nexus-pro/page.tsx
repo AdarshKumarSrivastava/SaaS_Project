@@ -4,12 +4,12 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, Star } from "lucide-react";
 import { useRef } from "react";
-import { NEXUS_PRODUCTS, useShop } from "./ShopContext";
+import { useShop } from "./ShopContext";
 import { useCustomization } from "@/hooks/useCustomization";
 
 export default function NexusProHomePage() {
   const containerRef = useRef(null);
-  const { addToCart, setIsCartOpen , currencySymbol } = useShop();
+  const { addToCart, setIsCartOpen , currencySymbol, products } = useShop();
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end start"]
@@ -18,7 +18,7 @@ export default function NexusProHomePage() {
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "40%"]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
-  const featuredProducts = NEXUS_PRODUCTS.slice(0, 3);
+  const featuredProducts = products.slice(0, 3);
   const customData = useCustomization();
   
   const preTitle = customData?.formData?.preTitle || "The Evolution of Style";

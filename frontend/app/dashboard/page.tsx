@@ -6,9 +6,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, X, LayoutTemplate, ShoppingBag, Scissors, Utensils, Settings, 
   ArrowRight, Globe, Search, Bell, Zap, BarChart3, Database, ShieldCheck, 
-  LayoutGrid, List, Sparkles, Layers, Cpu, ExternalLink, Activity, MoreHorizontal, Trash2, Copy
+  LayoutGrid, List, Sparkles, Layers, Cpu, ExternalLink, Activity, MoreHorizontal, Trash2, Copy, Rocket
 } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
+import { toast } from 'react-hot-toast';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { Button } from '@/components/ui/Button';
 import { TransitionLink } from '@/components/TransitionLink';
@@ -193,6 +194,20 @@ export default function DashboardPage() {
         setActiveSiteMenu(null);
       }
     } else {
+      setActiveSiteMenu(null);
+    }
+  };
+
+  const handleDeployLive = async (siteId: string) => {
+    try {
+      await apiClient.patch(`http://localhost:3001/api/sites/${siteId}`, { status: 'published' });
+      toast.success('Site deployed live!');
+      // Update local state to reflect new status
+      setSites(sites.map(s => s.id === siteId ? { ...s, status: 'published' } : s));
+    } catch (err) {
+      console.error('Failed to deploy', err);
+      toast.error('Failed to deploy site');
+    } finally {
       setActiveSiteMenu(null);
     }
   };
@@ -568,14 +583,28 @@ export default function DashboardPage() {
                                   initial={{ opacity: 0, scale: 0.95, y: -5 }}
                                   animate={{ opacity: 1, scale: 1, y: 0 }}
                                   exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                                  className="absolute top-10 right-0 w-40 bg-bg-elevated border border-line rounded-xl shadow-xl z-20 py-1 overflow-hidden"
+                                  className="absolute top-10 right-0 w-48 bg-bg-elevated border border-line rounded-xl shadow-xl z-20 py-1 overflow-hidden"
                                 >
-                                  <button className="w-full px-4 py-2 text-left text-xs text-ink hover:bg-bg-subtle flex items-center gap-2 transition-colors">
+                                  <button 
+                                    onClick={() => router.push(`/sites/${site.id}/admin`)}
+                                    className="w-full px-4 py-2 text-left text-xs text-ink hover:bg-bg-subtle flex items-center gap-2 transition-colors"
+                                  >
+                                    <Settings className="w-3.5 h-3.5 text-ink-soft" /> Manage Site (Admin)
+                                  </button>
+                                  <button 
+                                    onClick={() => handleDeployLive(site.id)}
+                                    className="w-full px-4 py-2 text-left text-xs text-ink hover:bg-bg-subtle flex items-center gap-2 transition-colors font-bold text-emerald-600"
+                                  >
+                                    <Rocket className="w-3.5 h-3.5 text-emerald-500" /> Deploy Live
+                                  </button>
+                                  <a 
+                                    href={`http://${site.subdomain}.localhost:3000`} 
+                                    target="_blank" 
+                                    rel="noreferrer"
+                                    className="w-full px-4 py-2 text-left text-xs text-ink hover:bg-bg-subtle flex items-center gap-2 transition-colors"
+                                  >
                                     <ExternalLink className="w-3.5 h-3.5 text-ink-soft" /> View Live
-                                  </button>
-                                  <button className="w-full px-4 py-2 text-left text-xs text-ink hover:bg-bg-subtle flex items-center gap-2 transition-colors">
-                                    <Copy className="w-3.5 h-3.5 text-ink-soft" /> Duplicate
-                                  </button>
+                                  </a>
                                   <div className="h-px bg-line/60 my-1" />
                                   <button 
                                     onClick={() => handleDeleteSite(site.id)}
@@ -635,10 +664,16 @@ export default function DashboardPage() {
                           {site.status === 'draft' ? 'Draft' : 'Live'}
                         </span>
                         <button 
-                          onClick={() => router.push(`/sites/${site.id}/setup`)}
+                          onClick={() => handleDeployLive(site.id)}
+                          className="px-3 py-1.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold shadow-sm"
+                        >
+                          Deploy Live
+                        </button>
+                        <button 
+                          onClick={() => router.push(`/sites/${site.id}/admin`)}
                           className="px-3 py-1.5 text-xs bg-bg-subtle hover:bg-bg-base border border-line rounded-lg font-medium"
                         >
-                          Setup
+                          Manage
                         </button>
                         <button 
                           onClick={() => router.push(`/sites/${site.id}/builder`)}

@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { useCustomization } from "@/hooks/useCustomization";
 
 export type Review = {
   id: string;
@@ -135,6 +136,7 @@ type CartItem = {
 
 type ShopContextType = {
   currencySymbol: string;
+  products: Product[];
   // Cart
   cartItems: CartItem[];
   addToCart: (product: Product, quantity?: number) => void;
@@ -183,6 +185,14 @@ export function ShopProvider({ children , initialCustomData }: { children: React
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
   }, []);
+
+  const { products: dynamicProducts } = useCustomization();
+  const products = (dynamicProducts && dynamicProducts.length > 0) ? dynamicProducts.map(dp => ({
+    ...dp,
+    rating: dp.rating || 5,
+    reviews: dp.reviews || [],
+    wearType: dp.wearType || "other"
+  })) : NEXUS_PRODUCTS;
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<Product[]>([]);
@@ -300,6 +310,7 @@ export function ShopProvider({ children , initialCustomData }: { children: React
     <ShopContext.Provider
       value={{
         currencySymbol,
+        products,
         cartItems,
         addToCart,
         removeFromCart,
