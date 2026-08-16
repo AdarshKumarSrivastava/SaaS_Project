@@ -64,13 +64,33 @@ export function CreateProjectModal({
 
     // 1. Calculate browser scrollbar width to prevent horizontal layout shift
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    
+    // Store original styles
+    const originalStyle = window.getComputedStyle(document.body);
     const originalOverflow = document.body.style.overflow;
     const originalPaddingRight = document.body.style.paddingRight;
+    const originalPosition = document.body.style.position;
+    const originalTop = document.body.style.top;
+    const originalWidth = document.body.style.width;
+    
+    // Store scroll position for restoring later
+    const scrollY = window.scrollY;
+    
+    // Check for iOS
+    const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
 
     // 2. Lock body scroll & compensate scrollbar width
     document.body.style.overflow = 'hidden';
+    
+    // iOS Safari specific fix: position fixed prevents background scrolling completely
+    if (isIOS) {
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+    }
+    
     if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
+      document.body.style.paddingRight = `${parseFloat(originalPaddingRight || '0') + scrollbarWidth}px`;
     }
 
     // 3. Escape key listener for accessibility
@@ -82,8 +102,17 @@ export function CreateProjectModal({
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
+      // Restore all original styles
       document.body.style.overflow = originalOverflow;
       document.body.style.paddingRight = originalPaddingRight;
+      
+      if (isIOS) {
+        document.body.style.position = originalPosition;
+        document.body.style.top = originalTop;
+        document.body.style.width = originalWidth;
+        window.scrollTo(0, scrollY);
+      }
+      
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, isCreating, onClose]);
@@ -115,7 +144,7 @@ export function CreateProjectModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="fixed inset-0 bg-ink/50 backdrop-blur-md z-40"
+            className="fixed inset-0 bg-ink/50 backdrop-blur-md z-40 touch-none"
             onClick={() => {
               if (!isCreating) onClose();
             }}
@@ -159,7 +188,7 @@ export function CreateProjectModal({
               </div>
 
               {/* Modal Internal Scrollable Form Area */}
-              <div className="px-6 py-6 sm:px-8 sm:py-8 overflow-y-auto flex-1 space-y-6 scrollbar-thin scrollbar-thumb-line">
+              <div className="px-6 py-6 sm:px-8 sm:py-8 overflow-y-auto flex-1 min-h-0 space-y-6 scrollbar-thin scrollbar-thumb-line overscroll-contain touch-pan-y">
                 <form id="create-project-form" onSubmit={handleSubmit} className="space-y-6">
                   {/* Error Banner */}
                   {errorMsg && (

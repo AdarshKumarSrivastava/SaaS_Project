@@ -9,15 +9,15 @@ export const useCustomization = () => {
   // Calculate initial flattened formData from context schema
   const initialFormData = (() => {
     let flattened = {};
+    if (context?.siteData?.global) {
+      flattened = { ...flattened, ...context.siteData.global };
+    }
     if (context?.siteData?.pages) {
       context.siteData.pages.forEach((page: any) => {
         page.sections?.forEach((section: any) => {
           flattened = { ...flattened, ...section.props };
         });
       });
-    }
-    if (context?.siteData?.global) {
-      flattened = { ...flattened, ...context.siteData.global };
     }
     return flattened;
   })();
@@ -42,15 +42,16 @@ export const useCustomization = () => {
          const payload = event.data.payload;
          let flattenedFormData = {};
          
+         if (payload?.global) {
+            flattenedFormData = { ...flattenedFormData, ...payload.global };
+         }
+         
          if (payload?.pages) {
             payload.pages.forEach((page: any) => {
                page.sections?.forEach((section: any) => {
                   flattenedFormData = { ...flattenedFormData, ...section.props };
                });
             });
-         }
-         if (payload?.global) {
-            flattenedFormData = { ...flattenedFormData, ...payload.global };
          }
 
          console.log("[useCustomization] Received UPDATE_SCHEMA:", flattenedFormData, payload.products);

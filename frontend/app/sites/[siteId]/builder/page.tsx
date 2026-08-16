@@ -501,10 +501,16 @@ export default function BuilderPage() {
                      <ChevronLeft className="w-4 h-4" /> Back
                   </button>
                   <button 
-                     onClick={() => setCurrentStepIndex(currentStepIndex + 1)}
-                     className="flex-1 bg-white text-black px-6 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                     onClick={async () => {
+                        if (isLastStep) {
+                           await handleSave();
+                        }
+                        setCurrentStepIndex(currentStepIndex + 1);
+                     }}
+                     disabled={saving}
+                     className="flex-1 bg-white text-black px-6 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                     {isLastStep ? 'Finish Setup' : 'Next Page'} <ChevronRight className="w-4 h-4" />
+                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : (isLastStep ? 'Finish Setup' : 'Next Page')} <ChevronRight className="w-4 h-4" />
                   </button>
                </div>
             )}
