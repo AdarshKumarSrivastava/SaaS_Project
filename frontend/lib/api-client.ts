@@ -34,21 +34,73 @@ function getToken() {
   return localStorage.getItem('accessToken') || localStorage.getItem('token') || '';
 }
 
-function handleAuthError(res: Response) {
+async function fetchWithAuth(endpoint: string, options: RequestInit): Promise<Response> {
+  options.credentials = 'include';
+  options.headers = {
+    ...options.headers,
+    'Authorization': `Bearer ${getToken()}`
+  };
+
+  let res = await fetch(endpoint, options);
+
   if (res.status === 401) {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
+    // Attempt to refresh token using HttpOnly cookie
+    try {
+      const refreshRes = await fetch('http://localhost:3001/api/auth/refresh', {
+        method: 'POST',
+        credentials: 'include'
+      });
+
+      if (refreshRes.ok) {
+        const data = await refreshRes.json();
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('accessToken', data.accessToken);
+          localStorage.setItem('token', data.accessToken);
+        }
+        
+        // Retry the original request with the new token
+        options.headers = {
+          ...options.headers,
+          'Authorization': `Bearer ${data.accessToken}`
+        };
+        res = await fetch(endpoint, options);
+      } else {
+        // Refresh failed, force logout
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('user');
+        }
+        throw new Error('Unauthorized');
+      }
+    } catch (err) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+      }
+      throw new Error('Unauthorized');
     }
-    throw new Error('Unauthorized');
   }
+
+  if (!res.ok) {
+    const text = await res.text();
+    try {
+      const json = JSON.parse(text);
+      throw new Error(json.error || json.message || text);
+    } catch (e: any) {
+      if (e.message !== text) throw e;
+      throw new Error(text);
+    }
+  }
+
+  return res;
 }
 
 export const apiClient = {
   async get(endpoint: string) {
-    // 1. Check in-memory cache
     const cached = memoryCache.get(endpoint);
     if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
       console.log(`[Cache HIT] ${endpoint}`);
@@ -56,103 +108,36 @@ export const apiClient = {
     }
     
     console.log(`[Cache MISS] ${endpoint}`);
-
-    // 2. Network request if cache is stale or missing
-    const res = await fetch(endpoint, {
-      credentials: 'include',
-      headers: {
-        'Authorization': `Bearer ${getToken()}`
-      }
-    });
-    if (!res.ok) {
-      handleAuthError(res);
-      const text = await res.text();
-      try {
-        const json = JSON.parse(text);
-        throw new Error(json.error || json.message || text);
-      } catch (e: any) {
-        if (e.message !== text) throw e;
-        throw new Error(text);
-      }
-    }
+    const res = await fetchWithAuth(endpoint, { method: 'GET' });
     const data = await res.json();
     
-    // 3. Save to cache
     memoryCache.set(endpoint, { data, timestamp: Date.now() });
-    
     return data;
   },
   
   async post(endpoint: string, body: any) {
     invalidateCacheForEndpoint(endpoint);
-    const res = await fetch(endpoint, {
+    const res = await fetchWithAuth(endpoint, {
       method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getToken()}`
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
-    if (!res.ok) {
-      handleAuthError(res);
-      const text = await res.text();
-      try {
-        const json = JSON.parse(text);
-        throw new Error(json.error || json.message || text);
-      } catch (e: any) {
-        if (e.message !== text) throw e;
-        throw new Error(text);
-      }
-    }
     return res.json();
   },
 
   async patch(endpoint: string, body: any) {
     invalidateCacheForEndpoint(endpoint);
-    const res = await fetch(endpoint, {
+    const res = await fetchWithAuth(endpoint, {
       method: 'PATCH',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getToken()}`
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
-    if (!res.ok) {
-      handleAuthError(res);
-      const text = await res.text();
-      try {
-        const json = JSON.parse(text);
-        throw new Error(json.error || json.message || text);
-      } catch (e: any) {
-        if (e.message !== text) throw e;
-        throw new Error(text);
-      }
-    }
     return res.json();
   },
 
   async delete(endpoint: string) {
     invalidateCacheForEndpoint(endpoint);
-    const res = await fetch(endpoint, {
-      method: 'DELETE',
-      credentials: 'include',
-      headers: {
-        'Authorization': `Bearer ${getToken()}`
-      }
-    });
-    if (!res.ok) {
-      handleAuthError(res);
-      const text = await res.text();
-      try {
-        const json = JSON.parse(text);
-        throw new Error(json.error || json.message || text);
-      } catch (e: any) {
-        if (e.message !== text) throw e;
-        throw new Error(text);
-      }
-    }
+    const res = await fetchWithAuth(endpoint, { method: 'DELETE' });
     return res.json();
   }
 };

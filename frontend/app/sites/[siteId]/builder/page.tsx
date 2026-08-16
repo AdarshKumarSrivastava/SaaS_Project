@@ -29,6 +29,7 @@ export default function BuilderPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [siteData, setSiteData] = useState<SiteData | null>(null);
+  const [products, setProducts] = useState<any[]>([]);
   
   // Wizard state
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -39,8 +40,16 @@ export default function BuilderPage() {
   useEffect(() => {
     const fetchSite = async () => {
       try {
-        const data = await apiClient.get(`http://localhost:3001/api/sites/${siteId}`);
+        const [siteRes, productsRes] = await Promise.all([
+          apiClient.get(`http://localhost:3001/api/sites/${siteId}`),
+          apiClient.get(`http://localhost:3001/api/sites/${siteId}/products`).catch(() => [])
+        ]);
         
+        const data = siteRes;
+        if (Array.isArray(productsRes)) {
+           setProducts(productsRes);
+        }
+
         let loadedData: SiteData;
         
         if (data.schema && typeof data.schema === 'object' && !Array.isArray(data.schema) && data.schema.pages) {
@@ -101,18 +110,18 @@ export default function BuilderPage() {
   useEffect(() => {
     if (iframeRef.current && iframeRef.current.contentWindow && siteData) {
       iframeRef.current.contentWindow.postMessage(
-        { type: 'UPDATE_SCHEMA', payload: siteData },
+        { type: 'UPDATE_SCHEMA', payload: { ...siteData, products } },
         '*'
       );
     }
-  }, [siteData]);
+  }, [siteData, products]);
 
   // Handle template ready signal
   useEffect(() => {
     const handleMessage = (e: MessageEvent) => {
       if (e.data?.type === 'TEMPLATE_READY' && iframeRef.current && iframeRef.current.contentWindow && siteData) {
         iframeRef.current.contentWindow.postMessage(
-          { type: 'UPDATE_SCHEMA', payload: siteData },
+          { type: 'UPDATE_SCHEMA', payload: { ...siteData, products } },
           '*'
         );
       }
@@ -125,7 +134,8 @@ export default function BuilderPage() {
     setSaving(true);
     try {
       await apiClient.patch(`http://localhost:3001/api/sites/${siteId}/schema`, {
-        schema: siteData
+        schema: siteData,
+        products: products
       });
     } catch (err) {
       console.error('Failed to save', err);
@@ -412,8 +422,70 @@ export default function BuilderPage() {
                                  </div>
                               </div>
                            ))}
-                        </div>
-                     </motion.div>
+
+                            {activePage.id === 'products' && (
+                               <div className="relative group mt-8">
+                                  <div className="flex items-center gap-3 mb-6">
+                                     <div className="flex flex-col gap-1">
+                                        <div className="w-4 h-[1px] bg-[#00f0ff]" />
+                                        <div className="w-2 h-[1px] bg-[#00f0ff]/50" />
+                                     </div>
+                                     <h3 className="text-[10px] font-black text-[#00f0ff] uppercase tracking-[0.3em] font-mono">
+                                        Products <span className="text-white/20">MANAGER</span>
+                                     </h3>
+                                     <div className="flex-1 h-[1px] bg-gradient-to-r from-[#00f0ff]/20 to-transparent" />
+                                  </div>
+
+                                  <div className="space-y-4">
+                                     {products.map((prod, idx) => (
+                                        <div key={prod.id || idx} className="bg-black/40 border border-white/10 rounded-xl p-4 flex flex-col gap-3">
+                                           <input 
+                                              type="text" 
+                                              value={prod.name} 
+                                              onChange={(e) => {
+                                                 const newProds = [...products];
+                                                 newProds[idx].name = e.target.value;
+                                                 setProducts(newProds);
+                                              }}
+                                              className="bg-transparent border-b border-white/20 pb-1 text-sm text-white focus:outline-none focus:border-[#00f0ff]"
+                                              placeholder="Product Name"
+                                           />
+                                           <input 
+                                              type="number" 
+                                              value={prod.price} 
+                                              onChange={(e) => {
+                                                 const newProds = [...products];
+                                                 newProds[idx].price = e.target.value;
+                                                 setProducts(newProds);
+                                              }}
+                                              className="bg-transparent border-b border-white/20 pb-1 text-sm text-white focus:outline-none focus:border-[#00f0ff]"
+                                              placeholder="Price"
+                                           />
+                                           <button 
+                                              onClick={() => {
+                                                 const newProds = [...products];
+                                                 newProds.splice(idx, 1);
+                                                 setProducts(newProds);
+                                              }}
+                                              className="text-[10px] text-red-500 font-bold uppercase tracking-widest text-left hover:text-red-400 mt-2"
+                                           >
+                                              Remove Product
+                                           </button>
+                                        </div>
+                                     ))}
+                                     <button 
+                                        onClick={() => {
+                                           setProducts([...products, { id: crypto.randomUUID(), name: 'New Product', price: 0, image: '', category: 'All' }]);
+                                        }}
+                                        className="w-full py-4 border border-dashed border-white/20 rounded-xl text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white hover:border-white/50 transition-colors"
+                                     >
+                                        + Add Product
+                                     </button>
+                                  </div>
+                               </div>
+                            )}
+                         </div>
+                      </motion.div>
                   )}
                </AnimatePresence>
             </div>
