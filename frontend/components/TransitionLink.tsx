@@ -54,6 +54,18 @@ export const TransitionLink = ({ children, className, onClick, ...props }: Trans
     );
     const targetSize = `${maxRadius * 2}px`;
 
+    // Extract dynamic label for the transition text
+    let labelText = '';
+    if (props['data-label']) {
+        labelText = props['data-label'];
+    } else if (e.currentTarget.textContent) {
+        labelText = e.currentTarget.textContent.trim();
+    } else {
+        const path = targetUrl.split('?')[0].split('/').pop();
+        labelText = path ? path.charAt(0).toUpperCase() + path.slice(1) : 'Loading';
+    }
+    labelText = labelText.split('\n')[0].substring(0, 30); // Clean up
+
     // Elite Ripple Overlay
     const overlay = document.createElement('div');
     overlay.className = 'fixed inset-0 z-[99999] pointer-events-none overflow-hidden transition-transform duration-[800ms] ease-[cubic-bezier(0.7,0,0.3,1)]';
@@ -80,16 +92,26 @@ export const TransitionLink = ({ children, className, onClick, ...props }: Trans
         circles.push(circle);
     });
 
+    // Dynamic Text Element
+    const textEl = document.createElement('div');
+    textEl.textContent = labelText;
+    textEl.className = 'absolute inset-0 flex items-center justify-center text-[#FCFBFA] font-medium text-5xl md:text-7xl tracking-tighter opacity-0 transition-opacity duration-[800ms] ease-out pointer-events-none z-10 mix-blend-difference';
+    overlay.appendChild(textEl);
+
     document.body.appendChild(overlay);
 
     // Force reflow
     void overlay.offsetWidth;
 
-    // Animate In: Expand circles from cursor
+    // Animate In: Expand circles from cursor and fade in text
     circles.forEach(circle => {
         circle.style.width = targetSize;
         circle.style.height = targetSize;
     });
+    
+    setTimeout(() => {
+        textEl.style.opacity = '1';
+    }, 300);
 
     // Wait for the final black circle to fully cover
     await sleep(800 + 240);
@@ -100,7 +122,13 @@ export const TransitionLink = ({ children, className, onClick, ...props }: Trans
     // Wait a brief moment for the new page DOM to mount
     await sleep(200);
 
-    // Animate Out: The entire overlay elegantly slides up and fades slightly
+    // Animate Out: Fade text out immediately, then slide overlay up
+    textEl.style.transition = 'opacity 300ms ease';
+    textEl.style.opacity = '0';
+    
+    await sleep(100);
+
+    // The entire overlay elegantly slides up and fades slightly
     overlay.style.transform = 'translateY(-100%)';
     overlay.style.opacity = '0.9';
 
