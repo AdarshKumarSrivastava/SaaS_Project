@@ -66,74 +66,136 @@ export const TransitionLink = ({ children, className, onClick, ...props }: Trans
     }
     labelText = labelText.split('\n')[0].substring(0, 30); // Clean up
 
-    // Elite Ripple Overlay
+    // Elite Staggered Columns Transition
     const overlay = document.createElement('div');
-    overlay.className = 'fixed inset-0 z-[99999] pointer-events-none overflow-hidden transition-transform duration-[800ms] ease-[cubic-bezier(0.7,0,0.3,1)]';
+    overlay.className = 'fixed inset-0 z-[99999] pointer-events-none overflow-hidden';
     
-    // Premium color layers: Cream -> Accent/Grey -> Ink
-    const colors = ['#EAE6DF', '#6E6D6B', '#0D0D0D'];
-    const circles: HTMLDivElement[] = [];
+    const numCols = 5;
+    const layer1: HTMLDivElement[] = [];
+    const layer2: HTMLDivElement[] = [];
 
-    colors.forEach((color, i) => {
-        const circle = document.createElement('div');
-        circle.style.position = 'absolute';
-        circle.style.left = `${x}px`;
-        circle.style.top = `${y}px`;
-        circle.style.width = '0px';
-        circle.style.height = '0px';
-        circle.style.backgroundColor = color;
-        circle.style.borderRadius = '50%';
-        circle.style.transform = 'translate(-50%, -50%)';
-        // Ultra-smooth easing curve
-        circle.style.transition = `width 0.8s cubic-bezier(0.76, 0, 0.24, 1), height 0.8s cubic-bezier(0.76, 0, 0.24, 1)`;
-        circle.style.transitionDelay = `${i * 120}ms`;
+    for (let i = 0; i < numCols; i++) {
+        // Accent Column (Background layer)
+        const col1 = document.createElement('div');
+        col1.className = 'absolute top-0 bottom-0 bg-ink z-[1]';
+        col1.style.left = `${(i * 100) / numCols}%`;
+        col1.style.width = `${100 / numCols + 0.5}%`; // prevent subpixel gaps
+        col1.style.transform = 'translateY(100%)';
+        col1.style.transition = `transform 0.7s cubic-bezier(0.85, 0, 0.15, 1)`;
+        col1.style.transitionDelay = `${i * 0.05}s`;
         
-        overlay.appendChild(circle);
-        circles.push(circle);
-    });
+        // Dark Column (Foreground layer)
+        const col2 = document.createElement('div');
+        col2.className = 'absolute top-0 bottom-0 bg-[#070707] z-[2]';
+        col2.style.left = `${(i * 100) / numCols}%`;
+        col2.style.width = `${100 / numCols + 0.5}%`;
+        col2.style.transform = 'translateY(100%)';
+        col2.style.transition = `transform 0.8s cubic-bezier(0.85, 0, 0.15, 1)`;
+        col2.style.transitionDelay = `${0.1 + (i * 0.05)}s`; 
 
-    // Dynamic Text Element
-    const textEl = document.createElement('div');
-    textEl.textContent = labelText;
-    textEl.className = 'absolute inset-0 flex items-center justify-center text-[#FCFBFA] font-medium text-5xl md:text-7xl tracking-tighter opacity-0 transition-opacity duration-[800ms] ease-out pointer-events-none z-10 mix-blend-difference';
-    overlay.appendChild(textEl);
+        overlay.appendChild(col1);
+        overlay.appendChild(col2);
+        layer1.push(col1);
+        layer2.push(col2);
+    }
+
+    // Text container
+    const textContainer = document.createElement('div');
+    textContainer.className = 'absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10';
+    
+    // Create staggered text characters
+    const textWrapper = document.createElement('div');
+    textWrapper.className = 'flex overflow-hidden pb-4 px-8';
+    
+    const labelUpper = labelText.toUpperCase();
+    const chars: HTMLSpanElement[] = [];
+    
+    for (let i = 0; i < labelUpper.length; i++) {
+        const char = document.createElement('span');
+        char.textContent = labelUpper[i] === ' ' ? '\u00A0' : labelUpper[i];
+        // Apply hollow effect (stroke) and italic serif for that high-fashion awwwards look
+        char.className = 'inline-block text-transparent font-serif italic text-5xl md:text-[8rem] lg:text-[11rem] leading-none tracking-tight';
+        char.style.WebkitTextStroke = '1px rgba(255,255,255,0.4)';
+        char.style.transform = 'translateY(120%) scaleY(1.3) rotate(10deg)';
+        char.style.filter = 'blur(12px)';
+        char.style.opacity = '0';
+        char.style.transition = `transform 0.9s cubic-bezier(0.7, 0, 0.2, 1), opacity 0.8s cubic-bezier(0.7, 0, 0.2, 1), filter 0.9s cubic-bezier(0.7, 0, 0.2, 1), -webkit-text-stroke 0.8s ease, color 0.8s ease`;
+        char.style.transitionDelay = `${0.3 + (i * 0.04)}s`;
+        
+        textWrapper.appendChild(char);
+        chars.push(char);
+    }
+
+    // Subtext
+    const subtext = document.createElement('div');
+    subtext.textContent = 'ESTABLISHING CONNECTION...';
+    subtext.className = 'mt-12 text-[#a0a0a0] text-[10px] md:text-xs uppercase tracking-[0.5em] font-mono opacity-0';
+    subtext.style.transition = 'opacity 0.8s ease 0.8s';
+
+    textContainer.appendChild(textWrapper);
+    textContainer.appendChild(subtext);
+    overlay.appendChild(textContainer);
 
     document.body.appendChild(overlay);
 
     // Force reflow
     void overlay.offsetWidth;
 
-    // Animate In: Expand circles from cursor and fade in text
-    circles.forEach(circle => {
-        circle.style.width = targetSize;
-        circle.style.height = targetSize;
+    // Animate columns in
+    layer1.forEach(col => col.style.transform = 'translateY(0)');
+    layer2.forEach(col => col.style.transform = 'translateY(0)');
+
+    // Animate text in & fill color
+    chars.forEach((char, i) => {
+        char.style.transform = 'translateY(0) scaleY(1) rotate(0deg)';
+        char.style.filter = 'blur(0px)';
+        char.style.opacity = '1';
+        
+        // Fill in the text shortly after it appears
+        setTimeout(() => {
+            char.style.color = '#ffffff';
+            char.style.WebkitTextStroke = '0px rgba(255,255,255,0)';
+        }, 700 + (i * 40));
     });
     
-    setTimeout(() => {
-        textEl.style.opacity = '1';
-    }, 300);
+    subtext.style.opacity = '1';
 
-    // Wait for the final black circle to fully cover
-    await sleep(800 + 240);
+    // Wait for animation to finish
+    await sleep(1500);
 
     // Route change happens silently behind the black screen
     router.push(targetUrl);
 
     // Wait a brief moment for the new page DOM to mount
-    await sleep(200);
+    await sleep(300);
 
-    // Animate Out: Fade text out immediately, then slide overlay up
-    textEl.style.transition = 'opacity 300ms ease';
-    textEl.style.opacity = '0';
+    // Animate text out
+    chars.forEach((char, i) => {
+        char.style.transitionDelay = `${i * 0.03}s`;
+        char.style.transitionDuration = `0.6s`;
+        char.style.transform = 'translateY(-120%) scaleY(0.8) rotate(-5deg)';
+        char.style.filter = 'blur(8px)';
+        char.style.opacity = '0';
+    });
     
-    await sleep(100);
+    subtext.style.transitionDelay = '0s';
+    subtext.style.transitionDuration = '0.3s';
+    subtext.style.opacity = '0';
 
-    // The entire overlay elegantly slides up and fades slightly
-    overlay.style.transform = 'translateY(-100%)';
-    overlay.style.opacity = '0.9';
+    await sleep(400);
 
-    // Wait for slide up to finish
-    await sleep(800);
+    // Animate columns out (sliding up)
+    layer2.forEach((col, i) => {
+        col.style.transitionDelay = `${i * 0.05}s`;
+        col.style.transform = 'translateY(-100%)';
+    });
+    layer1.forEach((col, i) => {
+        col.style.transitionDelay = `${0.1 + (i * 0.05)}s`;
+        col.style.transform = 'translateY(-100%)';
+    });
+
+    // Wait for columns to slide out
+    await sleep(1000);
     
     // Cleanup
     if (document.body.contains(overlay)) {

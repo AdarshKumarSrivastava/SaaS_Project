@@ -4,10 +4,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { 
   User as UserIcon, LogOut, Settings, LayoutDashboard, Sparkles, 
-  Shield, HelpCircle, ChevronDown, CheckCircle2, Key, CreditCard, X
+  ChevronDown, CheckCircle2
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AccountSettingsModal } from '@/components/modals/AccountSettingsModal';
 
 export const ProfileDropdown = (props: any) => {
   const authContext = useAuth();
@@ -17,10 +18,10 @@ export const ProfileDropdown = (props: any) => {
   const displayName = (rawUser?.name && rawUser.name.trim()) || 
     (rawUser?.first_name ? `${rawUser.first_name} ${rawUser.last_name && rawUser.last_name !== '-' ? rawUser.last_name : ''}`.trim() : '') ||
     (rawUser?.email ? rawUser.email.split('@')[0] : '') ||
-    'Senior Developer';
+    'Adarsh Kumar Srivastava';
 
-  const displayEmail = rawUser?.email || 'developer@buildspace.app';
-  const initial = displayName ? displayName[0].toUpperCase() : 'S';
+  const displayEmail = 'Adarsh.25SCSE1280059@galgotiasuniversity.ac.in';
+  const initial = displayName ? displayName[0].toUpperCase() : 'A';
 
   const [isOpen, setIsOpen] = useState(props.isOpen ?? false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -55,7 +56,7 @@ export const ProfileDropdown = (props: any) => {
           </div>
 
           {/* User Name Label (hidden on small mobile) */}
-          <span className="text-xs font-semibold text-ink hidden md:inline-block max-w-[100px] truncate">
+          <span className="text-xs font-semibold text-ink hidden md:inline-block max-w-[120px] truncate">
             {displayName.split(' ')[0]}
           </span>
 
@@ -111,7 +112,7 @@ export const ProfileDropdown = (props: any) => {
                     setIsOpen(false);
                     setIsSettingsOpen(true);
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-xs font-medium text-ink hover:bg-bg-subtle rounded-xl transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2 text-xs font-medium text-ink hover:bg-bg-subtle rounded-xl transition-colors text-left cursor-pointer"
                 >
                   <Settings className="w-4 h-4 text-ink-soft" />
                   <span>Account & Settings</span>
@@ -143,7 +144,7 @@ export const ProfileDropdown = (props: any) => {
                     setIsOpen(false);
                     logout();
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-xl transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-xl transition-colors text-left cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Sign out</span>
@@ -155,92 +156,12 @@ export const ProfileDropdown = (props: any) => {
       </div>
 
       {/* Account Settings Modal */}
-      <AnimatePresence>
-        {isSettingsOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-ink/40 backdrop-blur-md z-40"
-              onClick={() => setIsSettingsOpen(false)}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.96, y: 12 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: 12 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="relative w-full max-w-lg bg-bg-elevated border border-line rounded-[2.5rem] shadow-2xl overflow-hidden z-50"
-            >
-              {/* Modal Header */}
-              <div className="p-6 border-b border-line flex justify-between items-center bg-bg-subtle/40">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-ink text-bg-elevated flex items-center justify-center">
-                    <UserIcon className="w-5 h-5 text-accent" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold text-ink">Account Profile & Settings</h3>
-                    <p className="text-xs text-ink-soft">Manage user parameters & API environment</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsSettingsOpen(false)}
-                  className="p-2 rounded-xl text-ink-soft hover:text-ink hover:bg-bg-subtle"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Body Content */}
-              <div className="p-6 space-y-5">
-                <div className="p-4 rounded-2xl bg-bg-subtle/80 border border-line/60 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-accent to-amber-500 flex items-center justify-center text-white font-bold text-lg shadow-md">
-                      {initial}
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-ink">{displayName}</h4>
-                      <p className="text-xs text-ink-soft font-mono">{displayEmail}</p>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full uppercase tracking-wider">
-                    Verified
-                  </span>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center p-3 rounded-xl border border-line/60 bg-bg-elevated text-xs">
-                    <span className="text-ink-soft">Current Tier:</span>
-                    <span className="font-bold text-accent">Empire Pro (Unlimited Nodes)</span>
-                  </div>
-
-                  <div className="flex justify-between items-center p-3 rounded-xl border border-line/60 bg-bg-elevated text-xs">
-                    <span className="text-ink-soft">API Key Status:</span>
-                    <span className="font-mono text-ink">bs_live_94829*****7291</span>
-                  </div>
-
-                  <div className="flex justify-between items-center p-3 rounded-xl border border-line/60 bg-bg-elevated text-xs">
-                    <span className="text-ink-soft">Edge Region:</span>
-                    <span className="font-medium text-ink">us-east-1 (N. Virginia)</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="p-5 border-t border-line bg-bg-subtle/50 flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setIsSettingsOpen(false)}
-                  className="bg-ink text-bg-elevated px-5 py-2 rounded-xl text-xs font-semibold shadow-sm"
-                >
-                  Done
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <AccountSettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+        user={rawUser} 
+      />
     </>
   );
 };
+

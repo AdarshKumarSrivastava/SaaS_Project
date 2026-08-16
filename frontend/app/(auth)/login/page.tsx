@@ -34,11 +34,21 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    
+    // Create a fresh AbortController to guarantee we don't inherit Next.js's stale router AbortSignal from back navigation
+    const controller = new AbortController();
+    
     try {
       const res = await fetch('http://localhost:3001/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': '' // Explicitly clear any inherited auth
+        },
+        credentials: 'omit', // Explicitly prevent sending stale cookies
+        body: JSON.stringify({ email, password }),
+        signal: controller.signal,
+        cache: 'no-store'
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || data.details?.[0]?.message || 'Login failed');

@@ -198,10 +198,10 @@ export default function LandingPage() {
             <div>
               <h4 className="font-medium text-ink mb-6 text-sm tracking-widest uppercase">Connect</h4>
               <ul className="space-y-4 text-ink-soft font-light">
-                <li><a href="mailto:hello@example.com" className="hover:text-ink transition-colors">Email</a></li>
-                <li><a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:text-ink transition-colors">LinkedIn</a></li>
-                <li><a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-ink transition-colors">GitHub</a></li>
-                <li><a href="https://yourportfolio.com" target="_blank" rel="noopener noreferrer" className="hover:text-ink transition-colors">Portfolio</a></li>
+                <li><a href="mailto:Adarsh.25SCSE1280059@galgotiasuniversity.ac.in" className="hover:text-ink transition-colors">Email</a></li>
+                <li><a href="https://www.linkedin.com/in/adarsh-kumar-srivastava-8198b3387/" target="_blank" rel="noopener noreferrer" className="hover:text-ink transition-colors">LinkedIn</a></li>
+                <li><a href="https://github.com/AdarshKumarSrivastava" target="_blank" rel="noopener noreferrer" className="hover:text-ink transition-colors">GitHub</a></li>
+                <li><a href="https://adarsh-portfilio.vercel.app/" target="_blank" rel="noopener noreferrer" className="hover:text-ink transition-colors">Portfolio</a></li>
               </ul>
             </div>
           </div>

@@ -15,13 +15,13 @@ import { Navbar } from "@/components/Navbar";
 
 const templates = [
   { id: "starter-minimalist", name: "Minimalist", category: "Fashion & Commerce", description: "Clean, focused e-commerce storefront with high conversion primitives.", img: "/images/templates/minimalist.jpg", href: "/templates/minimalist" },
-  { id: "starter-essence", name: "Essence", category: "Skincare & Salon", description: "Elegant salon & luxury beauty booking experience.", img: "/images/templates/salon.jpg", href: "/templates/essence" },
-  { id: "starter-origin", name: "Origin", category: "Architecture & Portfolio", description: "Refined architectural portfolio showcase with editorial depth.", img: "/images/templates/portfolio.jpg", href: "/templates/origin" },
-  { id: "starter-canvas", name: "Canvas", category: "Editorial & Art", description: "Creative portfolio with immersive layout and typography.", img: "/images/templates/portfolio.jpg", href: "/templates/canvas" },
-  { id: "growth-nexus-pro", name: "Nexus Pro", category: "Tech & Gadgets", description: "Full-featured tech & gadgets commerce platform.", img: "/images/templates/minimalist.jpg", href: "/templates/nexus-pro" },
-  { id: "growth-velocity", name: "Velocity", category: "Dark Cyberpunk", description: "Performance-first cyberpunk developer portfolio.", img: "/images/templates/tech.jpg", href: "/templates/velocity" },
-  { id: "growth-quantum", name: "Quantum", category: "Kinetic Commerce", description: "Advanced kinetic commerce engine with dynamic product cards.", img: "/images/templates/tech.jpg", href: "/templates/quantum" },
-  { id: "growth-horizon", name: "Horizon", category: "Digital Studio", description: "Expansive digital agency & studio portfolio.", img: "/images/templates/portfolio.jpg", href: "/templates/horizon" }
+  { id: "starter-essence", name: "Essence", category: "Skincare & Salon", description: "Elegant salon & luxury beauty booking experience.", img: "/images/templates/essence.jpg", href: "/templates/essence" },
+  { id: "starter-origin", name: "Origin", category: "Architecture & Portfolio", description: "Refined architectural portfolio showcase with editorial depth.", img: "/images/templates/origin.jpg", href: "/templates/origin" },
+  { id: "starter-canvas", name: "Canvas", category: "Editorial & Art", description: "Creative portfolio with immersive layout and typography.", img: "/images/templates/canvas.jpg", href: "/templates/canvas" },
+  { id: "growth-nexus-pro", name: "Nexus Pro", category: "Tech & Gadgets", description: "Full-featured tech & gadgets commerce platform.", img: "/images/templates/nexus_pro.jpg", href: "/templates/nexus-pro" },
+  { id: "growth-velocity", name: "Velocity", category: "Dark Cyberpunk", description: "Performance-first cyberpunk developer portfolio.", img: "/images/templates/velocity.jpg", href: "/templates/velocity" },
+  { id: "growth-quantum", name: "Quantum", category: "Kinetic Commerce", description: "Advanced kinetic commerce engine with dynamic product cards.", img: "/images/templates/quantum.jpg", href: "/templates/quantum" },
+  { id: "growth-horizon", name: "Horizon", category: "Digital Studio", description: "Expansive digital agency & studio portfolio.", img: "/images/templates/horizon.jpg", href: "/templates/horizon" }
 ];
 
 export default function TemplatesPage() {

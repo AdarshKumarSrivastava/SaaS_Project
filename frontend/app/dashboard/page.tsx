@@ -28,13 +28,13 @@ const categories = [
 
 const templatesList = [
   { id: "starter-minimalist", name: "Minimalist", category: "ecommerce", description: "Clean, focused e-commerce storefront with high conversion primitives.", img: "/images/templates/minimalist.jpg", href: "/templates/minimalist" },
-  { id: "starter-essence", name: "Essence", category: "salon", description: "Elegant salon & luxury beauty booking experience.", img: "/images/templates/salon.jpg", href: "/templates/essence" },
-  { id: "starter-origin", name: "Origin", category: "portfolio", description: "Refined architectural portfolio showcase with editorial depth.", img: "/images/templates/portfolio.jpg", href: "/templates/origin" },
-  { id: "starter-canvas", name: "Canvas", category: "portfolio", description: "Creative portfolio with immersive layout and typography.", img: "/images/templates/portfolio.jpg", href: "/templates/canvas" },
-  { id: "growth-nexus-pro", name: "Nexus Pro", category: "ecommerce", description: "Full-featured tech & gadgets commerce platform.", img: "/images/templates/minimalist.jpg", href: "/templates/nexus-pro" },
-  { id: "growth-velocity", name: "Velocity", category: "portfolio", description: "Performance-first cyberpunk developer portfolio.", img: "/images/templates/tech.jpg", href: "/templates/velocity" },
-  { id: "growth-quantum", name: "Quantum", category: "ecommerce", description: "Advanced kinetic commerce engine with dynamic product cards.", img: "/images/templates/tech.jpg", href: "/templates/quantum" },
-  { id: "growth-horizon", name: "Horizon", category: "portfolio", description: "Expansive digital agency & studio portfolio.", img: "/images/templates/portfolio.jpg", href: "/templates/horizon" }
+  { id: "starter-essence", name: "Essence", category: "salon", description: "Elegant salon & luxury beauty booking experience.", img: "/images/templates/essence.jpg", href: "/templates/essence" },
+  { id: "starter-origin", name: "Origin", category: "portfolio", description: "Refined architectural portfolio showcase with editorial depth.", img: "/images/templates/origin.jpg", href: "/templates/origin" },
+  { id: "starter-canvas", name: "Canvas", category: "portfolio", description: "Creative portfolio with immersive layout and typography.", img: "/images/templates/canvas.jpg", href: "/templates/canvas" },
+  { id: "growth-nexus-pro", name: "Nexus Pro", category: "ecommerce", description: "Full-featured tech & gadgets commerce platform.", img: "/images/templates/nexus_pro.jpg", href: "/templates/nexus-pro" },
+  { id: "growth-velocity", name: "Velocity", category: "portfolio", description: "Performance-first cyberpunk developer portfolio.", img: "/images/templates/velocity.jpg", href: "/templates/velocity" },
+  { id: "growth-quantum", name: "Quantum", category: "ecommerce", description: "Advanced kinetic commerce engine with dynamic product cards.", img: "/images/templates/quantum.jpg", href: "/templates/quantum" },
+  { id: "growth-horizon", name: "Horizon", category: "portfolio", description: "Expansive digital agency & studio portfolio.", img: "/images/templates/horizon.jpg", href: "/templates/horizon" }
 ];
 
 export default function DashboardPage() {
@@ -131,10 +131,69 @@ export default function DashboardPage() {
         name: `My ${template.name}`,
         category: template.category
       });
-      router.push(`/sites/${data.id}/setup`);
+
+      // Multi-page template schema
+      const fallbackSchema = {
+         pages: [
+            {
+               id: 'home',
+               name: 'Home',
+               path: '/',
+               sections: [
+                  { id: crypto.randomUUID(), type: 'Hero', props: { 
+                     brandName: `My ${template.name}`, 
+                     heroSubtitle: 'System // Override // Active', 
+                     primaryCta: 'Initialize Sequence',
+                     heroImage: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2000&auto=format&fit=crop'
+                  } },
+               ]
+            },
+            {
+               id: 'products',
+               name: 'Products',
+               path: '/products',
+               sections: [
+                  { id: crypto.randomUUID(), type: 'Pricing', props: { shopTitle: 'The Arsenal', viewAllText: 'Access Full Grid' } },
+               ]
+            },
+            {
+               id: 'contact',
+               name: 'Contact',
+               path: '/contact',
+               sections: [
+                  { id: crypto.randomUUID(), type: 'Contact', props: { marqueeText1: 'Cybernetic Enhance', marqueeText2: 'Neo-Tokyo Aesthetics' } },
+               ]
+            }
+         ],
+         global: { 
+            brandName: `My ${template.name}`,
+            templateSlug: template.id.replace(/^(starter|growth)-/, '')
+         }
+      };
+
+      await apiClient.patch(`http://localhost:3001/api/sites/${data.id}/schema`, { schema: fallbackSchema });
+
+      router.push(`/sites/${data.id}/builder`);
     } catch (err) {
       console.error(err);
       setIsCreating(false);
+    }
+  };
+
+  const handleDeleteSite = async (siteId: string) => {
+    if (window.confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+      try {
+        await apiClient.delete(`http://localhost:3001/api/sites/${siteId}`);
+        setSites(sites.filter(site => site.id !== siteId));
+        toast.success('Project deleted successfully');
+      } catch (err) {
+        console.error('Failed to delete project', err);
+        toast.error('Failed to delete project');
+      } finally {
+        setActiveSiteMenu(null);
+      }
+    } else {
+      setActiveSiteMenu(null);
     }
   };
 
@@ -500,23 +559,32 @@ export default function DashboardPage() {
                           {/* Quick Actions Dropdown */}
                           <AnimatePresence>
                             {activeSiteMenu === site.id && (
-                              <motion.div
-                                initial={{ opacity: 0, scale: 0.95, y: -5 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                                className="absolute top-10 right-0 w-40 bg-bg-elevated border border-line rounded-xl shadow-xl z-20 py-1 overflow-hidden"
-                              >
-                                <button className="w-full px-4 py-2 text-left text-xs text-ink hover:bg-bg-subtle flex items-center gap-2 transition-colors">
-                                  <ExternalLink className="w-3.5 h-3.5 text-ink-soft" /> View Live
-                                </button>
-                                <button className="w-full px-4 py-2 text-left text-xs text-ink hover:bg-bg-subtle flex items-center gap-2 transition-colors">
-                                  <Copy className="w-3.5 h-3.5 text-ink-soft" /> Duplicate
-                                </button>
-                                <div className="h-px bg-line/60 my-1" />
-                                <button className="w-full px-4 py-2 text-left text-xs text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors">
-                                  <Trash2 className="w-3.5 h-3.5 text-red-500" /> Delete Project
-                                </button>
-                              </motion.div>
+                              <>
+                                <div 
+                                  className="fixed inset-0 z-10" 
+                                  onClick={(e) => { e.stopPropagation(); setActiveSiteMenu(null); }} 
+                                />
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.95, y: -5 }}
+                                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                                  exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                                  className="absolute top-10 right-0 w-40 bg-bg-elevated border border-line rounded-xl shadow-xl z-20 py-1 overflow-hidden"
+                                >
+                                  <button className="w-full px-4 py-2 text-left text-xs text-ink hover:bg-bg-subtle flex items-center gap-2 transition-colors">
+                                    <ExternalLink className="w-3.5 h-3.5 text-ink-soft" /> View Live
+                                  </button>
+                                  <button className="w-full px-4 py-2 text-left text-xs text-ink hover:bg-bg-subtle flex items-center gap-2 transition-colors">
+                                    <Copy className="w-3.5 h-3.5 text-ink-soft" /> Duplicate
+                                  </button>
+                                  <div className="h-px bg-line/60 my-1" />
+                                  <button 
+                                    onClick={() => handleDeleteSite(site.id)}
+                                    className="w-full px-4 py-2 text-left text-xs text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5 text-red-500" /> Delete Project
+                                  </button>
+                                </motion.div>
+                              </>
                             )}
                           </AnimatePresence>
                         </div>
