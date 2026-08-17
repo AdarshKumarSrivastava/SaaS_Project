@@ -32,7 +32,7 @@ export function Navbar() {
         {/* Links */}
         <div className="flex items-center gap-6 text-sm font-medium">
           <TransitionLink href="/templates" className="text-ink-soft hover:text-ink transition-colors whitespace-nowrap hidden md:inline-block">Templates</TransitionLink>
-          <TransitionLink href="/#pricing" className="text-ink-soft hover:text-ink transition-colors whitespace-nowrap hidden md:inline-block">Pricing</TransitionLink>
+          <TransitionLink href="/pricing" className="text-ink-soft hover:text-ink transition-colors whitespace-nowrap hidden md:inline-block">Pricing</TransitionLink>
         </div>
 
         <div className="h-4 w-px bg-line flex-shrink-0 mx-2 hidden sm:block"></div>

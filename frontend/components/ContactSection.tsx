@@ -1,13 +1,28 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 import { MagneticButton } from '@/components/ui/MagneticButton';
+import { apiClient } from '@/lib/api-client';
 
-export function ContactSection() {
+export function ContactSection({ siteId }: { siteId?: string }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  
+  // Form State
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  
+  // App State
+  const [step, setStep] = useState<'form' | 'loading' | 'otp' | 'verifying' | 'success'>('form');
+  const [error, setError] = useState<string | null>(null);
+  
+  // OTP State
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
@@ -16,6 +31,128 @@ export function ContactSection() {
       x: e.clientX - rect.left,
       y: e.clientY - rect.top,
     });
+  };
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (resendCooldown > 0) {
+      timer = setTimeout(() => setResendCooldown((prev) => prev - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (step === 'loading') return;
+    
+    setError(null);
+    if (!name.trim() || !email.trim() || !message.trim()) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    setStep('loading');
+    try {
+      await apiClient.post('http://localhost:3001/api/enquiry/submit', {
+        name: name.trim(),
+        email: email.trim(),
+        message: message.trim(),
+        siteId
+      });
+      setStep('otp');
+      setResendCooldown(45);
+      
+      // Auto-focus first OTP input after transition
+      setTimeout(() => otpRefs.current[0]?.focus(), 100);
+    } catch (err: any) {
+      setError(err.message || "Failed to send verification code.");
+      setStep('form');
+    }
+  };
+
+  const handleOtpChange = (index: number, value: string) => {
+    if (value.length > 1) {
+      // Handle paste
+      const pasted = value.replace(/\D/g, '').slice(0, 6);
+      if (pasted.length > 0) {
+        const newOtp = [...otp];
+        for (let i = 0; i < pasted.length; i++) {
+          newOtp[i] = pasted[i];
+        }
+        setOtp(newOtp);
+        // Focus the next empty input, or the last one if all filled
+        const nextIndex = Math.min(pasted.length, 5);
+        otpRefs.current[nextIndex]?.focus();
+      }
+      return;
+    }
+
+    if (!/^\d*$/.test(value)) return;
+
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+
+    // Auto-advance
+    if (value && index < 5) {
+      otpRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (otp.every(v => v !== '')) {
+        verifyOtp();
+      }
+    }
+  };
+
+  const verifyOtp = async () => {
+    const code = otp.join('');
+    if (code.length !== 6) {
+      setError("Please enter the complete 6-digit code.");
+      return;
+    }
+
+    setStep('verifying');
+    setError(null);
+
+    try {
+      await apiClient.post('http://localhost:3001/api/enquiry/verify', {
+        email: email.trim(),
+        otp: code,
+        siteId
+      });
+      setStep('success');
+    } catch (err: any) {
+      setError(err.message || "Invalid verification code.");
+      setStep('otp');
+    }
+  };
+
+  const handleResend = async () => {
+    if (resendCooldown > 0) return;
+    setError(null);
+    try {
+      await apiClient.post('http://localhost:3001/api/enquiry/resend', {
+        email: email.trim(),
+        siteId
+      });
+      setResendCooldown(45);
+      setError("A new code has been sent."); // Show as info
+    } catch (err: any) {
+      setError(err.message || "Failed to resend code.");
+    }
+  };
+
+  const maskEmail = (email: string) => {
+    const [local, domain] = email.split('@');
+    if (!domain) return email;
+    if (local.length <= 2) return `${local}***@${domain}`;
+    return `${local.substring(0, 2)}${'*'.repeat(local.length - 2)}@${domain}`;
   };
 
   return (
@@ -84,53 +221,186 @@ export function ContactSection() {
           </div>
         </div>
 
-        {/* Right Column / Form */}
-        <div className="flex-1 relative z-20 md:pt-4">
-          <form className="flex flex-col space-y-9" onSubmit={(e) => e.preventDefault()}>
-            <div className="relative group/field">
-              <input 
-                type="text" 
-                placeholder="Your Name" 
-                className="w-full bg-transparent border-b border-line pb-3 text-lg placeholder-ink-soft/40 outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus:border-ink transition-colors duration-300 text-ink"
-                required
-              />
-              <div className="absolute bottom-0 left-0 h-[1.5px] bg-accent w-0 group-focus-within/field:w-full transition-all duration-400 ease-out"></div>
-            </div>
-            <div className="relative group/field">
-              <input 
-                type="email" 
-                placeholder="Email Address" 
-                className="w-full bg-transparent border-b border-line pb-3 text-lg placeholder-ink-soft/40 outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus:border-ink transition-colors duration-300 text-ink"
-                required
-              />
-              <div className="absolute bottom-0 left-0 h-[1.5px] bg-accent w-0 group-focus-within/field:w-full transition-all duration-400 ease-out"></div>
-            </div>
-            <div className="relative group/field">
-              <input 
-                type="text" 
-                placeholder="Project Requirements" 
-                className="w-full bg-transparent border-b border-line pb-3 text-lg placeholder-ink-soft/40 outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus:border-ink transition-colors duration-300 text-ink"
-                required
-              />
-              <div className="absolute bottom-0 left-0 h-[1.5px] bg-accent w-0 group-focus-within/field:w-full transition-all duration-400 ease-out"></div>
-            </div>
-            
-            <div className="pt-6">
-              <MagneticButton className="w-full sm:w-auto">
+        {/* Right Column / Form Container */}
+        <div className="flex-1 relative z-20 md:pt-4 min-h-[300px]">
+          {error && step !== 'success' && (
+             <motion.div 
+               initial={{ opacity: 0, y: -10 }} 
+               animate={{ opacity: 1, y: 0 }}
+               className="mb-6 flex items-start gap-2 bg-rose-500/10 text-rose-500 px-4 py-3 rounded-lg border border-rose-500/20 text-sm"
+             >
+               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+               <p>{error}</p>
+             </motion.div>
+          )}
+
+          <AnimatePresence mode="wait">
+            {(step === 'form' || step === 'loading') && (
+              <motion.form 
+                key="form"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col space-y-9" 
+                onSubmit={handleFormSubmit}
+              >
+                <div className="relative group/field">
+                  <input 
+                    type="text" 
+                    placeholder="Your Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    disabled={step === 'loading'}
+                    className="w-full bg-transparent border-b border-line pb-3 text-lg placeholder-ink-soft/40 outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus:border-ink transition-colors duration-300 text-ink disabled:opacity-50"
+                    required
+                  />
+                  <div className="absolute bottom-0 left-0 h-[1.5px] bg-accent w-0 group-focus-within/field:w-full transition-all duration-400 ease-out"></div>
+                </div>
+                <div className="relative group/field">
+                  <input 
+                    type="email" 
+                    placeholder="Email Address" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={step === 'loading'}
+                    className="w-full bg-transparent border-b border-line pb-3 text-lg placeholder-ink-soft/40 outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus:border-ink transition-colors duration-300 text-ink disabled:opacity-50"
+                    required
+                  />
+                  <div className="absolute bottom-0 left-0 h-[1.5px] bg-accent w-0 group-focus-within/field:w-full transition-all duration-400 ease-out"></div>
+                </div>
+                <div className="relative group/field">
+                  <input 
+                    type="text" 
+                    placeholder="Project Requirements" 
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    disabled={step === 'loading'}
+                    className="w-full bg-transparent border-b border-line pb-3 text-lg placeholder-ink-soft/40 outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus:border-ink transition-colors duration-300 text-ink disabled:opacity-50"
+                    required
+                  />
+                  <div className="absolute bottom-0 left-0 h-[1.5px] bg-accent w-0 group-focus-within/field:w-full transition-all duration-400 ease-out"></div>
+                </div>
+                
+                <div className="pt-6">
+                  <MagneticButton className="w-full sm:w-auto">
+                    <button 
+                      type="submit" 
+                      disabled={step === 'loading'}
+                      className="group/btn flex items-center justify-between gap-6 bg-ink text-bg-elevated px-8 py-3.5 rounded-full font-semibold hover:bg-ink/90 transition-all duration-300 shadow-md hover:shadow-xl w-full sm:w-auto relative overflow-hidden disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                      <span className="tracking-widest text-xs uppercase relative z-10">
+                        {step === 'loading' ? 'Sending...' : 'Send Inquiry'}
+                      </span>
+                      <div className="bg-bg-elevated/20 text-bg-elevated w-7 h-7 rounded-full flex items-center justify-center group-hover/btn:translate-x-1 group-hover/btn:bg-accent transition-all duration-300 relative z-10">
+                        {step === 'loading' ? (
+                           <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                           <ArrowRight className="w-3.5 h-3.5" />
+                        )}
+                      </div>
+                      <div className="absolute inset-0 bg-white/10 -translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
+                    </button>
+                  </MagneticButton>
+                </div>
+              </motion.form>
+            )}
+
+            {(step === 'otp' || step === 'verifying') && (
+              <motion.div
+                key="otp"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col justify-center h-full space-y-8"
+              >
+                <div>
+                   <h3 className="text-2xl font-serif text-ink mb-2">VERIFY YOUR EMAIL</h3>
+                   <p className="text-ink-soft text-sm">
+                     We've sent a 6-digit verification code to<br/>
+                     <strong className="text-ink font-medium">{maskEmail(email)}</strong>
+                   </p>
+                </div>
+
+                <div className="flex gap-2 sm:gap-4 justify-between w-full max-w-sm">
+                  {otp.map((digit, index) => (
+                    <input
+                      key={index}
+                      ref={(el) => { otpRefs.current[index] = el; }}
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleOtpChange(index, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                      disabled={step === 'verifying'}
+                      className="w-10 h-14 sm:w-12 sm:h-16 text-center text-xl font-bold bg-transparent border-b-2 border-line focus:border-accent outline-none transition-colors duration-300 text-ink disabled:opacity-50"
+                    />
+                  ))}
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-6 pt-4">
+                  <MagneticButton className="w-full sm:w-auto">
+                    <button 
+                      onClick={verifyOtp}
+                      disabled={step === 'verifying' || otp.some(v => !v)}
+                      className="group/btn flex items-center justify-between gap-6 bg-ink text-bg-elevated px-8 py-3.5 rounded-full font-semibold hover:bg-ink/90 transition-all duration-300 shadow-md hover:shadow-xl w-full sm:w-auto relative overflow-hidden disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                      <span className="tracking-widest text-xs uppercase relative z-10">
+                        {step === 'verifying' ? 'Verifying...' : 'Verify Email'}
+                      </span>
+                      <div className="bg-bg-elevated/20 text-bg-elevated w-7 h-7 rounded-full flex items-center justify-center group-hover/btn:translate-x-1 group-hover/btn:bg-accent transition-all duration-300 relative z-10">
+                        {step === 'verifying' ? (
+                           <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                           <CheckCircle2 className="w-3.5 h-3.5" />
+                        )}
+                      </div>
+                    </button>
+                  </MagneticButton>
+                  
+                  <button 
+                    onClick={handleResend}
+                    disabled={resendCooldown > 0 || step === 'verifying'}
+                    className="text-sm font-medium text-ink-soft hover:text-ink transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {resendCooldown > 0 ? `Resend available in ${resendCooldown}s` : 'Resend code'}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 'success' && (
+              <motion.div
+                key="success"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex flex-col items-center justify-center h-full text-center space-y-6 py-8"
+              >
+                <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-2">
+                  <CheckCircle2 className="w-10 h-10" />
+                </div>
+                <h3 className="text-3xl font-serif text-ink tracking-tight">ENQUIRY SENT</h3>
+                <p className="text-ink-soft text-lg max-w-sm font-light">
+                  Thank you. Your enquiry has been successfully sent. We'll get back to you soon.
+                </p>
                 <button 
-                  type="submit" 
-                  className="group/btn flex items-center justify-between gap-6 bg-ink text-bg-elevated px-8 py-3.5 rounded-full font-semibold hover:bg-ink/90 transition-all duration-300 shadow-md hover:shadow-xl w-full sm:w-auto relative overflow-hidden"
+                  onClick={() => {
+                     setStep('form');
+                     setName('');
+                     setEmail('');
+                     setMessage('');
+                     setOtp(['','','','','','']);
+                  }}
+                  className="mt-8 text-sm font-semibold tracking-widest uppercase text-ink hover:text-accent transition-colors"
                 >
-                  <span className="tracking-widest text-xs uppercase relative z-10">Send Inquiry</span>
-                  <div className="bg-bg-elevated/20 text-bg-elevated w-7 h-7 rounded-full flex items-center justify-center group-hover/btn:translate-x-1 group-hover/btn:bg-accent transition-all duration-300 relative z-10">
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </div>
-                  {/* Subtle Light reflection in button */}
-                  <div className="absolute inset-0 bg-white/10 -translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
+                  Send Another
                 </button>
-              </MagneticButton>
-            </div>
-          </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.div>
     </section>

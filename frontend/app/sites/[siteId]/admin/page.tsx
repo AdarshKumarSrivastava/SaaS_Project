@@ -120,13 +120,13 @@ export default function AdminPanelPage() {
   if (loading || !site) {
     return (
       <div className="min-h-screen bg-[#020202] flex items-center justify-center font-sans selection:bg-white/20">
-        <div className="flex flex-col items-center gap-6">
-          <div className="relative flex items-center justify-center">
-            <div className="absolute inset-0 border-t border-white/20 rounded-full animate-[spin_3s_linear_infinite] w-24 h-24" />
-            <div className="absolute inset-0 border-r border-white/40 rounded-full animate-[spin_2s_linear_infinite] w-24 h-24" />
+        <div className="flex flex-col items-center gap-8">
+          <div className="relative flex items-center justify-center w-24 h-24">
+            <div className="absolute inset-0 border-t border-white/20 rounded-full animate-[spin_3s_linear_infinite]" />
+            <div className="absolute inset-0 border-r border-white/40 rounded-full animate-[spin_2s_linear_infinite]" />
             <Loader2 className="w-8 h-8 animate-spin text-white" />
           </div>
-          <span className="text-[10px] uppercase tracking-[0.3em] text-white/50 font-bold">Establishing Secure Link</span>
+          <span className="text-[10px] uppercase tracking-[0.3em] text-white/50 font-bold text-center">Establishing Secure Link</span>
         </div>
       </div>
     );

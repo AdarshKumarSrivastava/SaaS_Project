@@ -17,6 +17,11 @@ import { InteractiveTemplateCard } from '@/components/ui/InteractiveTemplateCard
 import { ProfileDropdown } from '@/components/ProfileDropdown';
 import { useAuth } from '@/context/AuthContext';
 import { CreateProjectModal } from '@/components/modals/CreateProjectModal';
+import { defaultAureliaProducts } from '../templates/aurelia/data';
+import { defaultNoireProducts } from '../templates/noire/data';
+import { defaultMonumentProducts } from '../templates/monument/data';
+import { defaultVantaProducts } from '../templates/vanta/data';
+import { defaultAtelierProducts } from '../templates/atelier/data';
 
 const categories = [
   { id: 'portfolio', label: 'Portfolio', icon: LayoutTemplate, accent: 'bg-blue-50 text-blue-600 border-blue-100', description: 'Personal, architectural & creative showcases.' },
@@ -24,7 +29,10 @@ const categories = [
   { id: 'salon', label: 'Salon & Beauty', icon: Scissors, accent: 'bg-purple-50 text-purple-600 border-purple-100', description: 'Luxury booking & service scheduling.' },
   { id: 'restaurant', label: 'Restaurant', icon: Utensils, accent: 'bg-orange-50 text-orange-600 border-orange-100', description: 'Dining menus & reservation experiences.' },
   { id: 'tech', label: 'Tech & AI', icon: Cpu, accent: 'bg-cyan-50 text-cyan-600 border-cyan-100', description: 'SaaS platforms & developer tools.' },
-  { id: 'studio', label: 'Digital Studio', icon: Layers, accent: 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100', description: 'Agencies & production portfolios.' }
+  { id: 'studio', label: 'Digital Studio', icon: Layers, accent: 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100', description: 'Agencies & production portfolios.' },
+  { id: 'fashion', label: 'Fashion', icon: ShoppingBag, accent: 'bg-rose-50 text-rose-600 border-rose-100', description: 'Luxury fashion & editorial commerce.' },
+  { id: 'skincare', label: 'Skincare', icon: Sparkles, accent: 'bg-pink-50 text-pink-600 border-pink-100', description: 'Premium beauty and skincare brands.' },
+  { id: 'architecture', label: 'Architecture', icon: LayoutGrid, accent: 'bg-slate-50 text-slate-600 border-slate-100', description: 'Architectural studios and editorial.' }
 ];
 
 const templatesList = [
@@ -35,7 +43,12 @@ const templatesList = [
   { id: "growth-nexus-pro", name: "Nexus Pro", category: "ecommerce", description: "Full-featured tech & gadgets commerce platform.", img: "/images/templates/nexus_pro.jpg", href: "/templates/nexus-pro" },
   { id: "growth-velocity", name: "Velocity", category: "portfolio", description: "Performance-first cyberpunk developer portfolio.", img: "/images/templates/velocity.jpg", href: "/templates/velocity" },
   { id: "growth-quantum", name: "Quantum", category: "ecommerce", description: "Advanced kinetic commerce engine with dynamic product cards.", img: "/images/templates/quantum.jpg", href: "/templates/quantum" },
-  { id: "growth-horizon", name: "Horizon", category: "portfolio", description: "Expansive digital agency & studio portfolio.", img: "/images/templates/horizon.jpg", href: "/templates/horizon" }
+  { id: "growth-horizon", name: "Horizon", category: "portfolio", description: "Expansive digital agency & studio portfolio.", img: "/images/templates/horizon.jpg", href: "/templates/horizon" },
+  { id: "premium-aurelia", name: "Aurelia", category: "fashion", description: "High-fashion editorial website inspired by luxury fashion houses.", img: "/images/templates/aurelia.jpg", href: "/templates/aurelia" },
+  { id: "premium-noire", name: "Noiré", category: "skincare", description: "Premium luxury skincare and beauty brand experience.", img: "/images/templates/noire.jpg", href: "/templates/noire" },
+  { id: "premium-monument", name: "Monument", category: "architecture", description: "World-class architectural studio website with rigorous grids.", img: "/images/templates/monument.jpg", href: "/templates/monument" },
+  { id: "premium-vanta", name: "Vanta", category: "tech", description: "Sophisticated technology product experience.", img: "/images/templates/vanta.jpg", href: "/templates/vanta" },
+  { id: "premium-atelier", name: "Atelier", category: "studio", description: "Experimental creative agency and digital studio portfolio.", img: "/images/templates/atelier.jpg", href: "/templates/atelier" }
 ];
 
 export default function DashboardPage() {
@@ -172,7 +185,23 @@ export default function DashboardPage() {
          }
       };
 
-      await apiClient.patch(`http://localhost:3001/api/sites/${data.id}/schema`, { schema: fallbackSchema });
+      const templateProductsMap: Record<string, any[]> = {
+         'aurelia': defaultAureliaProducts,
+         'noire': defaultNoireProducts,
+         'monument': defaultMonumentProducts,
+         'vanta': defaultVantaProducts,
+         'atelier': defaultAtelierProducts,
+      };
+      const slug = template.id.replace(/^(starter|growth)-/, '');
+      const productsToSeed = templateProductsMap[slug] || [];
+
+      // Add a small delay to ensure DB triggers are ready for the schema patch
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      await apiClient.patch(`http://localhost:3001/api/sites/${data.id}/schema`, { 
+        schema: fallbackSchema,
+        products: productsToSeed
+      });
 
       router.push(`/sites/${data.id}/builder`);
     } catch (err) {

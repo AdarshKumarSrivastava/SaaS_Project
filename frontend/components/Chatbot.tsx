@@ -53,6 +53,7 @@ export function Chatbot({ siteId }: { siteId?: string }) {
         body: JSON.stringify({ 
           query: userMessage, 
           siteId: siteId || 'global',
+          contextData: { pathname: window.location.pathname },
           conversationId: conversationIdRef.current,
           sessionId: 'client-' + Math.random().toString(36).substring(7)
         })
@@ -110,7 +111,7 @@ export function Chatbot({ siteId }: { siteId?: string }) {
       if (err.name === 'AbortError') {
         console.log('Request aborted');
       } else {
-        setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I am currently offline or encountered an error.' }]);
+        setMessages(prev => [...prev, { role: 'assistant', content: 'Something went wrong while connecting to the assistant. Please try again.' }]);
       }
       setLoading(false);
     } finally {
@@ -137,37 +138,35 @@ export function Chatbot({ siteId }: { siteId?: string }) {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 30, scale: 0.9, transformOrigin: 'bottom right' }}
+            initial={{ opacity: 0, y: 30, scale: 0.95, transformOrigin: 'bottom right' }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 30, scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 350, damping: 30 }}
-            className="fixed bottom-8 right-8 z-50 w-[90vw] sm:w-[400px] bg-white/70 backdrop-blur-3xl border border-white/60 rounded-3xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden"
-            style={{ height: '550px', maxHeight: 'calc(100vh - 64px)' }}
+            exit={{ opacity: 0, y: 30, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            className="fixed bottom-[calc(env(safe-area-inset-bottom,2rem)+5rem)] right-4 sm:right-8 z-50 w-[calc(100vw-2rem)] sm:w-[380px] bg-[#FDFCF8] border border-[#111111]/10 rounded-2xl shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden"
+            style={{ height: '580px', maxHeight: 'calc(100dvh - 140px)' }}
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-5 flex items-center justify-between shrink-0 shadow-md">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="w-10 h-10 bg-white/10 rounded-2xl flex items-center justify-center shadow-[inset_0_2px_4px_rgba(255,255,255,0.1)]">
-                    <MessageSquare className="w-5 h-5 text-indigo-200" />
-                  </div>
-                  <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-400 border-2 border-slate-900 rounded-full"></span>
+            <div className="bg-[#111111] text-[#FDFCF8] px-5 py-4 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="relative flex items-center justify-center w-8 h-8 bg-white/10 rounded-full">
+                  <MessageSquare className="w-4 h-4 text-white" />
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#E55225] border-2 border-[#111111] rounded-full"></span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-base tracking-tight text-white/95">Concierge</h3>
-                  <p className="text-[11px] text-white/60 font-medium tracking-wider uppercase mt-0.5">Powered by AI</p>
+                  <h3 className="font-semibold text-sm tracking-tight text-white">Concierge</h3>
+                  <p className="text-[9px] text-white/50 font-bold tracking-[0.1em] uppercase mt-0.5">Powered by AI</p>
                 </div>
               </div>
               <button 
                 onClick={() => setIsOpen(false)}
-                className="p-2 hover:bg-white/10 rounded-xl transition-all duration-300 hover:rotate-90 group"
+                className="p-1.5 hover:bg-white/10 rounded-full transition-colors group"
               >
-                <X className="w-5 h-5 text-white/80 group-hover:text-white" />
+                <X className="w-4 h-4 text-white/70 group-hover:text-white" />
               </button>
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-5 bg-slate-50/50">
+            <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-[#FDFCF8] scrollbar-thin scrollbar-thumb-[#111111]/10">
               <AnimatePresence>
                 {messages.map((msg, i) => (
                   <motion.div 
@@ -177,10 +176,10 @@ export function Chatbot({ siteId }: { siteId?: string }) {
                     className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div 
-                      className={`max-w-[85%] rounded-[20px] px-5 py-3 text-sm leading-relaxed shadow-sm ${
+                      className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-[13px] leading-relaxed shadow-sm ${
                         msg.role === 'user' 
-                          ? 'bg-slate-900 text-white rounded-br-[4px]' 
-                          : 'bg-white text-slate-800 border border-slate-100 rounded-bl-[4px] shadow-[0_2px_10px_rgba(0,0,0,0.02)]'
+                          ? 'bg-[#111111] text-[#FDFCF8] rounded-br-sm' 
+                          : 'bg-white text-[#111111] border border-[#111111]/5 rounded-bl-sm'
                       }`}
                     >
                       {msg.content}
@@ -193,10 +192,10 @@ export function Chatbot({ siteId }: { siteId?: string }) {
                     animate={{ opacity: 1, y: 0 }}
                     className="flex justify-start"
                   >
-                    <div className="bg-white text-slate-800 border border-slate-100 rounded-[20px] rounded-bl-[4px] px-5 py-4 flex gap-1.5 items-center shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
-                      <motion.span animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} className="w-2 h-2 bg-slate-300 rounded-full"></motion.span>
-                      <motion.span animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.15 }} className="w-2 h-2 bg-slate-400 rounded-full"></motion.span>
-                      <motion.span animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.3 }} className="w-2 h-2 bg-slate-500 rounded-full"></motion.span>
+                    <div className="bg-white text-[#111111] border border-[#111111]/5 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1 items-center shadow-sm h-10">
+                      <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.4, delay: 0 }} className="w-1.5 h-1.5 bg-[#111111]/40 rounded-full"></motion.span>
+                      <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.4, delay: 0.2 }} className="w-1.5 h-1.5 bg-[#111111]/40 rounded-full"></motion.span>
+                      <motion.span animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1.4, delay: 0.4 }} className="w-1.5 h-1.5 bg-[#111111]/40 rounded-full"></motion.span>
                     </div>
                   </motion.div>
                 )}
@@ -205,21 +204,27 @@ export function Chatbot({ siteId }: { siteId?: string }) {
             </div>
 
             {/* Input Area */}
-            <form onSubmit={handleSend} className="p-4 border-t border-white/60 bg-white/70 backdrop-blur-xl shrink-0">
-              <div className="flex items-center gap-3 relative">
+            <form onSubmit={handleSend} className="p-3 border-t border-[#111111]/10 bg-white shrink-0">
+              <div className="flex items-center gap-2 relative">
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Type a message..."
-                  className="flex-1 bg-white/80 border border-slate-200 rounded-2xl pl-5 pr-12 py-3.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/5 focus:border-slate-300 transition-all shadow-[inset_0_2px_5px_rgba(0,0,0,0.01)]"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSend(e);
+                    }
+                  }}
+                  placeholder="Type your message..."
+                  className="flex-1 bg-transparent border-none rounded-none pl-3 pr-10 py-2.5 text-[13px] text-[#111111] placeholder:text-[#111111]/40 focus:outline-none focus:ring-0 transition-all"
                 />
                 <button
                   type="submit"
                   disabled={!input.trim() || loading}
-                  className="absolute right-2 p-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-slate-900 transition-all shadow-md group"
+                  className="absolute right-1 p-1.5 bg-[#111111] text-[#FDFCF8] rounded-md hover:bg-[#E55225] disabled:opacity-30 disabled:hover:bg-[#111111] transition-colors"
                 >
-                  <Send className="w-4 h-4 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  <Send className="w-3.5 h-3.5" />
                 </button>
               </div>
             </form>

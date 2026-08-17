@@ -1,17 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, Zap, Palette, Code2, User, ArrowRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { TransitionLink } from "@/components/TransitionLink";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ProfileDropdown } from "@/components/ProfileDropdown";
-
-import { InteractiveTemplateCard } from "@/components/ui/InteractiveTemplateCard";
 import { Search } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
+import { TransitionLink } from "@/components/TransitionLink";
 
 const templates = [
   { id: "starter-minimalist", name: "Minimalist", category: "Fashion & Commerce", description: "Clean, focused e-commerce storefront with high conversion primitives.", img: "/images/templates/minimalist.jpg", href: "/templates/minimalist" },
@@ -21,17 +16,24 @@ const templates = [
   { id: "growth-nexus-pro", name: "Nexus Pro", category: "Tech & Gadgets", description: "Full-featured tech & gadgets commerce platform.", img: "/images/templates/nexus_pro.jpg", href: "/templates/nexus-pro" },
   { id: "growth-velocity", name: "Velocity", category: "Dark Cyberpunk", description: "Performance-first cyberpunk developer portfolio.", img: "/images/templates/velocity.jpg", href: "/templates/velocity" },
   { id: "growth-quantum", name: "Quantum", category: "Kinetic Commerce", description: "Advanced kinetic commerce engine with dynamic product cards.", img: "/images/templates/quantum.jpg", href: "/templates/quantum" },
-  { id: "growth-horizon", name: "Horizon", category: "Digital Studio", description: "Expansive digital agency & studio portfolio.", img: "/images/templates/horizon.jpg", href: "/templates/horizon" }
+  { id: "growth-horizon", name: "Horizon", category: "Digital Studio", description: "Expansive digital agency & studio portfolio.", img: "/images/templates/horizon.jpg", href: "/templates/horizon" },
+  { id: "premium-aurelia", name: "Aurelia", category: "Fashion", description: "High-fashion editorial website inspired by luxury fashion houses.", img: "/images/templates/aurelia.jpg", href: "/templates/aurelia" },
+  { id: "premium-noire", name: "Noiré", category: "Skincare", description: "Premium luxury skincare and beauty brand experience.", img: "/images/templates/noire.jpg", href: "/templates/noire" },
+  { id: "premium-monument", name: "Monument", category: "Architecture", description: "World-class architectural studio website with rigorous grids.", img: "/images/templates/monument.jpg", href: "/templates/monument" },
+  { id: "premium-vanta", name: "Vanta", category: "Tech", description: "Sophisticated technology product experience.", img: "/images/templates/vanta.jpg", href: "/templates/vanta" },
+  { id: "premium-atelier", name: "Atelier", category: "Digital Studio", description: "Experimental creative agency and digital studio portfolio.", img: "/images/templates/atelier.jpg", href: "/templates/atelier" }
 ];
 
-export default function TemplatesPage() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const { isLoggedIn, user, logout } = useAuth();
-  const router = useRouter();
+const categories = ['all', 'fashion', 'skincare', 'architecture', 'tech', 'studio'];
 
+export default function TemplatesPage() {
+  const router = useRouter();
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const { scrollYProgress } = useScroll();
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "40%"]);
+  const textY = useTransform(scrollYProgress, [0, 1], ["0%", "-20%"]);
 
   const filteredTemplates = templates.filter((tpl) => {
     const matchesCat = activeCategory === "all" || tpl.category.toLowerCase().includes(activeCategory.toLowerCase());
@@ -41,163 +43,224 @@ export default function TemplatesPage() {
   });
 
   return (
-    <main className="min-h-screen bg-bg-base text-ink font-sans relative w-full selection:bg-accent/20 selection:text-ink">
-
-      {/* Navigation */}
+    <main className="min-h-screen bg-[#FDFCF8] text-[#111111] font-sans selection:bg-[#E55225]/20 selection:text-[#111111]">
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative min-h-[60vh] pt-36 pb-16 px-8 max-w-[1600px] mx-auto flex items-end bg-bg-base overflow-hidden">
-        <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-ink/[0.04] to-transparent blur-3xl pointer-events-none" />
-        <div className="absolute top-[20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-accent/[0.08] to-transparent blur-3xl pointer-events-none" />
+      <section className="relative h-screen w-full overflow-hidden bg-[#FDFCF8]">
+        {/* Parallax Background Image */}
+        <motion.div 
+          style={{ y: bgY }}
+          className="absolute inset-0 w-full h-[120%] -top-[10%] origin-top"
+        >
+          <img 
+            src="/images/templates-hero.jpg" 
+            alt="Architectural Interior" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#FDFCF8]/40 via-transparent to-[#FDFCF8] z-10" />
+        </motion.div>
 
-        <div className="relative z-20 w-full flex flex-col md:flex-row justify-between items-end gap-12">
-          <div className="flex-1">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-line/50 bg-bg-elevated/50 backdrop-blur-md mb-8"
-            >
-              <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-              <span className="text-xs uppercase tracking-widest font-bold text-ink">The Architecture</span>
-            </motion.div>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-              className="text-6xl md:text-[90px] lg:text-[110px] leading-[0.9] tracking-tighter text-ink uppercase max-w-4xl font-medium"
-            >
-              Architect <br /> Perfection.
-            </motion.h1>
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="flex-shrink-0 max-w-sm pb-4"
+        {/* Hero Content */}
+        <div className="relative z-20 h-full w-full max-w-[1600px] mx-auto px-8 flex items-end pb-32">
+          <motion.div 
+            style={{ y: textY }}
+            className="flex flex-col gap-12 w-full"
           >
-            <p className="text-ink-soft text-lg font-medium leading-relaxed">
-              Stop settling for generic layouts. Deploy award-winning, WebGL-ready storefront templates that command absolute authority.
-            </p>
+            <div className="flex justify-between items-end w-full gap-8">
+              <div className="flex flex-col gap-6">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                  className="flex items-center gap-4"
+                >
+                  <div className="h-[1px] w-12 bg-[#111111]/30" />
+                  <span className="text-[10px] uppercase tracking-[0.3em] font-semibold text-[#111111]/70">The Architecture</span>
+                </motion.div>
+                
+                <motion.h1
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+                  className="text-7xl md:text-[120px] lg:text-[150px] leading-[0.85] tracking-tighter uppercase font-medium"
+                >
+                  Architect <br /> Perfection.
+                </motion.h1>
+              </div>
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1, delay: 0.6 }}
+                className="hidden md:flex max-w-[320px] pb-6"
+              >
+                <p className="text-sm font-medium text-[#111111]/60 leading-relaxed">
+                  Stop settling for generic layouts. Deploy award-winning, WebGL-ready storefront templates that command absolute authority.
+                </p>
+              </motion.div>
+            </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Grid Showcase Section */}
-      <div className="w-full bg-bg-base relative z-20 pb-32">
-        <section className="px-6 md:px-12 max-w-[1500px] mx-auto relative z-10 pt-12">
-          {/* Header Controls & Filter Bar */}
-          <div className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10 border-b border-line/50 pb-8">
+      {/* The Vault Section */}
+      <section className="relative z-30 bg-[#FDFCF8] px-8 pt-32 pb-48">
+        <div className="max-w-[1600px] mx-auto">
+          
+          {/* Section Header & Filters */}
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-12 mb-24">
             <div>
-              <h2 className="text-4xl md:text-5xl tracking-tighter text-ink uppercase font-medium">The Vault</h2>
-              <p className="text-ink-soft text-sm font-medium mt-1">Click directly on any template image to launch its live preview website.</p>
+              <h2 className="text-5xl md:text-7xl tracking-tighter uppercase font-medium mb-4">The Vault</h2>
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-[1px] bg-[#E55225]" />
+                <span className="text-xs uppercase tracking-widest text-[#111111]/50 font-bold">Curated Collection</span>
+              </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
-              <div className="relative">
-                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-soft" />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-12 w-full lg:w-auto">
+              {/* Refined Search */}
+              <div className="relative group">
+                <Search className="w-4 h-4 absolute left-0 top-1/2 -translate-y-1/2 text-[#111111]/30 group-focus-within:text-[#E55225] transition-colors" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search templates..."
-                  className="w-full sm:w-64 bg-bg-elevated border border-line/50 rounded-full pl-9 pr-4 py-2.5 text-xs text-ink focus:outline-none focus:border-ink transition-colors"
+                  className="w-full sm:w-64 bg-transparent border-b border-[#111111]/10 rounded-none pl-8 pr-4 py-2 text-sm text-[#111111] focus:outline-none focus:border-[#E55225] placeholder:text-[#111111]/30 transition-colors"
                 />
               </div>
 
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-                {['all', 'fashion', 'skincare', 'architecture', 'tech'].map((cat) => (
+              {/* Minimal Filters */}
+              <div className="flex items-center gap-8 overflow-x-auto pb-2 sm:pb-0 scrollbar-none">
+                {categories.map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setActiveCategory(cat)}
-                    className={`px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 whitespace-nowrap ${
-                      activeCategory === cat
-                        ? 'bg-ink text-bg-elevated shadow-sm'
-                        : 'bg-bg-elevated/60 text-ink-soft hover:text-ink hover:bg-bg-elevated border border-line/50'
-                    }`}
+                    className="relative pb-1 group"
                   >
-                    {cat}
+                    <span className={`text-[10px] font-bold uppercase tracking-[0.2em] transition-colors duration-500 ${
+                      activeCategory === cat ? 'text-[#111111]' : 'text-[#111111]/40 group-hover:text-[#111111]/70'
+                    }`}>
+                      {cat}
+                    </span>
+                    {activeCategory === cat && (
+                      <motion.div 
+                        layoutId="activeFilter"
+                        className="absolute bottom-0 left-0 right-0 h-[1px] bg-[#E55225]"
+                        initial={false}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      />
+                    )}
                   </button>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Interactive Templates Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 min-h-[480px]">
-            <AnimatePresence mode="sync">
-              {filteredTemplates.map((tpl) => (
-                <motion.div
-                  key={tpl.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <InteractiveTemplateCard template={tpl} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+          {/* Asymmetrical Gallery Layout */}
+          {filteredTemplates.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-16 items-start">
+              <AnimatePresence mode="popLayout">
+                {filteredTemplates.map((tpl, idx) => {
+                  const isFeatured = idx === 0;
+                  return (
+                  <motion.div
+                    key={tpl.id}
+                    layout
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                    className={`relative group cursor-pointer ${isFeatured ? 'md:col-span-2' : 'col-span-1'}`}
+                    onClick={() => router.push(tpl.href)}
+                  >
+                    <div className="relative overflow-hidden bg-[#EAE8E4]">
+                      <motion.img 
+                        src={tpl.img} 
+                        alt={tpl.name}
+                        className="w-full h-auto object-cover transition-transform duration-1000 ease-[0.16,1,0.3,1] group-hover:scale-105"
+                      />
+                      
+                      {/* Interaction Overlay */}
+                      <div className="absolute inset-0 bg-[#111111]/0 group-hover:bg-[#111111]/10 transition-colors duration-500" />
+                      
+                      {/* Floating Metadata */}
+                      <div className="absolute top-4 left-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 transform -translate-y-2 group-hover:translate-y-0">
+                        <span className="px-3 py-1 bg-[#FDFCF8] text-[#111111] text-[9px] uppercase tracking-widest font-bold">
+                          {tpl.category}
+                        </span>
+                      </div>
 
-          {filteredTemplates.length === 0 && (
-            <div className="text-center py-20 bg-bg-elevated/50 rounded-3xl border border-line/50">
-              <p className="text-ink-soft text-lg font-medium">No templates match your search query.</p>
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 scale-95 group-hover:scale-100">
+                        <div className="px-6 py-3 bg-[#111111]/90 backdrop-blur-md text-[#FDFCF8] text-xs uppercase tracking-[0.2em] font-semibold border border-white/10 hover:bg-[#E55225] hover:border-[#E55225] hover:text-white transition-colors duration-300">
+                          Open Preview
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex justify-between items-start gap-4">
+                      <div>
+                        <h3 className="text-lg font-medium tracking-tight text-[#111111]">{tpl.name}</h3>
+                        <p className="text-xs text-[#111111]/50 mt-1 max-w-xs leading-relaxed">{tpl.description}</p>
+                      </div>
+                      <span className="text-[10px] font-mono text-[#111111]/30 pt-1">0{idx + 1}</span>
+                    </div>
+                  </motion.div>
+                );
+              })}
+              </AnimatePresence>
+            </div>
+          ) : (
+            <div className="h-[40vh] flex flex-col items-center justify-center border border-[#111111]/10">
+              <p className="text-sm font-medium text-[#111111]/50 mb-4">No curated pieces match this criteria.</p>
               <button 
                 onClick={() => { setActiveCategory('all'); setSearchQuery(''); }}
-                className="mt-4 text-sm font-bold text-accent hover:underline uppercase tracking-wider"
+                className="text-[10px] font-bold text-[#E55225] uppercase tracking-widest hover:text-[#111111] transition-colors"
               >
-                Reset Filters
+                Clear Filters
               </button>
             </div>
           )}
-        </section>
-      </div>
+        </div>
+      </section>
 
       {/* Footer */}
-      <footer className="bg-bg-base border-t border-line/50 pt-24 pb-12 px-8">
-        <div className="max-w-[1400px] mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
+      <footer className="bg-[#111111] text-[#FDFCF8] pt-32 pb-16 px-8">
+        <div className="max-w-[1600px] mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-16 mb-32">
             <div className="col-span-1 md:col-span-2">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-8 h-8 rounded-full bg-ink flex items-center justify-center">
-                  <span className="text-bg-elevated font-bold text-sm">B</span>
-                </div>
-                <span className="font-semibold tracking-tight text-xl text-ink">BuildSpace</span>
-              </div>
-              <p className="text-ink-soft font-medium max-w-sm leading-relaxed">
-                Elevating ecommerce for the modern brand. Design, scale, and convert with confidence.
+              <h2 className="text-4xl tracking-tighter uppercase font-medium mb-6 text-white">BuildSpace</h2>
+              <p className="text-white/50 font-medium max-w-sm leading-relaxed text-sm">
+                Elevating the digital experience. Design, scale, and convert with absolute authority.
               </p>
             </div>
 
             <div>
-              <h4 className="font-bold uppercase tracking-widest text-xs text-ink mb-6">Product</h4>
-              <ul className="space-y-4 text-sm font-medium text-ink-soft">
-                <li><TransitionLink href="/#features" className="hover:text-ink transition-colors">Features</TransitionLink></li>
-                <li><TransitionLink href="/#pricing" className="hover:text-ink transition-colors">Pricing</TransitionLink></li>
-                <li><TransitionLink href="/templates" className="hover:text-ink transition-colors">Templates</TransitionLink></li>
+              <h4 className="font-bold uppercase tracking-[0.2em] text-[10px] text-white/40 mb-8">Navigation</h4>
+              <ul className="space-y-4 text-sm font-medium">
+                <li><TransitionLink href="/#features" className="text-white/70 hover:text-white transition-colors">Features</TransitionLink></li>
+                <li><TransitionLink href="/pricing" className="text-white/70 hover:text-white transition-colors">Pricing</TransitionLink></li>
+                <li><TransitionLink href="/templates" className="text-white/70 hover:text-white transition-colors">Templates</TransitionLink></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-bold uppercase tracking-widest text-xs text-ink mb-6">Company</h4>
-              <ul className="space-y-4 text-sm font-medium text-ink-soft">
-                <li><Link href="/#about" className="hover:text-ink transition-colors">About Us</Link></li>
-                <li><Link href="/#contact" className="hover:text-ink transition-colors">Contact</Link></li>
-                <li><Link href="/privacy" className="hover:text-ink transition-colors">Privacy Policy</Link></li>
+              <h4 className="font-bold uppercase tracking-[0.2em] text-[10px] text-white/40 mb-8">Legal</h4>
+              <ul className="space-y-4 text-sm font-medium">
+                <li><Link href="/privacy" className="text-white/70 hover:text-white transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="text-white/70 hover:text-white transition-colors">Terms of Service</Link></li>
+                <li><Link href="/contact" className="text-white/70 hover:text-white transition-colors">Contact</Link></li>
               </ul>
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-line/30 text-xs font-medium text-ink-soft uppercase tracking-wider">
+          <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-white/10 text-[10px] font-medium text-white/40 uppercase tracking-widest">
             <p>&copy; 2026 BuildSpace Inc. All rights reserved.</p>
-            <div className="flex gap-6 mt-4 md:mt-0">
-              <Link href="/terms" className="hover:text-ink transition-colors">Terms</Link>
-              <Link href="/privacy" className="hover:text-ink transition-colors">Privacy</Link>
-              <Link href="#" className="hover:text-ink transition-colors">Cookies</Link>
+            <div className="flex gap-8 mt-4 md:mt-0">
+              <Link href="#" className="hover:text-white transition-colors">Twitter</Link>
+              <Link href="#" className="hover:text-white transition-colors">Instagram</Link>
+              <Link href="#" className="hover:text-white transition-colors">Awwwards</Link>
             </div>
           </div>
         </div>

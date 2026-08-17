@@ -145,6 +145,7 @@ export function CreateProjectModal({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
             className="fixed inset-0 bg-ink/50 backdrop-blur-md z-40 touch-none"
+            data-lenis-prevent
             onClick={() => {
               if (!isCreating) onClose();
             }}
@@ -159,6 +160,7 @@ export function CreateProjectModal({
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
               className="pointer-events-auto relative w-full max-w-xl max-h-[85vh] bg-bg-elevated border border-line rounded-[2.5rem] shadow-[0_32px_90px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col focus:outline-none"
+              data-lenis-prevent
             >
               {/* Modal Fixed Header */}
               <div className="px-6 py-5 sm:px-8 sm:py-6 border-b border-line/60 flex items-center justify-between shrink-0 bg-bg-elevated/95 backdrop-blur-md">
@@ -188,7 +190,10 @@ export function CreateProjectModal({
               </div>
 
               {/* Modal Internal Scrollable Form Area */}
-              <div className="px-6 py-6 sm:px-8 sm:py-8 overflow-y-auto flex-1 min-h-0 space-y-6 scrollbar-thin scrollbar-thumb-line overscroll-contain touch-pan-y">
+              <div 
+                className="px-6 py-6 sm:px-8 sm:py-8 overflow-y-auto flex-1 min-h-0 space-y-6 scrollbar-thin scrollbar-thumb-line overscroll-contain touch-pan-y"
+                data-lenis-prevent
+              >
                 <form id="create-project-form" onSubmit={handleSubmit} className="space-y-6">
                   {/* Error Banner */}
                   {errorMsg && (
