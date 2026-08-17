@@ -8,6 +8,7 @@ import sitesRoutes from './sites/sites.routes';
 import publicRoutes from './public/public.routes';
 import hireRoutes from './hire/hire.routes';
 import aiRoutes from './ai/ai.routes';
+import enquiryRoutes from './enquiry/enquiry.routes';
 import { prisma } from './lib/prisma';
 import { sanitizeInput } from './middleware/sanitizeInput';
 import { errorHandler } from './middleware/errorHandler';
@@ -47,6 +48,7 @@ app.use('/api/sites', sitesRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api/hire', hireRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/enquiry', enquiryRoutes);
 
 // Health check route
 app.get('/health', async (req, res) => {

@@ -38,6 +38,7 @@ model Site {
   documents    SiteDocument[]
   conversations Conversation[]
   products     Product[]
+  enquiries    Enquiry[]
 }
 
 model SiteRole {
@@ -80,13 +81,13 @@ model SiteDocument {
 
 model Conversation {
   id        String    @id @default(uuid())
-  siteId    String
+  siteId    String?
   userId    String?   // Optional: if logged in user, else anonymous
   sessionId String?   // For anonymous visitors
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   messages  Message[]
-  site      Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  site      Site?     @relation(fields: [siteId], references: [id], onDelete: Cascade)
 }
 
 model Message {
@@ -108,4 +109,31 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+}
+
+model Enquiry {
+  id          String   @id @default(uuid())
+  siteId      String?
+  name        String
+  email       String
+  message     String
+  status      String   @default("NEW") // NEW, VERIFIED, READ, ARCHIVED
+  verifiedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  site        Site?    @relation(fields: [siteId], references: [id], onDelete: Cascade)
+}
+
+model EnquiryOTP {
+  id          String   @id @default(uuid())
+  email       String
+  otp         String
+  siteId      String?
+  name        String
+  message     String
+  expiresAt   DateTime
+  attempts    Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@unique([email, siteId])
 }

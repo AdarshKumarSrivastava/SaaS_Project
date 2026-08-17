@@ -177,6 +177,7 @@ export const resendOtp = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
+  console.log('[LOGIN REQUEST] body:', req.body, 'headers:', req.headers);
   try {
     const parsed = loginSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: 'Invalid credentials format' });
@@ -207,8 +208,9 @@ export const login = async (req: Request, res: Response) => {
         name: user.name
       } 
     });
-  } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+  } catch (error: any) {
+    console.error('[AUTH LOGIN ERROR]', error);
+    res.status(500).json({ error: error.message || 'Internal server error' });
   }
 };
 

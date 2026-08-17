@@ -3,32 +3,35 @@ import { prisma } from '../lib/prisma';
 import { generateEmbedding, generateCompletion } from './openai.service';
 
 export const chat = async (req: Request, res: Response) => {
-  const { query, siteId, conversationId, sessionId } = req.body;
+  const { query, siteId, conversationId, sessionId, contextData } = req.body;
   if (!query || !siteId) {
     return res.status(400).json({ error: 'Query and siteId are required' });
   }
 
   try {
-    const embedding = await generateEmbedding(query);
-    const vectorStr = `[${embedding.join(',')}]`;
+    let context: string[] = [];
+    
+    if (siteId !== 'global') {
+      const embedding = await generateEmbedding(query);
+      const vectorStr = `[${embedding.join(',')}]`;
 
-    // Perform vector similarity search
-    const documents: any[] = await prisma.$queryRaw`
-      SELECT content, 1 - (embedding <=> ${vectorStr}::vector) AS similarity
-      FROM "SiteDocument"
-      WHERE "siteId" = ${siteId}
-      ORDER BY similarity DESC
-      LIMIT 5
-    `;
-
-    const context = documents.map(d => d.content);
+      // Perform vector similarity search
+      const documents: any[] = await prisma.$queryRaw`
+        SELECT content, 1 - (embedding <=> ${vectorStr}::vector) AS similarity
+        FROM "SiteDocument"
+        WHERE "siteId" = ${siteId}
+        ORDER BY similarity DESC
+        LIMIT 5
+      `;
+      context = documents.map(d => d.content);
+    }
     
     // Conversation management
     let currentConversationId = conversationId;
     if (!currentConversationId) {
        const newConv = await prisma.conversation.create({
          data: {
-           siteId,
+           siteId: siteId === 'global' ? null : siteId,
            sessionId: sessionId || 'anonymous',
            userId: (req as any).user?.userId || null
          }
@@ -54,7 +57,8 @@ export const chat = async (req: Request, res: Response) => {
     // Stream initial data with conversation ID
     res.write(`data: ${JSON.stringify({ type: 'init', conversationId: currentConversationId })}\n\n`);
 
-    const stream: any = await generateCompletion(query, context, true);
+    const isGlobal = siteId === 'global';
+    const stream: any = await generateCompletion(query, context, true, isGlobal, contextData?.pathname);
     
     let fullContent = '';
 

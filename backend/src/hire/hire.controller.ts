@@ -63,7 +63,7 @@ export const submitOffer = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'No pending data found for this email' });
     }
 
-    const receivingEmail = process.env.RECEIVING_EMAIL || 'adarshsrivastava1524@gmail.com';
+    const receivingEmail = process.env.RECEIVING_EMAIL || 'Adarsh.25SCSE1280059@galgotiasuniversity.ac.in';
 
     // Send the final offer email to Adarsh
     if (process.env.SMTP_USER && process.env.SMTP_PASS) {

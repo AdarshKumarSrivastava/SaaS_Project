@@ -104,13 +104,70 @@ export const inviteRole = async (req: Request, res: Response) => {
 export const updateSchema = async (req: Request, res: Response) => {
   try {
     const siteId = req.params.siteId as string;
-    const { schema } = req.body;
+    const { schema, products } = req.body;
+
+    const updateData: any = {};
+    if (schema !== undefined) updateData.schema = schema;
+
     const site = await prisma.site.update({
       where: { id: siteId },
-      data: { schema }
+      data: updateData
     });
+
+    // Sync products if provided
+    if (Array.isArray(products)) {
+      const incomingIds = products.map(p => p.id).filter(id => id);
+      
+      // Delete products not in incoming list
+      await prisma.product.deleteMany({
+        where: {
+          siteId,
+          id: { notIn: incomingIds }
+        }
+      });
+
+      for (const prod of products) {
+        if (prod.id) {
+          const existing = await prisma.product.findUnique({ where: { id: prod.id } });
+          if (existing && existing.siteId === siteId) {
+             await prisma.product.update({
+               where: { id: prod.id },
+               data: {
+                 name: prod.name,
+                 price: parseFloat(prod.price) || 0,
+                 image: prod.image || prod.images?.[0] || '',
+                 category: prod.category || ''
+               }
+             });
+          } else if (!existing) {
+             await prisma.product.create({
+               data: {
+                 id: prod.id,
+                 siteId: siteId,
+                 name: prod.name,
+                 price: parseFloat(prod.price) || 0,
+                 image: prod.image || prod.images?.[0] || '',
+                 category: prod.category || ''
+               }
+             });
+          }
+        } else {
+             await prisma.product.create({
+               data: {
+                 siteId: siteId,
+                 name: prod.name,
+                 price: parseFloat(prod.price) || 0,
+                 image: prod.image || prod.images?.[0] || '',
+                 category: prod.category || ''
+               }
+             });
+        }
+      }
+    }
+
     res.json(site);
   } catch (error) {
+    console.error('Update schema error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
