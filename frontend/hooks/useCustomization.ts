@@ -7,8 +7,8 @@ export const useCustomization = () => {
   
   // If we have a context, we are in the live preview environment, not the builder iframe
   // Calculate initial flattened formData from context schema
-  const initialFormData = (() => {
-    let flattened = {};
+  const initialFormData: Record<string, any> = (() => {
+    let flattened: Record<string, any> = {};
     if (context?.siteData?.global) {
       flattened = { ...flattened, ...context.siteData.global };
     }
@@ -40,7 +40,7 @@ export const useCustomization = () => {
       if (event.data?.type === 'UPDATE_SCHEMA') {
          // Flatten the multi-page schema into a simple formData object for the template to consume
          const payload = event.data.payload;
-         let flattenedFormData = {};
+         let flattenedFormData: Record<string, any> = {};
          
          if (payload?.global) {
             flattenedFormData = { ...flattenedFormData, ...payload.global };

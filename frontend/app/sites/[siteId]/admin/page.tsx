@@ -6,7 +6,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { 
   ArrowLeft, Globe, Settings, LayoutTemplate, ShoppingBag, 
   Plus, Edit2, Trash2, Loader2, Save, Image as ImageIcon,
-  ExternalLink, Rocket, Activity, Box, BarChart3, ChevronRight, Zap, Sparkles, Lock
+  ExternalLink, Rocket, Activity, Box, BarChart3, ChevronRight, Zap, Sparkles, Lock, MessageSquare, CheckCheck, Mail
 } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { useAuth } from '@/context/AuthContext';
@@ -20,7 +20,7 @@ export default function AdminPanelPage() {
   
   const [site, setSite] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'inbox' | 'products' | 'settings'>('overview');
 
   // Product State
   const [products, setProducts] = useState<any[]>([]);
@@ -30,13 +30,27 @@ export default function AdminPanelPage() {
   const [savingProduct, setSavingProduct] = useState(false);
   const [deploying, setDeploying] = useState(false);
 
+  // Inbox State
+  const [enquiries, setEnquiries] = useState<any[]>([]);
+  const [selectedEnquiry, setSelectedEnquiry] = useState<any>(null);
+
   // Parallax setup
   const { scrollYProgress } = useScroll();
   const yOffset = useTransform(scrollYProgress, [0, 1], [0, -50]);
 
   useEffect(() => {
     fetchSiteAndProducts();
+    fetchEnquiries();
   }, [siteId]);
+
+  const fetchEnquiries = async () => {
+    try {
+      const data = await apiClient.get(`http://localhost:3001/api/enquiry?siteId=${siteId}`);
+      setEnquiries(data.enquiries || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchSiteAndProducts = async () => {
     try {
@@ -102,6 +116,30 @@ export default function AdminPanelPage() {
       setProductForm({ name: '', price: '', category: '', image: '' });
     }
     setIsProductModalOpen(true);
+  };
+
+  const handleUpdateEnquiryStatus = async (id: string, status: string) => {
+    try {
+      await apiClient.patch(`http://localhost:3001/api/enquiry/${id}/status`, { status });
+      if (selectedEnquiry?.id === id) {
+         setSelectedEnquiry({ ...selectedEnquiry, status });
+      }
+      fetchEnquiries();
+    } catch(err) {
+      toast.error('Failed to update status');
+    }
+  };
+
+  const handleDeleteEnquiry = async (id: string) => {
+    if (!window.confirm('Eradicate this message? This action is irreversible.')) return;
+    try {
+      await apiClient.delete(`http://localhost:3001/api/enquiry/${id}`);
+      setSelectedEnquiry(null);
+      fetchEnquiries();
+      toast.success('Message eradicated');
+    } catch(err) {
+      toast.error('Failed to delete message');
+    }
   };
 
   const handleDeploy = async () => {
@@ -200,6 +238,7 @@ export default function AdminPanelPage() {
           <div className="text-[9px] font-bold text-white/30 uppercase tracking-[0.3em] mb-4 hidden md:block pl-4">Command Center</div>
           {[
             { id: 'overview', label: 'Overview', icon: LayoutTemplate },
+            { id: 'inbox', label: 'Inbox', icon: MessageSquare },
             { id: 'products', label: 'Inventory', icon: Box },
             { id: 'settings', label: 'System', icon: Settings },
           ].map((tab) => {
@@ -313,6 +352,104 @@ export default function AdminPanelPage() {
                   </div>
                 </div>
 
+              </motion.div>
+            )}
+
+            {/* INBOX TAB */}
+            {activeTab === 'inbox' && (
+              <motion.div 
+                key="inbox"
+                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}
+              >
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+                  <div>
+                    <h2 className="text-4xl font-light tracking-tight mb-3">Communications Matrix</h2>
+                    <p className="text-white/50 text-sm max-w-md font-light leading-relaxed">Incoming messages and enquiries from your digital environment.</p>
+                  </div>
+                  <div className="bg-[#0a0a0a] border border-white/10 px-6 py-3 rounded-full flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-[#00f0ff] animate-pulse" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">{enquiries.filter(e => e.status === 'NEW').length} Unread</span>
+                  </div>
+                </div>
+
+                {enquiries.length === 0 ? (
+                  <div className="border border-dashed border-white/20 rounded-[2rem] p-24 flex flex-col items-center justify-center text-center bg-white/[0.01]">
+                    <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-full flex items-center justify-center mb-8">
+                      <Mail className="w-8 h-8 text-white/40" />
+                    </div>
+                    <h3 className="text-2xl font-light mb-3">No Comm Traffic</h3>
+                    <p className="text-white/40 max-w-sm font-light">The network is quiet. No incoming messages have been logged yet.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* List Column */}
+                    <div className="lg:col-span-5 flex flex-col gap-3">
+                      {enquiries.map((enq) => (
+                        <div 
+                          key={enq.id}
+                          onClick={() => {
+                            setSelectedEnquiry(enq);
+                            if (enq.status === 'NEW') handleUpdateEnquiryStatus(enq.id, 'READ');
+                          }}
+                          className={`p-6 rounded-[1.5rem] border cursor-pointer transition-all duration-300 ${selectedEnquiry?.id === enq.id ? 'bg-white/10 border-white/30' : 'bg-[#0a0a0a] border-white/10 hover:border-white/20'}`}
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <h4 className="font-semibold text-lg">{enq.name}</h4>
+                            {enq.status === 'NEW' && <span className="w-2 h-2 rounded-full bg-[#00f0ff] shrink-0 mt-2" />}
+                          </div>
+                          <p className="text-white/50 text-sm truncate mb-4 font-light">{enq.message}</p>
+                          <div className="flex justify-between items-center text-[10px] uppercase tracking-widest">
+                            <span className="text-white/40 font-mono">{new Date(enq.createdAt).toLocaleDateString()}</span>
+                            <span className={enq.status === 'NEW' ? 'text-[#00f0ff]' : 'text-white/30'}>{enq.status}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Detail Column */}
+                    <div className="lg:col-span-7">
+                      <AnimatePresence mode="wait">
+                        {selectedEnquiry ? (
+                          <motion.div 
+                            key={selectedEnquiry.id}
+                            initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                            className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-8 md:p-12 sticky top-32"
+                          >
+                            <div className="flex justify-between items-start mb-10">
+                              <div>
+                                <h3 className="text-3xl font-light mb-2">{selectedEnquiry.name}</h3>
+                                <a href={`mailto:${selectedEnquiry.email}`} className="text-[#00f0ff] hover:underline text-sm font-mono">{selectedEnquiry.email}</a>
+                              </div>
+                              <div className="flex gap-2">
+                                <button onClick={() => handleDeleteEnquiry(selectedEnquiry.id)} className="w-10 h-10 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors border border-red-500/20" title="Delete">
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                            
+                            <div className="bg-white/[0.02] border border-white/5 rounded-[1.5rem] p-8 mb-10">
+                              <p className="text-white/80 font-light leading-relaxed whitespace-pre-wrap text-lg">{selectedEnquiry.message}</p>
+                            </div>
+
+                            <div className="flex justify-between items-center border-t border-white/10 pt-8 text-[10px] uppercase tracking-widest text-white/40">
+                              <span>Received: {new Date(selectedEnquiry.createdAt).toLocaleString()}</span>
+                              <div className="flex gap-4">
+                                {selectedEnquiry.status !== 'ARCHIVED' && (
+                                  <button onClick={() => handleUpdateEnquiryStatus(selectedEnquiry.id, 'ARCHIVED')} className="hover:text-white transition-colors">Archive</button>
+                                )}
+                              </div>
+                            </div>
+                          </motion.div>
+                        ) : (
+                          <div className="h-[400px] border border-dashed border-white/10 rounded-[2rem] flex flex-col items-center justify-center text-white/30 sticky top-32">
+                            <MessageSquare className="w-8 h-8 mb-4 opacity-50" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">Select an enquiry</span>
+                          </div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+                )}
               </motion.div>
             )}
 

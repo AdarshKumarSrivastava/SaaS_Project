@@ -115,7 +115,7 @@ export const TransitionLink = ({ children, className, onClick, ...props }: Trans
         char.textContent = labelUpper[i] === ' ' ? '\u00A0' : labelUpper[i];
         // Apply hollow effect (stroke) and italic serif for that high-fashion awwwards look
         char.className = 'inline-block text-transparent font-serif italic text-5xl md:text-[8rem] lg:text-[11rem] leading-none tracking-tight';
-        char.style.WebkitTextStroke = '1px rgba(255,255,255,0.4)';
+        char.style.webkitTextStroke = '1px rgba(255,255,255,0.4)';
         char.style.transform = 'translateY(120%) scaleY(1.3) rotate(10deg)';
         char.style.filter = 'blur(12px)';
         char.style.opacity = '0';
@@ -154,7 +154,7 @@ export const TransitionLink = ({ children, className, onClick, ...props }: Trans
         // Fill in the text shortly after it appears
         setTimeout(() => {
             char.style.color = '#ffffff';
-            char.style.WebkitTextStroke = '0px rgba(255,255,255,0)';
+            char.style.webkitTextStroke = '0px rgba(255,255,255,0)';
         }, 700 + (i * 40));
     });
     

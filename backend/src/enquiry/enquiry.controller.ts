@@ -255,3 +255,47 @@ export const getEnquiries = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const updateEnquiryStatus = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!id || typeof id !== 'string') {
+      return res.status(400).json({ error: 'Invalid id provided' });
+    }
+
+    if (!status || !['NEW', 'READ', 'ARCHIVED'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status provided' });
+    }
+
+    const enquiry = await prisma.enquiry.update({
+      where: { id },
+      data: { status },
+    });
+
+    res.status(200).json({ enquiry });
+  } catch (error) {
+    console.error('[updateEnquiryStatus Error]', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const deleteEnquiry = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!id || typeof id !== 'string') {
+      return res.status(400).json({ error: 'Invalid id provided' });
+    }
+
+    await prisma.enquiry.delete({
+      where: { id },
+    });
+
+    res.status(200).json({ message: 'Enquiry deleted successfully' });
+  } catch (error) {
+    console.error('[deleteEnquiry Error]', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
