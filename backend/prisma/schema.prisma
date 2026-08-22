@@ -37,8 +37,19 @@ model Site {
   credentials  SiteCredential[]
   documents    SiteDocument[]
   conversations Conversation[]
-  products     Product[]
   enquiries    Enquiry[]
+
+  // Commerce OS Relations
+  products       Product[]
+  categories     Category[]
+  brands         Brand[]
+  orders         Order[]
+  customers      Customer[]
+  discounts      Discount[]
+  invoices       Invoice[]
+  reviews        Review[]
+  returnRequests ReturnRequest[]
+  deployments    Deployment[]
 }
 
 model SiteRole {
@@ -99,18 +110,6 @@ model Message {
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 }
 
-model Product {
-  id        String   @id @default(uuid())
-  siteId    String
-  name      String
-  price     Float
-  image     String?
-  category  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
-}
-
 model Enquiry {
   id          String   @id @default(uuid())
   siteId      String?
@@ -136,4 +135,219 @@ model EnquiryOTP {
   createdAt   DateTime @default(now())
 
   @@unique([email, siteId])
+}
+
+// ==========================================
+// Commerce OS Models
+// ==========================================
+
+model Category {
+  id          String    @id @default(uuid())
+  siteId      String
+  name        String
+  slug        String
+  description String?
+  parentId    String?
+  parent      Category? @relation("CategoryToCategory", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryToCategory")
+  site        Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Brand {
+  id          String    @id @default(uuid())
+  siteId      String
+  name        String
+  slug        String
+  description String?
+  logo        String?
+  site        Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id                String           @id @default(uuid())
+  siteId            String
+  name              String
+  slug              String
+  description       String?
+  shortDescription  String?
+  sku               String?
+  barcode           String?
+  price             Float
+  comparePrice      Float?
+  taxRate           Float            @default(0)
+  stock             Int              @default(0)
+  lowStockThreshold Int              @default(5)
+  weight            Float?
+  dimensions        String?          // e.g., "10x20x5"
+  seoTitle          String?
+  seoDescription    String?
+  status            String           @default("DRAFT") // ACTIVE, DRAFT, ARCHIVED
+  images            String[]
+  categoryId        String?
+  brandId           String?
+  site              Site             @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  category          Category?        @relation(fields: [categoryId], references: [id])
+  brand             Brand?           @relation(fields: [brandId], references: [id])
+  variants          ProductVariant[]
+  orderItems        OrderItem[]
+  reviews           Review[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+}
+
+model ProductVariant {
+  id         String   @id @default(uuid())
+  productId  String
+  sku        String?
+  name       String   // e.g., "Large / Red"
+  price      Float?   // Override parent price if set
+  stock      Int      @default(0)
+  attributes Json     // e.g., { "size": "L", "color": "Red" }
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  siteId    String
+  email     String
+  firstName String?
+  lastName  String?
+  phone     String?
+  site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  orders    Order[]
+  reviews   Review[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([siteId, email])
+}
+
+model Order {
+  id              String          @id @default(uuid())
+  siteId          String
+  customerId      String?
+  orderNumber     String
+  status          String          @default("PENDING") // PENDING, CONFIRMED, PROCESSING, PACKED, SHIPPED, OUT_FOR_DELIVERY, DELIVERED, CANCELLED
+  total           Float
+  subtotal        Float
+  tax             Float
+  discount        Float           @default(0)
+  shipping        Float           @default(0)
+  trackingNumber  String?
+  trackingUrl     String?
+  shippingAddress Json?
+  billingAddress  Json?
+  site            Site            @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  customer        Customer?       @relation(fields: [customerId], references: [id])
+  items           OrderItem[]
+  timeline        OrderTimeline[]
+  returnRequests  ReturnRequest[]
+  invoices        Invoice[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@unique([siteId, orderNumber])
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  productId String
+  name      String
+  quantity  Int
+  price     Float
+  total     Float
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+model OrderTimeline {
+  id        String   @id @default(uuid())
+  orderId   String
+  status    String
+  message   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model ReturnRequest {
+  id        String   @id @default(uuid())
+  siteId    String
+  orderId   String
+  reason    String
+  status    String   @default("PENDING") // PENDING, APPROVED, REJECTED, PICKUP, RECEIVED, REFUND_PROCESSING, REFUNDED
+  site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Invoice {
+  id            String   @id @default(uuid())
+  siteId        String
+  orderId       String
+  invoiceNumber String
+  pdfUrl        String?
+  site          Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+
+  @@unique([siteId, invoiceNumber])
+}
+
+model Discount {
+  id            String   @id @default(uuid())
+  siteId        String
+  code          String
+  type          String   // PERCENTAGE, FIXED
+  value         Float
+  usageLimit    Int?
+  usageCount    Int      @default(0)
+  startsAt      DateTime?
+  endsAt        DateTime?
+  site          Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([siteId, code])
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  siteId    String
+  productId String
+  customerId String?
+  rating    Int
+  title     String?
+  content   String
+  status    String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customer  Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==========================================
+// Deployment Orchestration
+// ==========================================
+
+model Deployment {
+  id          String   @id @default(uuid())
+  siteId      String
+  versionId   String   @default(uuid())
+  status      String   // PUBLISHING, LIVE, FAILED, ARCHIVED
+  schema      Json     // The builder schema snapshot
+  errorLogs   String?
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
+  site        Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
 }

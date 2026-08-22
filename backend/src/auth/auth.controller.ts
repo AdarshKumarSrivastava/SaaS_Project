@@ -88,6 +88,11 @@ export const signup = async (req: Request, res: Response) => {
       console.log(`[EMAIL SENT] OTP sent to ${email}`);
     } else {
       console.log(`[MOCK EMAIL] OTP for ${email} is: ${otp}`);
+      // In development/mock mode, return the OTP to the client so they can easily test it
+      return res.status(201).json({ 
+        message: 'OTP sent. Please verify to complete registration.',
+        development_otp: otp 
+      });
     }
 
     res.status(201).json({ message: 'OTP sent. Please verify to complete registration.' });
@@ -167,6 +172,10 @@ export const resendOtp = async (req: Request, res: Response) => {
       console.log(`[EMAIL RESENT] OTP sent to ${email}`);
     } else {
       console.log(`[MOCK EMAIL RESENT] OTP for ${email} is: ${otp}`);
+      return res.status(200).json({ 
+        message: 'OTP resent successfully.',
+        development_otp: otp
+      });
     }
 
     res.status(200).json({ message: 'OTP resent successfully.' });

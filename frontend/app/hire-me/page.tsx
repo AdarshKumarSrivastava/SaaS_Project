@@ -42,7 +42,7 @@ export default function HireMePage() {
     
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3001/api/hire/otp', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}'}/api/hire/otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, role, stipend, message }),
@@ -65,7 +65,7 @@ export default function HireMePage() {
     
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3001/api/hire/submit', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}'}/api/hire/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp }),

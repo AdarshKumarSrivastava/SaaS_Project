@@ -25,7 +25,7 @@ export default function SettingsPage() {
   useEffect(() => {
     const fetchSite = async () => {
       try {
-        const data = await apiClient.get(`http://localhost:3001/api/sites/${siteId}`);
+        const data = await apiClient.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}`);
         setSite(data);
         setCustomDomain(data.customDomain || '');
       } catch (err) {
@@ -44,7 +44,7 @@ export default function SettingsPage() {
     setSuccess(false);
 
     try {
-      await apiClient.patch(`http://localhost:3001/api/sites/${siteId}/domain`, {
+      await apiClient.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/domain`, {
         customDomain
       });
       setSuccess(true);

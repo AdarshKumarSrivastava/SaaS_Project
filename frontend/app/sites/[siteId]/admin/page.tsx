@@ -14,6 +14,8 @@ import { toast } from 'react-hot-toast';
 // Lazy load or import directly
 import OverviewTab from '@/components/admin/OverviewTab';
 import OrdersTab from '@/components/admin/OrdersTab';
+import ProductsTab from '@/components/admin/ProductsTab';
+import CustomersTab from '@/components/admin/CustomersTab';
 // Fallbacks for tabs not yet modularized
 const FallbackTab = ({ name }: { name: string }) => (
   <div className="h-[500px] flex items-center justify-center border border-dashed border-white/20 rounded-[2rem]">
@@ -37,7 +39,7 @@ export default function AdminPanelPage() {
   useEffect(() => {
     const fetchSite = async () => {
       try {
-        const data = await apiClient.get(`http://localhost:3001/api/sites/${siteId}`);
+        const data = await apiClient.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}`);
         setSite(data);
       } catch (err) {
         toast.error('System synchronization failed');
@@ -127,8 +129,8 @@ export default function AdminPanelPage() {
           <AnimatePresence mode="wait">
             {activeTab === 'overview' && <OverviewTab key="overview" siteId={siteId} site={site} />}
             {activeTab === 'orders' && <OrdersTab key="orders" siteId={siteId} />}
-            {activeTab === 'products' && <FallbackTab key="products" name="Products Matrix" />}
-            {activeTab === 'customers' && <FallbackTab key="customers" name="Customer Profiles" />}
+            {activeTab === 'products' && <ProductsTab key="products" siteId={siteId} />}
+            {activeTab === 'customers' && <CustomersTab key="customers" siteId={siteId} />}
             {activeTab === 'inbox' && <FallbackTab key="inbox" name="Communications" />}
             {activeTab === 'settings' && <FallbackTab key="settings" name="Settings" />}
           </AnimatePresence>

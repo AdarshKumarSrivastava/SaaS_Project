@@ -23,7 +23,7 @@ export default function MfaPage() {
     setError('');
     const mfaToken = localStorage.getItem('mfaToken');
     try {
-      const res = await fetch('http://localhost:3001/api/auth/mfa/verify', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}'}/api/auth/mfa/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mfaToken, token })

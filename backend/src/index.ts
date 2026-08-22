@@ -34,7 +34,9 @@ const port = process.env.PORT || 3001;
 // Middlewares
 app.use(helmet());
 app.use(cors({
-  origin: true,
+  origin: process.env.FRONTEND_URL 
+    ? [process.env.FRONTEND_URL, 'http://localhost:3000'] 
+    : true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
 }));

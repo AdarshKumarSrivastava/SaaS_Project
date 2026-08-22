@@ -22,7 +22,7 @@ export default async function LivePreviewRouter({ params }: { params: { siteId: 
   const { siteId, path } = params;
   
   // Fetch from the public endpoint
-  const res = await fetch(`http://localhost:3001/api/public/sites/${siteId}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/public/sites/${siteId}`, {
     cache: 'no-store'
   });
   

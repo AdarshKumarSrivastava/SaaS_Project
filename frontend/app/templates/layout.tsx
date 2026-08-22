@@ -1,44 +1,36 @@
-"use client";
+import { headers } from "next/headers";
+import { PreviewModeButton } from "./PreviewModeButton";
+import { CustomizationProvider } from "@/context/CustomizationContext";
 
-import Link from "next/link";
-import { ArrowLeft, Edit2 } from "lucide-react";
-import { usePathname, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
+export default async function TemplatesLayout({ children }: { children: React.ReactNode }) {
+  // Check if middleware passed live deployment data
+  const headersList = await headers();
+  const liveDataHeader = headersList.get('x-live-data');
 
-import { Suspense } from "react";
+  if (liveDataHeader) {
+    try {
+      const decoded = Buffer.from(liveDataHeader, 'base64').toString('utf8');
+      const data = JSON.parse(decoded);
+      
+      if (data.deployment) {
+        return (
+          <CustomizationProvider siteData={data.deployment.schema} products={data.products}>
+            <div className="relative w-full h-full">
+              {children}
+            </div>
+          </CustomizationProvider>
+        );
+      }
+    } catch (e) {
+      console.error('Failed to parse x-live-data header', e);
+    }
+  }
 
-function PreviewModeButton() {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const isPreviewMode = searchParams?.get("mode") === "preview";
-
-  if (!isPreviewMode || pathname !== "/templates") return null;
-
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 1, duration: 0.5 }}
-      className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-4 bg-[#0A0A0A]/80 backdrop-blur-xl p-2 rounded-full border border-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
-    >
-      <Link 
-        href="/onboarding/template-selection" 
-        className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-full transition-all text-sm font-medium tracking-wide"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back to Selection
-      </Link>
-    </motion.div>
-  );
-}
-
-export default function TemplatesLayout({ children }: { children: React.ReactNode }) {
+  // Fallback to normal layout (for builder preview and template selection)
   return (
     <div className="relative w-full h-full">
       {children}
-      <Suspense fallback={null}>
-        <PreviewModeButton />
-      </Suspense>
+      <PreviewModeButton />
     </div>
   );
 }

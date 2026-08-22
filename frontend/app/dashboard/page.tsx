@@ -22,6 +22,7 @@ import { defaultNoireProducts } from '../templates/noire/data';
 import { defaultMonumentProducts } from '../templates/monument/data';
 import { defaultVantaProducts } from '../templates/vanta/data';
 import { defaultAtelierProducts } from '../templates/atelier/data';
+import { DeploymentModal } from '@/components/modals/DeploymentModal';
 
 const categories = [
   { id: 'portfolio', label: 'Portfolio', icon: LayoutTemplate, accent: 'bg-blue-50 text-blue-600 border-blue-100', description: 'Personal, architectural & creative showcases.' },
@@ -61,6 +62,10 @@ export default function DashboardPage() {
   const [newSiteName, setNewSiteName] = useState('');
   const [newSiteCategory, setNewSiteCategory] = useState('portfolio');
   const [isCreating, setIsCreating] = useState(false);
+
+  // Deployment Modal State
+  const [isDeployModalOpen, setIsDeployModalOpen] = useState(false);
+  const [deploySite, setDeploySite] = useState<any>(null);
 
   // Template & Project Filtering states
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -111,7 +116,7 @@ export default function DashboardPage() {
 
     const fetchSites = async () => {
       try {
-        const data = await apiClient.get('http://localhost:3001/api/sites');
+        const data = await apiClient.get(`${process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}'}/api/sites`);
         setSites(data);
       } catch (err) {
         console.warn('Dashboard auth check:', err);
@@ -127,7 +132,7 @@ export default function DashboardPage() {
     e.preventDefault();
     setIsCreating(true);
     try {
-      const data = await apiClient.post('http://localhost:3001/api/sites', {
+      const data = await apiClient.post(`${process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}'}/api/sites`, {
         name: newSiteName,
         category: newSiteCategory
       });
@@ -141,7 +146,7 @@ export default function DashboardPage() {
   const handleOwnThisTemplate = async (template: typeof templatesList[0]) => {
     setIsCreating(true);
     try {
-      const data = await apiClient.post('http://localhost:3001/api/sites', {
+      const data = await apiClient.post(`${process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}'}/api/sites`, {
         name: `My ${template.name}`,
         category: template.category
       });
@@ -198,7 +203,7 @@ export default function DashboardPage() {
       // Add a small delay to ensure DB triggers are ready for the schema patch
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      await apiClient.patch(`http://localhost:3001/api/sites/${data.id}/schema`, { 
+      await apiClient.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${data.id}/schema`, { 
         schema: fallbackSchema,
         products: productsToSeed
       });
@@ -213,7 +218,7 @@ export default function DashboardPage() {
   const handleDeleteSite = async (siteId: string) => {
     if (window.confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
       try {
-        await apiClient.delete(`http://localhost:3001/api/sites/${siteId}`);
+        await apiClient.delete(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}`);
         setSites(sites.filter(site => site.id !== siteId));
         toast.success('Project deleted successfully');
       } catch (err) {
@@ -228,17 +233,25 @@ export default function DashboardPage() {
   };
 
   const handleDeployLive = async (siteId: string) => {
-    try {
-      await apiClient.patch(`http://localhost:3001/api/sites/${siteId}`, { status: 'published' });
-      toast.success('Site deployed live!');
-      // Update local state to reflect new status
-      setSites(sites.map(s => s.id === siteId ? { ...s, status: 'published' } : s));
-    } catch (err) {
-      console.error('Failed to deploy', err);
-      toast.error('Failed to deploy site');
-    } finally {
+    const siteToDeploy = sites.find(s => s.id === siteId);
+    if (siteToDeploy) {
+      setDeploySite(siteToDeploy);
+      setIsDeployModalOpen(true);
       setActiveSiteMenu(null);
     }
+  };
+
+  const onDeploySuccess = (siteId: string) => {
+    setSites(sites.map(s => {
+      if (s.id === siteId) {
+        return { 
+          ...s, 
+          status: 'published',
+          deployments: [{ status: 'LIVE' }] 
+        };
+      }
+      return s;
+    }));
   };
 
   // Filter user projects
@@ -584,11 +597,11 @@ export default function DashboardPage() {
                           
                           <div className="flex items-center gap-2">
                             <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full border uppercase tracking-wider ${
-                              site.status === 'draft' 
+                              (!site.deployments || site.deployments.length === 0 || site.deployments[0].status !== 'LIVE')
                                 ? 'bg-amber-50 text-amber-600 border-amber-100' 
                                 : 'bg-emerald-50 text-emerald-600 border-emerald-100'
                             }`}>
-                              {site.status === 'draft' ? 'Draft' : 'Live'}
+                              {(!site.deployments || site.deployments.length === 0 || site.deployments[0].status !== 'LIVE') ? 'Draft' : 'Live'}
                             </span>
                             
                             {/* Quick Actions Menu Trigger */}
@@ -624,10 +637,10 @@ export default function DashboardPage() {
                                     onClick={() => handleDeployLive(site.id)}
                                     className="w-full px-4 py-2 text-left text-xs text-ink hover:bg-bg-subtle flex items-center gap-2 transition-colors font-bold text-emerald-600"
                                   >
-                                    <Rocket className="w-3.5 h-3.5 text-emerald-500" /> Deploy Live
+                                    <Rocket className="w-3.5 h-3.5 text-emerald-500" /> {(!site.deployments || site.deployments.length === 0 || site.deployments[0].status !== 'LIVE') ? 'Deploy Live' : 'Redeploy'}
                                   </button>
                                   <a 
-                                    href={`http://${site.subdomain}.localhost:3000`} 
+                                    href={`/sites/${site.id}/live`} 
                                     target="_blank" 
                                     rel="noreferrer"
                                     className="w-full px-4 py-2 text-left text-xs text-ink hover:bg-bg-subtle flex items-center gap-2 transition-colors"
@@ -688,15 +701,15 @@ export default function DashboardPage() {
 
                       <div className="flex items-center gap-3">
                         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border uppercase tracking-wider hidden sm:inline-block ${
-                          site.status === 'draft' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                          (!site.deployments || site.deployments.length === 0 || site.deployments[0].status !== 'LIVE') ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'
                         }`}>
-                          {site.status === 'draft' ? 'Draft' : 'Live'}
+                          {(!site.deployments || site.deployments.length === 0 || site.deployments[0].status !== 'LIVE') ? 'Draft' : 'Live'}
                         </span>
                         <button 
                           onClick={() => handleDeployLive(site.id)}
                           className="px-3 py-1.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold shadow-sm"
                         >
-                          Deploy Live
+                          {(!site.deployments || site.deployments.length === 0 || site.deployments[0].status !== 'LIVE') ? 'Deploy Live' : 'Redeploy'}
                         </button>
                         <button 
                           onClick={() => router.push(`/sites/${site.id}/admin`)}
@@ -795,6 +808,16 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Deployment Modal Component */}
+      <DeploymentModal
+        isOpen={isDeployModalOpen}
+        onClose={() => setIsDeployModalOpen(false)}
+        siteId={deploySite?.id || null}
+        siteName={deploySite?.name || null}
+        siteSubdomain={deploySite?.subdomain || null}
+        onDeploySuccess={onDeploySuccess}
+      />
+
       {/* Creation Modal Component */}
       <CreateProjectModal
         isOpen={isModalOpen}
@@ -802,7 +825,7 @@ export default function DashboardPage() {
         onSubmit={async (name, category, subdomain) => {
           setIsCreating(true);
           try {
-            const data = await apiClient.post('http://localhost:3001/api/sites', {
+            const data = await apiClient.post(`${process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}'}/api/sites`, {
               name,
               category,
               subdomain,

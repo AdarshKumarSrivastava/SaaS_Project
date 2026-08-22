@@ -53,7 +53,7 @@ export const CommandPalette = () => {
 
     timeoutRef.current = setTimeout(async () => {
       try {
-        const data = await apiClient.get(`http://localhost:3001/api/sites/search?q=${encodeURIComponent(query)}`);
+        const data = await apiClient.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/search?q=${encodeURIComponent(query)}`);
         setResults(data);
         setSelectedIndex(0);
       } catch (err) {

@@ -46,7 +46,7 @@ async function fetchWithAuth(endpoint: string, options: RequestInit): Promise<Re
   if (res.status === 401) {
     // Attempt to refresh token using HttpOnly cookie
     try {
-      const refreshRes = await fetch('http://localhost:3001/api/auth/refresh', {
+      const refreshRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}'}/api/auth/refresh`, {
         method: 'POST',
         credentials: 'include'
       });

@@ -14,7 +14,7 @@ export default function OrdersTab({ siteId }: { siteId: string }) {
 
   const fetchOrders = async () => {
     try {
-      const data = await apiClient.get(`http://localhost:3001/api/sites/${siteId}/orders`);
+      const data = await apiClient.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/orders`);
       setOrders(data);
     } catch (err) {
       console.error(err);
@@ -29,7 +29,7 @@ export default function OrdersTab({ siteId }: { siteId: string }) {
 
   const updateStatus = async (orderId: string, status: string) => {
     try {
-      await apiClient.patch(`http://localhost:3001/api/sites/${siteId}/orders/${orderId}/status`, { status });
+      await apiClient.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/orders/${orderId}/status`, { status });
       fetchOrders();
       if (selectedOrder?.id === orderId) {
         setSelectedOrder({ ...selectedOrder, status });
@@ -60,13 +60,13 @@ export default function OrdersTab({ siteId }: { siteId: string }) {
           <h2 className="text-4xl font-light tracking-tight mb-3">Fulfillment Operations</h2>
           <p className="text-white/50 text-sm font-light leading-relaxed">Manage order lifecycles and physical fulfillment pipelines.</p>
         </div>
-        <div className="relative w-full md:w-72">
+        <div className="relative flex items-center w-full md:w-72">
+          <Search className="w-4 h-4 text-white/40 absolute left-5 pointer-events-none" />
           <input 
             type="text" 
             placeholder="Search orders..." 
             className="w-full bg-[#0a0a0a] border border-white/10 rounded-full px-6 py-3 pl-12 text-sm font-light focus:border-white/30 outline-none transition-all"
           />
-          <Search className="w-4 h-4 text-white/40 absolute left-5 top-1/2 -translate-y-1/2" />
         </div>
       </div>
 

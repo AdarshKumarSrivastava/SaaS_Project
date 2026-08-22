@@ -10,7 +10,17 @@ export const listSites = async (req: Request, res: Response) => {
     const userId = (req as any).user.userId;
     const siteRoles = await prisma.siteRole.findMany({
       where: { userId },
-      include: { site: true },
+      include: { 
+        site: {
+          include: {
+            deployments: {
+              where: { status: 'LIVE' },
+              orderBy: { createdAt: 'desc' },
+              take: 1
+            }
+          }
+        } 
+      },
       orderBy: { site: { createdAt: 'desc' } }
     });
     const sites = siteRoles.map((sr: any) => ({ ...sr.site, myRole: sr.role }));
@@ -127,16 +137,19 @@ export const updateSchema = async (req: Request, res: Response) => {
       });
 
       for (const prod of products) {
+        const productSlug = (prod.name || 'product').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const images = prod.image ? [prod.image] : (prod.images || []);
+        
         if (prod.id) {
           const existing = await prisma.product.findUnique({ where: { id: prod.id } });
           if (existing && existing.siteId === siteId) {
              await prisma.product.update({
                where: { id: prod.id },
                data: {
-                 name: prod.name,
+                 name: prod.name || 'Unnamed',
+                 slug: productSlug,
                  price: parseFloat(prod.price) || 0,
-                 image: prod.image || prod.images?.[0] || '',
-                 category: prod.category || ''
+                 images,
                }
              });
           } else if (!existing) {
@@ -144,10 +157,10 @@ export const updateSchema = async (req: Request, res: Response) => {
                data: {
                  id: prod.id,
                  siteId: siteId,
-                 name: prod.name,
+                 name: prod.name || 'Unnamed',
+                 slug: productSlug,
                  price: parseFloat(prod.price) || 0,
-                 image: prod.image || prod.images?.[0] || '',
-                 category: prod.category || ''
+                 images,
                }
              });
           }
@@ -155,10 +168,10 @@ export const updateSchema = async (req: Request, res: Response) => {
              await prisma.product.create({
                data: {
                  siteId: siteId,
-                 name: prod.name,
+                 name: prod.name || 'Unnamed',
+                 slug: productSlug,
                  price: parseFloat(prod.price) || 0,
-                 image: prod.image || prod.images?.[0] || '',
-                 category: prod.category || ''
+                 images,
                }
              });
         }

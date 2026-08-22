@@ -53,7 +53,7 @@ export function ContactSection({ siteId }: { siteId?: string }) {
 
     setStep('loading');
     try {
-      await apiClient.post('http://localhost:3001/api/enquiry/submit', {
+      await apiClient.post(`${process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}'}/api/enquiry/submit`, {
         name: name.trim(),
         email: email.trim(),
         message: message.trim(),
@@ -121,7 +121,7 @@ export function ContactSection({ siteId }: { siteId?: string }) {
     setError(null);
 
     try {
-      await apiClient.post('http://localhost:3001/api/enquiry/verify', {
+      await apiClient.post(`${process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}'}/api/enquiry/verify`, {
         email: email.trim(),
         otp: code,
         siteId
@@ -137,7 +137,7 @@ export function ContactSection({ siteId }: { siteId?: string }) {
     if (resendCooldown > 0) return;
     setError(null);
     try {
-      await apiClient.post('http://localhost:3001/api/enquiry/resend', {
+      await apiClient.post(`${process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}'}/api/enquiry/resend`, {
         email: email.trim(),
         siteId
       });

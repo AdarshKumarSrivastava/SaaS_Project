@@ -14,7 +14,7 @@ export default function OverviewTab({ siteId, site }: { siteId: string, site: an
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const data = await apiClient.get(`http://localhost:3001/api/sites/${siteId}/analytics`);
+        const data = await apiClient.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/analytics`);
         setMetrics(data.metrics);
       } catch (err) {
         console.error('Failed to load metrics', err);

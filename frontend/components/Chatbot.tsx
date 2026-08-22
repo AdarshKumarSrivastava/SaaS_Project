@@ -46,7 +46,7 @@ export function Chatbot({ siteId }: { siteId?: string }) {
     abortControllerRef.current = new AbortController();
 
     try {
-      const res = await fetch('http://localhost:3001/api/ai/chat', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}'}/api/ai/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         signal: abortControllerRef.current.signal,

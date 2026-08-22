@@ -51,7 +51,7 @@ export default function SiteAdminPanel() {
   const fetchInquiries = async () => {
     setLoadingInquiries(true);
     try {
-      const data = await apiClient.get(`http://localhost:3001/api/enquiry?siteId=${params.siteId}`);
+      const data = await apiClient.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/enquiry?siteId=${params.siteId}`);
       if (data && data.enquiries) {
         setInquiries(data.enquiries);
       }

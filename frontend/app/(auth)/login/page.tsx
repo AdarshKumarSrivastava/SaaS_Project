@@ -17,7 +17,7 @@ export default function LoginPage() {
   const handleOAuthLogin = async (provider: 'google' | 'github') => {
     setOauthLoading(provider);
     try {
-      const res = await fetch(`http://localhost:3001/api/auth/oauth/${provider}`, { method: 'POST' });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/auth/oauth/${provider}`, { method: 'POST' });
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
@@ -39,7 +39,7 @@ export default function LoginPage() {
     const controller = new AbortController();
     
     try {
-      const res = await fetch('http://localhost:3001/api/auth/login', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}'}/api/auth/login`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

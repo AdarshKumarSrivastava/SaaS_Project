@@ -20,7 +20,7 @@ export default function SignupPage() {
   const handleOAuthLogin = async (provider: 'google' | 'github') => {
     setOauthLoading(provider);
     try {
-      const res = await fetch(`http://localhost:3001/api/auth/oauth/${provider}`, { method: 'POST' });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/auth/oauth/${provider}`, { method: 'POST' });
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
@@ -38,7 +38,7 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3001/api/auth/signup', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}'}/api/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password })
@@ -47,6 +47,11 @@ export default function SignupPage() {
       if (!res.ok) throw new Error(data.error || data.details?.[0]?.message || 'Signup failed');
       setStep('otp');
       toast.success("Verification code sent to your email.");
+      
+      if (data.development_otp) {
+        toast.info(`Development Mode: Your OTP is ${data.development_otp}`, { duration: 10000 });
+        setOtp(data.development_otp);
+      }
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : String(err));
     } finally {
@@ -57,7 +62,7 @@ export default function SignupPage() {
   const handleResendOtp = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3001/api/auth/resend-otp', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}'}/api/auth/resend-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -65,6 +70,11 @@ export default function SignupPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to resend code');
       toast.success("Verification code resent to your email.");
+      
+      if (data.development_otp) {
+        toast.info(`Development Mode: Your OTP is ${data.development_otp}`, { duration: 10000 });
+        setOtp(data.development_otp);
+      }
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : String(err));
     } finally {
@@ -76,7 +86,7 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3001/api/auth/verify-otp', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}'}/api/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp })

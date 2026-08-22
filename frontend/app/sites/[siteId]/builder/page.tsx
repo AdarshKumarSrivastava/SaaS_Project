@@ -41,8 +41,8 @@ export default function BuilderPage() {
     const fetchSite = async () => {
       try {
         const [siteRes, productsRes] = await Promise.all([
-          apiClient.get(`http://localhost:3001/api/sites/${siteId}`),
-          apiClient.get(`http://localhost:3001/api/sites/${siteId}/products`).catch(() => [])
+          apiClient.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}`),
+          apiClient.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/products`).catch(() => [])
         ]);
         
         const data = siteRes;
@@ -90,7 +90,7 @@ export default function BuilderPage() {
             ],
             global: { brandName: data.name || 'My Brand', templateSlug: 'velocity' }
           };
-          apiClient.patch(`http://localhost:3001/api/sites/${siteId}/schema`, { schema: loadedData }).catch(console.error);
+          apiClient.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/schema`, { schema: loadedData }).catch(console.error);
         }
         
         setSiteData(loadedData);
@@ -133,7 +133,7 @@ export default function BuilderPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await apiClient.patch(`http://localhost:3001/api/sites/${siteId}/schema`, {
+      await apiClient.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/schema`, {
         schema: siteData,
         products: products
       });

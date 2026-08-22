@@ -33,7 +33,7 @@ export default function BYOKVault() {
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const { hasPin } = await apiClient.get(`http://localhost:3001/api/sites/${siteId}/credentials/pin/status`);
+        const { hasPin } = await apiClient.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/credentials/pin/status`);
         setViewState(hasPin ? 'locked' : 'setup');
       } catch (err) {
         console.error(err);
@@ -44,7 +44,7 @@ export default function BYOKVault() {
 
   const fetchCredentials = async () => {
     try {
-      const data = await apiClient.get(`http://localhost:3001/api/sites/${siteId}/credentials`);
+      const data = await apiClient.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/credentials`);
       setCredentials(data);
     } catch (err) {
       console.error(err);
@@ -56,7 +56,7 @@ export default function BYOKVault() {
     setError('');
     setIsSubmitting(true);
     try {
-      await apiClient.post(`http://localhost:3001/api/sites/${siteId}/credentials/pin/setup`, { pin });
+      await apiClient.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/credentials/pin/setup`, { pin });
       setViewState('unlocked');
       await fetchCredentials();
       setPin('');
@@ -72,7 +72,7 @@ export default function BYOKVault() {
     setError('');
     setIsSubmitting(true);
     try {
-      await apiClient.post(`http://localhost:3001/api/sites/${siteId}/credentials/pin/verify`, { pin });
+      await apiClient.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/credentials/pin/verify`, { pin });
       setViewState('unlocked');
       await fetchCredentials();
       setPin('');
@@ -87,7 +87,7 @@ export default function BYOKVault() {
     setError('');
     setIsSubmitting(true);
     try {
-      await apiClient.post(`http://localhost:3001/api/sites/${siteId}/credentials/pin/forgot`, {});
+      await apiClient.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/credentials/pin/forgot`, {});
       setViewState('forgot_otp');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to send OTP');
@@ -101,7 +101,7 @@ export default function BYOKVault() {
     setError('');
     setIsSubmitting(true);
     try {
-      await apiClient.post(`http://localhost:3001/api/sites/${siteId}/credentials/pin/reset`, { otp, newPin });
+      await apiClient.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/credentials/pin/reset`, { otp, newPin });
       setViewState('locked');
       setOtp('');
       setNewPin('');
@@ -115,7 +115,7 @@ export default function BYOKVault() {
 
   const handleSaveKeys = async (keyName: string, keyValue: string) => {
     try {
-      await apiClient.post(`http://localhost:3001/api/sites/${siteId}/credentials`, { keys: [{ keyName, keyValue }] });
+      await apiClient.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/credentials`, { keys: [{ keyName, keyValue }] });
       await fetchCredentials();
       alert('Key saved securely!');
     } catch (err: unknown) {

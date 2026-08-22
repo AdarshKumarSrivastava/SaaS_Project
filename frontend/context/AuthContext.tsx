@@ -47,12 +47,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     if (token) {
-      fetch('http://localhost:3001/api/auth/me', {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}'}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then((res) => {
           if (res.ok) return res.json();
-          return null;
+          throw new Error('Token invalid');
         })
         .then((data) => {
           if (data && data.user) {
@@ -61,13 +61,44 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         })
         .catch((err) => {
-          console.warn('Could not sync user profile:', err);
+          console.warn('Could not sync user profile, trying refresh:', err);
+          return tryRefresh();
         })
         .finally(() => {
           setLoading(false);
         });
     } else {
-      setLoading(false);
+      tryRefresh().finally(() => setLoading(false));
+    }
+
+    async function tryRefresh() {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}'}/api/auth/refresh`, {
+          method: 'POST',
+          credentials: 'include'
+        });
+        if (!res.ok) throw new Error('Refresh failed');
+        const data = await res.json();
+        
+        localStorage.setItem('accessToken', data.accessToken);
+        localStorage.setItem('token', data.accessToken);
+        
+        const meRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || '${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}'}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${data.accessToken}` }
+        });
+        if (!meRes.ok) throw new Error('Me failed after refresh');
+        const meData = await meRes.json();
+        
+        setUser(meData.user);
+        localStorage.setItem('user', JSON.stringify(meData.user));
+      } catch (e) {
+        console.warn('Refresh flow failed', e);
+        // Clean up completely
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+      }
     }
   }, []);
 

@@ -21,7 +21,7 @@ export default function ProductsManager({ siteId }: { siteId: string }) {
 
   const fetchProducts = async () => {
     try {
-      const data = await apiClient.get(`http://localhost:3001/api/sites/${siteId}/products`);
+      const data = await apiClient.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/products`);
       setProducts(data);
     } catch (err) {
       console.error(err);
@@ -45,9 +45,9 @@ export default function ProductsManager({ siteId }: { siteId: string }) {
       };
 
       if (isEditing) {
-        await apiClient.patch(`http://localhost:3001/api/sites/${siteId}/products/${isEditing.id}`, payload);
+        await apiClient.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/products/${isEditing.id}`, payload);
       } else {
-        await apiClient.post(`http://localhost:3001/api/sites/${siteId}/products`, payload);
+        await apiClient.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/products`, payload);
       }
       setIsEditing(null);
       setIsCreating(false);
@@ -63,7 +63,7 @@ export default function ProductsManager({ siteId }: { siteId: string }) {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this product?')) return;
     try {
-      await apiClient.delete(`http://localhost:3001/api/sites/${siteId}/products/${id}`);
+      await apiClient.delete(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/products/${id}`);
       fetchProducts();
     } catch (err) {
       alert('Failed to delete product');

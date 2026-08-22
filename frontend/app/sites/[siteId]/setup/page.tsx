@@ -27,7 +27,7 @@ export default function SetupWizard() {
   useEffect(() => {
     const fetchSite = async () => {
       try {
-        const data = await apiClient.get(`http://localhost:3001/api/sites/${siteId}`);
+        const data = await apiClient.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}`);
         setSite(data);
       } catch (err) {
         console.error(err);
@@ -42,8 +42,8 @@ export default function SetupWizard() {
   const handleVerifyAndSave = async (keyName: string, keyValue: string, nextStep: number) => {
     setVerifying(true);
     try {
-      await apiClient.post(`http://localhost:3001/api/sites/${siteId}/credentials/test`, { keyName, keyValue });
-      await apiClient.post(`http://localhost:3001/api/sites/${siteId}/credentials`, { keys: [{ keyName, keyValue }] });
+      await apiClient.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/credentials/test`, { keyName, keyValue });
+      await apiClient.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/credentials`, { keys: [{ keyName, keyValue }] });
       setStep(nextStep);
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : (err as { message?: string })?.message || 'Key verification failed. Please check the key and try again.');
@@ -55,8 +55,8 @@ export default function SetupWizard() {
   const handleVerifyRazorpay = async () => {
     setVerifying(true);
     try {
-      await apiClient.post(`http://localhost:3001/api/sites/${siteId}/credentials/test`, { keyName: 'razorpay', keyValue: razorpayKeyId + ':' + razorpayKeySecret });
-      await apiClient.post(`http://localhost:3001/api/sites/${siteId}/credentials`, {
+      await apiClient.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/credentials/test`, { keyName: 'razorpay', keyValue: razorpayKeyId + ':' + razorpayKeySecret });
+      await apiClient.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sites/${siteId}/credentials`, {
         keys: [
           { keyName: 'razorpay_key_id', keyValue: razorpayKeyId },
           { keyName: 'razorpay_key_secret', keyValue: razorpayKeySecret }
