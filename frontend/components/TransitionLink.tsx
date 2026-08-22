@@ -105,26 +105,37 @@ export const TransitionLink = ({ children, className, onClick, ...props }: Trans
     
     // Create staggered text characters
     const textWrapper = document.createElement('div');
-    textWrapper.className = 'flex overflow-hidden pb-4 px-8';
+    textWrapper.className = 'flex flex-wrap justify-center overflow-hidden pb-4 px-4 w-full max-w-[100vw]';
     
     const labelUpper = labelText.toUpperCase();
     const chars: HTMLSpanElement[] = [];
     
-    for (let i = 0; i < labelUpper.length; i++) {
-        const char = document.createElement('span');
-        char.textContent = labelUpper[i] === ' ' ? '\u00A0' : labelUpper[i];
-        // Apply hollow effect (stroke) and italic serif for that high-fashion awwwards look
-        char.className = 'inline-block text-transparent font-serif italic text-5xl md:text-[8rem] lg:text-[11rem] leading-none tracking-tight';
-        char.style.webkitTextStroke = '1px rgba(255,255,255,0.4)';
-        char.style.transform = 'translateY(120%) scaleY(1.3) rotate(10deg)';
-        char.style.filter = 'blur(12px)';
-        char.style.opacity = '0';
-        char.style.transition = `transform 0.9s cubic-bezier(0.7, 0, 0.2, 1), opacity 0.8s cubic-bezier(0.7, 0, 0.2, 1), filter 0.9s cubic-bezier(0.7, 0, 0.2, 1), -webkit-text-stroke 0.8s ease, color 0.8s ease`;
-        char.style.transitionDelay = `${0.3 + (i * 0.04)}s`;
+    const words = labelUpper.split(' ');
+    let globalIndex = 0;
+
+    words.forEach((word, wordIndex) => {
+        const wordContainer = document.createElement('div');
+        wordContainer.className = `flex whitespace-nowrap ${wordIndex < words.length - 1 ? 'mr-[3vw] md:mr-[2vw]' : ''}`;
         
-        textWrapper.appendChild(char);
-        chars.push(char);
-    }
+        for (let i = 0; i < word.length; i++) {
+            const char = document.createElement('span');
+            char.textContent = word[i];
+            // Apply responsive font scaling and wrap
+            char.className = 'inline-block text-transparent font-serif italic text-[clamp(2.5rem,9vw,9rem)] leading-none tracking-tight';
+            char.style.webkitTextStroke = '1px rgba(255,255,255,0.4)';
+            char.style.transform = 'translateY(120%) scaleY(1.3) rotate(10deg)';
+            char.style.filter = 'blur(12px)';
+            char.style.opacity = '0';
+            char.style.transition = `transform 0.9s cubic-bezier(0.7, 0, 0.2, 1), opacity 0.8s cubic-bezier(0.7, 0, 0.2, 1), filter 0.9s cubic-bezier(0.7, 0, 0.2, 1), -webkit-text-stroke 0.8s ease, color 0.8s ease`;
+            char.style.transitionDelay = `${0.3 + (globalIndex * 0.04)}s`;
+            
+            wordContainer.appendChild(char);
+            chars.push(char);
+            globalIndex++;
+        }
+        
+        textWrapper.appendChild(wordContainer);
+    });
 
     // Subtext
     const subtext = document.createElement('div');
