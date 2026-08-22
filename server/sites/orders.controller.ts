@@ -67,6 +67,26 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
     const order = await prisma.order.findFirst({ where: { id: orderId, siteId } });
     if (!order) return res.status(404).json({ error: 'Order not found' });
 
+    // Enforce valid order state transitions
+    const validTransitions: Record<string, string[]> = {
+      PENDING: ['CONFIRMED', 'CANCELLED'],
+      CONFIRMED: ['PROCESSING', 'CANCELLED'],
+      PROCESSING: ['PACKED', 'CANCELLED'],
+      PACKED: ['SHIPPED', 'CANCELLED'],
+      SHIPPED: ['OUT_FOR_DELIVERY', 'CANCELLED'],
+      OUT_FOR_DELIVERY: ['DELIVERED', 'CANCELLED'],
+      DELIVERED: [], // Terminal state
+      CANCELLED: [], // Terminal state
+    };
+
+    const allowed = validTransitions[order.status] || [];
+    if (!allowed.includes(parsed.data.status)) {
+      return res.status(400).json({ 
+        error: `Invalid transition: cannot move from ${order.status} to ${parsed.data.status}`,
+        allowedTransitions: allowed
+      });
+    }
+
     // Transaction to update order and create timeline event
     const updatedOrder = await prisma.$transaction(async (tx) => {
       const updated = await tx.order.update({

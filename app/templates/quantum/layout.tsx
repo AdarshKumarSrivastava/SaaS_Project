@@ -73,7 +73,7 @@ function QuantumNavigation() {
 
           <nav className="hidden md:flex items-center justify-center absolute left-1/2 -translate-x-1/2 gap-12">
             {navLinks.map((link, i) => {
-              const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
+              const isActive = pathname === link.href || pathname?.startsWith(`${link.href}/`);
               return (
                 <Link 
                   key={link.name}

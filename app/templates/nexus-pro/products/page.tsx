@@ -65,15 +65,15 @@ function ProductsContent() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   useEffect(() => {
-    const cat = searchParams.get('category');
+    const cat = searchParams?.get('category');
     if (cat) setSelectedCategory(cat);
     else setSelectedCategory("All");
 
-    const wt = searchParams.get('wearType');
+    const wt = searchParams?.get('wearType');
     if (wt) setSelectedWearType(wt);
     else setSelectedWearType("All");
 
-    const isNew = searchParams.get('isNew');
+    const isNew = searchParams?.get('isNew');
     if (isNew === 'true') setShowNewOnly(true);
     else setShowNewOnly(false);
   }, [searchParams]);

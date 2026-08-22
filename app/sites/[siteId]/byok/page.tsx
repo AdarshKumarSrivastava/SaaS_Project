@@ -9,7 +9,7 @@ import { apiClient } from '@/lib/api-client';
 export default function BYOKVault() {
   const router = useRouter();
   const params = useParams();
-  const siteId = params.siteId as string;
+  const siteId = params?.siteId as string;
 
   const [viewState, setViewState] = useState<'loading' | 'setup' | 'locked' | 'unlocked' | 'forgot_otp'>('loading');
 

@@ -103,11 +103,8 @@ export const apiClient = {
   async get(endpoint: string) {
     const cached = memoryCache.get(endpoint);
     if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
-      console.log(`[Cache HIT] ${endpoint}`);
       return cached.data;
     }
-    
-    console.log(`[Cache MISS] ${endpoint}`);
     const res = await fetchWithAuth(endpoint, { method: 'GET' });
     const data = await res.json();
     

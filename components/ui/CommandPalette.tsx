@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Loader2, Globe, ArrowRight } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
+import { getSiteUrl } from '@/lib/utils';
 
 export const CommandPalette = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -36,7 +37,7 @@ export const CommandPalette = () => {
 
   useEffect(() => {
     if (!isOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+  
       setQuery('');
       setResults([]);
       return;
@@ -148,7 +149,7 @@ export const CommandPalette = () => {
                     <Globe className={`w-5 h-5 ${index === selectedIndex ? 'text-accent' : 'text-ink-soft'}`} />
                     <div>
                       <div className={`font-medium ${index === selectedIndex ? 'text-accent' : 'text-ink'}`}>{site.name}</div>
-                      <div className="text-sm opacity-60 text-ink-soft">{site.subdomain}.localhost:3000</div>
+                      <div className="text-sm opacity-60 text-ink-soft">{getSiteUrl(site.subdomain)}</div>
                     </div>
                   </div>
                   {index === selectedIndex && <ArrowRight className="w-5 h-5 text-accent" />}

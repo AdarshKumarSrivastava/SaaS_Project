@@ -24,7 +24,7 @@ interface SiteData {
 export default function BuilderPage() {
   const router = useRouter();
   const params = useParams();
-  const siteId = params.siteId as string;
+  const siteId = params?.siteId as string;
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

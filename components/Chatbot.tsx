@@ -109,7 +109,7 @@ export function Chatbot({ siteId }: { siteId?: string }) {
       }
     } catch (err: any) {
       if (err.name === 'AbortError') {
-        console.log('Request aborted');
+        // Request was aborted, no action needed
       } else {
         setMessages(prev => [...prev, { role: 'assistant', content: 'Something went wrong while connecting to the assistant. Please try again.' }]);
       }

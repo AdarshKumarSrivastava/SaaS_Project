@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { authenticator } = require('otplib');
 import qrcode from 'qrcode';
 import { prisma } from '../lib/prisma';
@@ -312,7 +313,7 @@ export const logout = (req: Request, res: Response) => {
 };
 
 export const oauthGoogle = async (req: Request, res: Response) => {
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3001/api/auth/oauth/google/callback';
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/oauth/google/callback';
   const clientId = process.env.GOOGLE_CLIENT_ID || 'stub_google_client_id';
   const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=email%20profile`;
   res.json({ url });
@@ -321,11 +322,11 @@ export const oauthGoogle = async (req: Request, res: Response) => {
 export const oauthGoogleCallback = async (req: Request, res: Response) => {
   const { code } = req.query;
   if (!code) {
-    res.redirect('http://localhost:3000/login?error=OAuthFailed');
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=OAuthFailed`);
     return;
   }
   try {
-    const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3001/api/auth/oauth/google/callback';
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/oauth/google/callback';
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -363,15 +364,15 @@ export const oauthGoogleCallback = async (req: Request, res: Response) => {
 
     const tokens = generateTokens(user.id);
     setTokenCookies(res, tokens);
-    res.redirect(`http://localhost:3000/dashboard`);
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard`);
   } catch (error) {
     console.error('Google OAuth Error:', error);
-    res.redirect('http://localhost:3000/login?error=OAuthFailed');
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=OAuthFailed`);
   }
 };
 
 export const oauthGithub = async (req: Request, res: Response) => {
-  const redirectUri = process.env.GITHUB_REDIRECT_URI || 'http://localhost:3001/api/auth/oauth/github/callback';
+  const redirectUri = process.env.GITHUB_REDIRECT_URI || 'http://localhost:3000/api/auth/oauth/github/callback';
   const clientId = process.env.GITHUB_CLIENT_ID || 'stub_github_client_id';
   const url = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=user:email`;
   res.json({ url });
@@ -380,11 +381,11 @@ export const oauthGithub = async (req: Request, res: Response) => {
 export const oauthGithubCallback = async (req: Request, res: Response) => {
   const { code } = req.query;
   if (!code) {
-    res.redirect('http://localhost:3000/login?error=OAuthFailed');
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=OAuthFailed`);
     return;
   }
   try {
-    const redirectUri = process.env.GITHUB_REDIRECT_URI || 'http://localhost:3001/api/auth/oauth/github/callback';
+    const redirectUri = process.env.GITHUB_REDIRECT_URI || 'http://localhost:3000/api/auth/oauth/github/callback';
     const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
       headers: {
@@ -432,9 +433,9 @@ export const oauthGithubCallback = async (req: Request, res: Response) => {
 
     const tokens = generateTokens(user.id);
     setTokenCookies(res, tokens);
-    res.redirect(`http://localhost:3000/dashboard`);
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard`);
   } catch (error) {
     console.error('GitHub OAuth Error:', error);
-    res.redirect('http://localhost:3000/login?error=OAuthFailed');
+    res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=OAuthFailed`);
   }
 };

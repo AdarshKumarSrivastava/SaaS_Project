@@ -8,7 +8,7 @@ import { Heart, Star, ShoppingBag, ArrowLeft, ArrowRight, Share2, Plus, Minus, C
 import { NEXUS_PRODUCTS, useShop } from "../../ShopContext";
 
 export default function NexusProProductDetailPage() {
-  const { id } = useParams();
+  const { id } = useParams() as { id: string };
   const { addToCart, toggleWishlist, isInWishlist , currencySymbol } = useShop();
   const basePath = '/templates/nexus-pro';
   

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, CheckCircle2, Globe, Rocket, Terminal, X, Copy } from 'lucide-react';
+import { getSiteUrl } from '@/lib/utils';
 import { apiClient } from '@/lib/api-client';
 
 interface DeploymentModalProps {
@@ -27,11 +28,6 @@ export function DeploymentModal({ isOpen, onClose, siteId, siteName, siteSubdoma
   const [errorMsg, setErrorMsg] = useState('');
   const [logs, setLogs] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (isOpen && siteId && status === 'idle') {
-      startDeployment();
-    }
-  }, [isOpen, siteId]);
 
   const addLog = (msg: string) => {
     setLogs(prev => [...prev, `[${new Date().toISOString().split('T')[1].split('.')[0]}] ${msg}`]);
@@ -86,6 +82,12 @@ export function DeploymentModal({ isOpen, onClose, siteId, siteName, siteSubdoma
     }
   };
 
+  useEffect(() => {
+    if (isOpen && siteId && status === 'idle') {
+      startDeployment();
+    }
+  }, [isOpen, siteId]);
+
   const handleClose = () => {
     if (status === 'running') return; // Prevent closing while running
     setStatus('idle');
@@ -95,7 +97,7 @@ export function DeploymentModal({ isOpen, onClose, siteId, siteName, siteSubdoma
     onClose();
   };
 
-  const liveUrl = siteSubdomain ? `http://${siteSubdomain}.localhost:3000` : '';
+  const liveUrl = siteSubdomain ? getSiteUrl(siteSubdomain) : '';
 
   return (
     <AnimatePresence>

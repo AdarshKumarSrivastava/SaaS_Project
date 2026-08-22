@@ -66,8 +66,8 @@ export function CartProvider({ children, initialBasePath, initialCustomData }: {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const pathname = usePathname();
-  const isCustomStore = pathname ? pathname.startsWith('/store/') : false;
-  const storeSlug = isCustomStore ? pathname.split('/')[2] : '';
+  const isCustomStore = pathname ? pathname?.startsWith('/store/') : false;
+  const storeSlug = isCustomStore ? pathname?.split('/')[2] : '';
   const calculatedBasePath = isCustomStore ? `/store/${storeSlug}` : '/templates/atelier';
   const basePath = initialBasePath !== undefined ? initialBasePath : calculatedBasePath;
 

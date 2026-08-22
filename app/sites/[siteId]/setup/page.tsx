@@ -10,7 +10,7 @@ import { TransitionLink } from '@/components/TransitionLink';
 export default function SetupWizard() {
   const router = useRouter();
   const params = useParams();
-  const siteId = params.siteId as string;
+  const siteId = params?.siteId as string;
   
    
   const [site, setSite] = useState<any>(null);

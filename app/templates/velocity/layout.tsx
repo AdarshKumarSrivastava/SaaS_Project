@@ -66,7 +66,7 @@ function VelocityNavigation() {
           <nav className="hidden md:flex items-center gap-10">
             {["Products", "About", "Contact"].map((item) => {
               const href = `/templates/velocity/${item.toLowerCase()}`;
-              const isActive = pathname === href || pathname.startsWith(`${href}/`);
+              const isActive = pathname === href || pathname?.startsWith(`${href}/`);
               return (
                 <Link 
                   key={item}

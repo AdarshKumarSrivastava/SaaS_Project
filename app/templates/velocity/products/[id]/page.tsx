@@ -8,7 +8,7 @@ import Link from "next/link";
 import { VELOCITY_PRODUCTS, useVelocity } from "../../VelocityContext";
 
 export default function VelocityProductDetails() {
-  const { id } = useParams();
+  const { id } = useParams() as { id: string };
   const basePath = '/templates/velocity';
   const router = useRouter();
   const { addToCart, setIsCartOpen, toggleWishlist, wishlist , currencySymbol } = useVelocity();

@@ -34,7 +34,7 @@ export default async function LivePreviewRouter({ params }: { params: { siteId: 
   const schema = site.schema || {};
   const templateSlug = schema.global?.templateSlug || 'velocity';
   
-  let TemplateComponent = templateMap[templateSlug];
+  const TemplateComponent = templateMap[templateSlug];
 
   if (!TemplateComponent) {
     // Fallback if template component not wired up yet

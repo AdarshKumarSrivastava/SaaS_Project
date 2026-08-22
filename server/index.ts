@@ -29,14 +29,11 @@ for (const envVar of requiredEnvVars) {
 }
 
 const app = express();
-const port = process.env.PORT || 3001;
 
 // Middlewares
 app.use(helmet());
 app.use(cors({
-  origin: process.env.FRONTEND_URL 
-    ? [process.env.FRONTEND_URL, 'http://localhost:3000'] 
-    : true,
+  origin: process.env.NODE_ENV === 'production' ? process.env.FRONTEND_URL : true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
 }));

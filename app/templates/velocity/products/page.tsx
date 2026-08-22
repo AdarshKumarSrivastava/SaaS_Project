@@ -120,11 +120,11 @@ function ProductsContent() {
   const [isSortOpen, setIsSortOpen] = useState(false);
 
   useEffect(() => {
-    const cat = searchParams.get('category');
+    const cat = searchParams?.get('category');
     if (cat) setTimeout(() => setSelectedCategory(cat), 0);
     else setTimeout(() => setSelectedCategory("All"), 0);
 
-    const wt = searchParams.get('wearType');
+    const wt = searchParams?.get('wearType');
     if (wt) setTimeout(() => setSelectedWearType(wt), 0);
     else setTimeout(() => setSelectedWearType("All"), 0);
   }, [searchParams]);

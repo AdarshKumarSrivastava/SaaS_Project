@@ -7,7 +7,7 @@ import { ArrowLeft, ChevronRight, Heart } from "lucide-react";
 import { useState } from "react";
 
 export default function OriginProductDetailPage() {
-  const { id } = useParams();
+  const { id } = useParams() as { id: string };
   const basePath = '/templates/origin';
   const router = useRouter();
   const { addToCart, toggleWishlist, isInWishlist, reviews, addReview , currencySymbol } = useCart();

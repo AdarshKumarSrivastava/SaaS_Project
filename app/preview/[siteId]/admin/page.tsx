@@ -25,6 +25,19 @@ export default function SiteAdminPanel() {
     if (token) setIsAuthenticated(true);
   }, [siteId]);
 
+  const fetchInquiries = async () => {
+    setLoadingInquiries(true);
+    try {
+      const data = await apiClient.get(`/api/enquiry?siteId=${siteId}`);
+      if (data && data.enquiries) {
+        setInquiries(data.enquiries);
+      }
+    } catch (err) {
+      console.error('Failed to fetch inquiries:', err);
+    }
+    setLoadingInquiries(false);
+  };
+
   useEffect(() => {
     if (isAuthenticated && activeTab === 'Inquiries') {
       fetchInquiries();
@@ -49,18 +62,7 @@ export default function SiteAdminPanel() {
     setIsAuthenticated(false);
   };
 
-  const fetchInquiries = async () => {
-    setLoadingInquiries(true);
-    try {
-      const data = await apiClient.get(`/api/enquiry?siteId=${siteId}`);
-      if (data && data.enquiries) {
-        setInquiries(data.enquiries);
-      }
-    } catch (err) {
-      console.error('Failed to fetch inquiries:', err);
-    }
-    setLoadingInquiries(false);
-  };
+
 
   if (!isAuthenticated) {
     return (
