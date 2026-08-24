@@ -180,6 +180,18 @@ function ProductEditor({ siteId, product, onClose, onSaved }: { siteId: string, 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Validate type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file (JPG, PNG, WEBP)');
+      return;
+    }
+    // Validate size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB');
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (event) => {
       if (event.target?.result) {
@@ -187,6 +199,16 @@ function ProductEditor({ siteId, product, onClose, onSaved }: { siteId: string, 
       }
     };
     reader.readAsDataURL(file);
+    
+    // Clear the input so selecting the same file again triggers change
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setFormData((prev: any) => ({ ...prev, images: [] }));
   };
 
   const handleNumberChange = (field: string, value: string) => {
@@ -200,6 +222,10 @@ function ProductEditor({ siteId, product, onClose, onSaved }: { siteId: string, 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.name?.trim()) {
+      toast.error('Product name is required');
+      return;
+    }
     setSaving(true);
     try {
       const payload = {
@@ -217,8 +243,9 @@ function ProductEditor({ siteId, product, onClose, onSaved }: { siteId: string, 
         toast.success('Product created');
       }
       onSaved();
-    } catch (err) {
-      toast.error('Failed to save product');
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.response?.data?.error || 'Failed to save product');
     } finally {
       setSaving(false);
     }
@@ -390,15 +417,25 @@ function ProductEditor({ siteId, product, onClose, onSaved }: { siteId: string, 
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/50">Product Image</label>
                   <input type="file" accept="image/jpeg, image/png, image/webp" className="hidden" ref={fileInputRef} onChange={handleImageUpload} />
-                  <div onClick={() => fileInputRef.current?.click()} className="border-2 border-dashed border-white/10 rounded-[16px] p-8 flex flex-col items-center justify-center gap-4 bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/20 transition-all cursor-pointer group">
-                    <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 group-hover:bg-white/10 transition-transform">
-                      <ImageIcon className="w-5 h-5 text-white/50 group-hover:text-white transition-colors" />
+                  {formData.images?.[0] ? (
+                    <div className="relative border-2 border-white/20 rounded-[16px] overflow-hidden group">
+                      <img src={formData.images[0]} alt="Uploaded preview" className="w-full h-[240px] object-cover" />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                        <button type="button" onClick={() => fileInputRef.current?.click()} className="px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full text-[12px] font-bold text-white transition-colors">Replace</button>
+                        <button type="button" onClick={handleRemoveImage} className="px-4 py-2 bg-red-500/80 hover:bg-red-500 backdrop-blur-md rounded-full text-[12px] font-bold text-white transition-colors">Remove</button>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <p className="text-[13px] font-medium text-white/80">Drop image here or click to browse</p>
-                      <p className="text-[11px] text-white/40 mt-1 uppercase tracking-widest">JPG / PNG / WEBP • MAX 5MB</p>
+                  ) : (
+                    <div onClick={() => fileInputRef.current?.click()} className="border-2 border-dashed border-white/10 rounded-[16px] p-8 flex flex-col items-center justify-center gap-4 bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/20 transition-all cursor-pointer group h-[240px]">
+                      <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 group-hover:bg-white/10 transition-transform">
+                        <ImageIcon className="w-5 h-5 text-white/50 group-hover:text-white transition-colors" />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-[13px] font-medium text-white/80">Drop image here or click to browse</p>
+                        <p className="text-[11px] text-white/40 mt-1 uppercase tracking-widest">JPG / PNG / WEBP • MAX 5MB</p>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </section>
             </div>
