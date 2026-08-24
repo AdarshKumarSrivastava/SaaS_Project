@@ -20,12 +20,14 @@ function setTokenCookies(res: Response, tokens: { accessToken: string, refreshTo
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: '/'
   });
   res.cookie('accessToken', tokens.accessToken, {
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 15 * 60 * 1000
+    maxAge: 15 * 60 * 1000,
+    path: '/'
   });
 }
 
