@@ -1,11 +1,10 @@
 import { Request, Response } from 'express';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+import * as bcrypt from 'bcrypt';
+import * as jwt from 'jsonwebtoken';
 const { authenticator } = require('otplib');
-import qrcode from 'qrcode';
+import * as qrcode from 'qrcode';
 import { prisma } from '../lib/prisma';
-import nodemailer from 'nodemailer';
+import * as nodemailer from 'nodemailer';
 import { z } from 'zod';
 
 const JWT_SECRET = process.env.JWT_PLATFORM_SECRET || 'fallback_secret';
@@ -51,7 +50,9 @@ export const signup = async (req: Request, res: Response) => {
   try {
     const parsed = signupSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: 'Invalid input', details: parsed.error.issues });
-    const { name, email, password } = parsed.data;
+    const { name, password } = parsed.data;
+    let { email } = parsed.data;
+    email = email.trim().toLowerCase();
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) return res.status(400).json({ error: 'User already exists' });
@@ -97,7 +98,11 @@ export const signup = async (req: Request, res: Response) => {
     }
 
     res.status(201).json({ message: 'OTP sent. Please verify to complete registration.' });
-  } catch (error) {
+  } catch (error: any) {
+    console.error('[AUTH SIGNUP ERROR]', error);
+    if (error.name === 'PrismaClientInitializationError' || (error.message && error.message.includes("Can't reach database server"))) {
+       return res.status(503).json({ error: 'Authentication service is temporarily unavailable. Please try again.' });
+    }
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -106,7 +111,9 @@ export const verifyOtp = async (req: Request, res: Response) => {
   try {
     const parsed = verifyOtpSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: 'Invalid input' });
-    const { email, otp } = parsed.data;
+    const { otp } = parsed.data;
+    let { email } = parsed.data;
+    email = email.trim().toLowerCase();
 
     const pending = await prisma.pendingSignup.findUnique({ where: { email } });
     
@@ -134,10 +141,11 @@ export const verifyOtp = async (req: Request, res: Response) => {
 
 export const resendOtp = async (req: Request, res: Response) => {
   try {
-    const { email } = req.body;
+    let { email } = req.body;
     if (!email || typeof email !== 'string') {
       return res.status(400).json({ error: 'Valid email is required' });
     }
+    email = email.trim().toLowerCase();
 
     const pending = await prisma.pendingSignup.findUnique({ where: { email } });
     if (!pending) {
@@ -191,7 +199,9 @@ export const login = async (req: Request, res: Response) => {
   try {
     const parsed = loginSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: 'Invalid credentials format' });
-    const { email, password } = parsed.data;
+    const { password } = parsed.data;
+    let { email } = parsed.data;
+    email = email.trim().toLowerCase();
 
     const user = await prisma.user.findUnique({ where: { email } });
     
@@ -220,7 +230,10 @@ export const login = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error('[AUTH LOGIN ERROR]', error);
-    res.status(500).json({ error: error.message || 'Internal server error' });
+    if (error.name === 'PrismaClientInitializationError' || (error.message && error.message.includes("Can't reach database server"))) {
+       return res.status(503).json({ error: 'Authentication service is temporarily unavailable. Please try again.' });
+    }
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -349,7 +362,7 @@ export const oauthGoogleCallback = async (req: Request, res: Response) => {
 
     if (!userData.email) throw new Error('No email returned from Google');
 
-    const email = userData.email;
+    const email = userData.email.trim().toLowerCase();
     const googleId = String(userData.id);
     const name = userData.name || 'Google User';
 
@@ -421,6 +434,7 @@ export const oauthGithubCallback = async (req: Request, res: Response) => {
     }
 
     if (!email) throw new Error('No email associated with GitHub account');
+    email = email.trim().toLowerCase();
 
     let user = await prisma.user.findFirst({ where: { OR: [{ githubId }, { email }] } });
     if (!user) {
