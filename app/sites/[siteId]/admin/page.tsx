@@ -7,7 +7,7 @@ import {
   ArrowLeft, Settings, LayoutTemplate, Box, MessageSquare, 
   ChevronRight, Loader2, Users, Receipt
 } from 'lucide-react';
-import { getSiteUrl } from '@/lib/utils';
+import { getLiveSiteUrl } from '@/lib/utils';
 import { apiClient } from '@/lib/api-client';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'react-hot-toast';
@@ -60,7 +60,7 @@ export default function AdminPanelPage() {
     );
   }
 
-  const liveUrl = getSiteUrl(site.subdomain);
+  const liveUrl = getLiveSiteUrl(site.id);
 
   return (
     <div className="min-h-screen bg-[#020202] text-white font-sans selection:bg-white/20 overflow-x-hidden">

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Globe, Loader2, Save, CheckCircle2, Shield } from 'lucide-react';
-import { getSiteUrl } from '@/lib/utils';
+import { getLiveSiteUrl } from '@/lib/utils';
 import { apiClient } from '@/lib/api-client';
 import { TransitionLink } from '@/components/TransitionLink';
 
@@ -115,7 +115,7 @@ export default function SettingsPage() {
             <div>
               <label className="block text-sm font-medium mb-1.5">Primary Subdomain</label>
               <div className="w-full bg-bg-subtle border border-line rounded-xl px-4 py-3 text-ink-soft text-sm cursor-not-allowed">
-                {getSiteUrl(site.subdomain)}
+                {getLiveSiteUrl(site.id)}
               </div>
               <p className="text-xs text-ink-soft mt-1.5">This is your permanent BuildSpace assigned URL.</p>
             </div>

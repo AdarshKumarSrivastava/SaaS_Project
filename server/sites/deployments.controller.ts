@@ -60,30 +60,46 @@ export const updateDeploymentStatus = async (req: Request, res: Response) => {
        return res.status(404).json({ error: 'Deployment not found' });
     }
 
-    // 2. If transitioning to LIVE, we should archive previous LIVE deployments for cleanliness, 
-    // though querying by `orderBy createdAt desc` also works. We'll archive them.
+    let updated;
+
     if (status === 'LIVE') {
-       await prisma.deployment.updateMany({
-          where: { siteId, status: 'LIVE', id: { not: deploymentId } },
-          data: { status: 'ARCHIVED' }
+       // Atomic transaction: mark this deployment LIVE, archive others, and set publishedDeploymentId
+       updated = await prisma.$transaction(async (tx) => {
+          await tx.deployment.updateMany({
+             where: { siteId, status: 'LIVE', id: { not: deploymentId } },
+             data: { status: 'ARCHIVED' }
+          });
+          
+          const liveDeployment = await tx.deployment.update({
+             where: { id: deploymentId },
+             data: { 
+                status,
+                errorLogs: errorLogs || null,
+                completedAt: new Date()
+             }
+          });
+
+          await tx.site.update({
+             where: { id: siteId },
+             data: { 
+                status: 'published',
+                publishedDeploymentId: deploymentId
+             }
+          });
+
+          return liveDeployment;
        });
-       
-       // Update site status to 'published'
-       await prisma.site.update({
-          where: { id: siteId },
-          data: { status: 'published' }
+    } else {
+       // Update the target deployment only
+       updated = await prisma.deployment.update({
+          where: { id: deploymentId },
+          data: { 
+             status,
+             errorLogs: errorLogs || null,
+             completedAt: new Date()
+          }
        });
     }
-
-    // 3. Update the target deployment
-    const updated = await prisma.deployment.update({
-       where: { id: deploymentId },
-       data: { 
-          status,
-          errorLogs: errorLogs || null,
-          completedAt: new Date()
-       }
-    });
 
     res.json(updated);
   } catch (error) {

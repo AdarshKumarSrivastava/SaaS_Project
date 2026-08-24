@@ -49,7 +49,9 @@ model Site {
   invoices       Invoice[]
   reviews        Review[]
   returnRequests ReturnRequest[]
-  deployments    Deployment[]
+  deployments    Deployment[] @relation("SiteDeployments")
+  publishedDeploymentId String? @unique
+  publishedDeployment   Deployment? @relation("SitePublishedDeployment", fields: [publishedDeploymentId], references: [id])
 }
 
 model SiteRole {
@@ -349,5 +351,6 @@ model Deployment {
   errorLogs   String?
   createdAt   DateTime @default(now())
   completedAt DateTime?
-  site        Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  site        Site     @relation("SiteDeployments", fields: [siteId], references: [id], onDelete: Cascade)
+  publishedForSite Site? @relation("SitePublishedDeployment")
 }

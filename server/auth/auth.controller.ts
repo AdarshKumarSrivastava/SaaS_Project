@@ -101,11 +101,12 @@ export const signup = async (req: Request, res: Response) => {
 
     res.status(201).json({ message: 'OTP sent. Please verify to complete registration.' });
   } catch (error: any) {
-    console.error('[AUTH SIGNUP ERROR]', error);
+    console.error('[AUTH] SIGNUP FAILURE - Error:', error);
     if (error.name === 'PrismaClientInitializationError' || (error.message && error.message.includes("Can't reach database server"))) {
-       return res.status(503).json({ error: 'Authentication service is temporarily unavailable. Please try again.' });
+       console.error('[AUTH] DATABASE CONNECTION FAILURE - Could not reach database during signup');
+       return res.status(503).json({ error: 'Database connection failed. Please ensure the database is available.' });
     }
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error during signup' });
   }
 };
 
@@ -197,7 +198,7 @@ export const resendOtp = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-  console.log('[LOGIN REQUEST] body:', req.body, 'headers:', req.headers);
+  console.log('[AUTH] method = credentials');
   try {
     const parsed = loginSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: 'Invalid credentials format' });
@@ -205,11 +206,21 @@ export const login = async (req: Request, res: Response) => {
     let { email } = parsed.data;
     email = email.trim().toLowerCase();
 
+    console.log('[AUTH] database = checking');
     const user = await prisma.user.findUnique({ where: { email } });
+    console.log('[AUTH] database = connected');
     
-    if (!user || !user.passwordHash || !(await bcrypt.compare(password, user.passwordHash))) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    if (!user) {
+      console.log('[AUTH] user = not_found');
+      return res.status(401).json({ error: 'Invalid email or password.' });
     }
+    console.log('[AUTH] user = found');
+
+    if (!user.passwordHash || !(await bcrypt.compare(password, user.passwordHash))) {
+      console.log('[AUTH] password = invalid');
+      return res.status(401).json({ error: 'Invalid email or password.' });
+    }
+    console.log('[AUTH] password = verified');
 
     if (!user.emailVerified) {
       return res.status(403).json({ error: 'Please verify your email first' });
@@ -222,6 +233,7 @@ export const login = async (req: Request, res: Response) => {
 
     const tokens = generateTokens(user.id);
     setTokenCookies(res, tokens);
+    console.log('[AUTH] session = created');
     res.json({ 
       ...tokens, 
       user: { 
@@ -231,11 +243,12 @@ export const login = async (req: Request, res: Response) => {
       } 
     });
   } catch (error: any) {
-    console.error('[AUTH LOGIN ERROR]', error);
+    console.error('[AUTH] LOGIN FAILURE - Error:', error);
     if (error.name === 'PrismaClientInitializationError' || (error.message && error.message.includes("Can't reach database server"))) {
-       return res.status(503).json({ error: 'Authentication service is temporarily unavailable. Please try again.' });
+       console.error('[AUTH] DATABASE CONNECTION FAILURE - Could not reach database during login');
+       return res.status(503).json({ error: 'Authentication database is currently unavailable.' });
     }
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Authentication failed. Please try again.' });
   }
 };
 
@@ -335,6 +348,8 @@ export const oauthGoogle = async (req: Request, res: Response) => {
 };
 
 export const oauthGoogleCallback = async (req: Request, res: Response) => {
+  console.log('[AUTH] provider = google');
+  console.log('[AUTH] oauth_callback = received');
   const { code } = req.query;
   if (!code) {
     res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=OAuthFailed`);
@@ -373,15 +388,18 @@ export const oauthGoogleCallback = async (req: Request, res: Response) => {
       user = await prisma.user.create({
         data: { email, name, googleId, emailVerified: true, passwordHash: '' }
       });
+      console.log('[AUTH] account = created');
     } else if (!user.googleId) {
       user = await prisma.user.update({ where: { id: user.id }, data: { googleId } });
+      console.log('[AUTH] account = linked');
     }
 
     const tokens = generateTokens(user.id);
     setTokenCookies(res, tokens);
+    console.log('[AUTH] session = created');
     res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard`);
-  } catch (error) {
-    console.error('Google OAuth Error:', error);
+  } catch (error: any) {
+    console.error('[AUTH] OAUTH CALLBACK FAILURE - Google OAuth Error:', error);
     res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=OAuthFailed`);
   }
 };
@@ -394,6 +412,8 @@ export const oauthGithub = async (req: Request, res: Response) => {
 };
 
 export const oauthGithubCallback = async (req: Request, res: Response) => {
+  console.log('[AUTH] provider = github');
+  console.log('[AUTH] oauth_callback = received');
   const { code } = req.query;
   if (!code) {
     res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=OAuthFailed`);
@@ -443,15 +463,18 @@ export const oauthGithubCallback = async (req: Request, res: Response) => {
       user = await prisma.user.create({
         data: { email, name, githubId, emailVerified: true, passwordHash: '' }
       });
+      console.log('[AUTH] account = created');
     } else if (!user.githubId) {
       user = await prisma.user.update({ where: { id: user.id }, data: { githubId } });
+      console.log('[AUTH] account = linked');
     }
 
     const tokens = generateTokens(user.id);
     setTokenCookies(res, tokens);
+    console.log('[AUTH] session = created');
     res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard`);
-  } catch (error) {
-    console.error('GitHub OAuth Error:', error);
+  } catch (error: any) {
+    console.error('[AUTH] OAUTH CALLBACK FAILURE - GitHub OAuth Error:', error);
     res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=OAuthFailed`);
   }
 };

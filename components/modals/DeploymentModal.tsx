@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, CheckCircle2, Globe, Rocket, Terminal, X, Copy } from 'lucide-react';
-import { getSiteUrl } from '@/lib/utils';
+import { getLiveSiteUrl } from '@/lib/utils';
 import { apiClient } from '@/lib/api-client';
 
 interface DeploymentModalProps {
@@ -97,7 +97,7 @@ export function DeploymentModal({ isOpen, onClose, siteId, siteName, siteSubdoma
     onClose();
   };
 
-  const liveUrl = siteSubdomain ? getSiteUrl(siteSubdomain) : '';
+  const liveUrl = siteId ? getLiveSiteUrl(siteId) : '';
 
   return (
     <AnimatePresence>
