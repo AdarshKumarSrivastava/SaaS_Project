@@ -74,14 +74,14 @@ export default async function LiveSitePage({ params }: { params: Promise<{ siteI
           </p>
           <div className="flex flex-col w-full gap-4">
             <Link 
-              href={`/dashboard`} 
+              href={`/sites/${siteId}/admin`} 
               className="w-full bg-ink text-bg-elevated font-bold py-3.5 rounded-xl hover:bg-ink/90 transition-all flex items-center justify-center gap-2 shadow-sm"
             >
-              <Rocket className="w-4 h-4" /> Deploy Live
+              🚀 DEPLOY LIVE
             </Link>
             <Link 
-              href={`/dashboard`} 
-              className="text-xs text-ink-soft font-semibold hover:text-ink transition-colors"
+              href={`/sites/${siteId}/admin`} 
+              className="text-sm text-ink-soft font-semibold hover:text-ink transition-colors"
             >
               Deploy now &rarr;
             </Link>

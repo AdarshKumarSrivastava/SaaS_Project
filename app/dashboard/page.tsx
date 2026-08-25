@@ -23,6 +23,7 @@ import { defaultMonumentProducts } from '../templates/monument/data';
 import { defaultVantaProducts } from '../templates/vanta/data';
 import { defaultAtelierProducts } from '../templates/atelier/data';
 import { DeploymentModal } from '@/components/modals/DeploymentModal';
+import { getTemplateConfig } from '@/lib/template-registry';
 
 const categories = [
   { id: 'portfolio', label: 'Portfolio', icon: LayoutTemplate, accent: 'bg-blue-50 text-blue-600 border-blue-100', description: 'Personal, architectural & creative showcases.' },
@@ -151,60 +152,17 @@ export default function DashboardPage() {
         category: template.category
       });
 
-      // Multi-page template schema
-      const fallbackSchema = {
-         pages: [
-            {
-               id: 'home',
-               name: 'Home',
-               path: '/',
-               sections: [
-                  { id: crypto.randomUUID(), type: 'Hero', props: { 
-                     brandName: `My ${template.name}`, 
-                     heroSubtitle: 'System // Override // Active', 
-                     primaryCta: 'Initialize Sequence',
-                     heroImage: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2000&auto=format&fit=crop'
-                  } },
-               ]
-            },
-            {
-               id: 'products',
-               name: 'Products',
-               path: '/products',
-               sections: [
-                  { id: crypto.randomUUID(), type: 'Pricing', props: { shopTitle: 'The Arsenal', viewAllText: 'Access Full Grid' } },
-               ]
-            },
-            {
-               id: 'contact',
-               name: 'Contact',
-               path: '/contact',
-               sections: [
-                  { id: crypto.randomUUID(), type: 'Contact', props: { marqueeText1: 'Cybernetic Enhance', marqueeText2: 'Neo-Tokyo Aesthetics' } },
-               ]
-            }
-         ],
-         global: { 
-            brandName: `My ${template.name}`,
-            templateSlug: template.id.replace(/^(starter|growth)-/, '')
-         }
-      };
-
-      const templateProductsMap: Record<string, any[]> = {
-         'aurelia': defaultAureliaProducts,
-         'noire': defaultNoireProducts,
-         'monument': defaultMonumentProducts,
-         'vanta': defaultVantaProducts,
-         'atelier': defaultAtelierProducts,
-      };
-      const slug = template.id.replace(/^(starter|growth)-/, '');
-      const productsToSeed = templateProductsMap[slug] || [];
+      const slug = template.id.replace(/^(starter|growth|premium)-/, '');
+      const config = getTemplateConfig(slug);
+      
+      const schema = config.defaultSchema(`My ${template.name}`);
+      const productsToSeed = config.defaultProducts;
 
       // Add a small delay to ensure DB triggers are ready for the schema patch
       await new Promise(resolve => setTimeout(resolve, 500));
 
       await apiClient.patch(`/api/sites/${data.id}/schema`, { 
-        schema: fallbackSchema,
+        schema: schema,
         products: productsToSeed
       });
 

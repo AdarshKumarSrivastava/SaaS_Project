@@ -12,11 +12,18 @@ export const useCustomization = () => {
     if (context?.siteData?.global) {
       flattened = { ...flattened, ...context.siteData.global };
     }
+    
+    // In live environments, determine which page we are on
+    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+    
     if (context?.siteData?.pages) {
-      context.siteData.pages.forEach((page: any) => {
-        page.sections?.forEach((section: any) => {
-          flattened = { ...flattened, ...section.props };
-        });
+      const activePage = context.siteData.pages.find((p: any) => {
+         if (p.path === '/') return currentPath === '/' || currentPath.endsWith('/origin') || currentPath.endsWith('/velocity');
+         return currentPath.includes(p.path);
+      }) || context.siteData.pages[0]; // fallback to first page
+
+      activePage?.sections?.forEach((section: any) => {
+        flattened = { ...flattened, ...section.props };
       });
     }
     return flattened;
@@ -47,10 +54,15 @@ export const useCustomization = () => {
          }
          
          if (payload?.pages) {
-            payload.pages.forEach((page: any) => {
-               page.sections?.forEach((section: any) => {
-                  flattenedFormData = { ...flattenedFormData, ...section.props };
-               });
+            // During builder preview, try to guess the page from URL or fallback
+            const currentPath = window.location.pathname;
+            const activePage = payload.pages.find((p: any) => {
+               if (p.path === '/') return currentPath === '/' || currentPath.endsWith('/origin') || currentPath.endsWith('/velocity');
+               return currentPath.includes(p.path);
+            }) || payload.pages[0]; // fallback to first page
+
+            activePage?.sections?.forEach((section: any) => {
+               flattenedFormData = { ...flattenedFormData, ...section.props };
             });
          }
 

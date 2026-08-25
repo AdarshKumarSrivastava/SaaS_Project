@@ -31,7 +31,8 @@ export default async function middleware(request: NextRequest) {
       const trailingPath = liveMatch[2] || '';
       
       try {
-        const res = await fetch(`/api/sites/${siteId}/live`);
+        const apiUrl = new URL(`/api/sites/${siteId}/live`, request.url);
+        const res = await fetch(apiUrl);
         if (res.ok) {
           const data = await res.json();
           
@@ -73,7 +74,8 @@ export default async function middleware(request: NextRequest) {
   if (subdomain && !['www', 'app', 'admin'].includes(subdomain)) {
     try {
       // Fetch live configuration for this subdomain
-      const res = await fetch(`/api/sites/live/${subdomain}`);
+      const apiUrl = new URL(`/api/sites/live/${subdomain}`, request.url);
+      const res = await fetch(apiUrl);
       if (res.ok) {
         const data = await res.json();
         const templateSlug = data.deployment?.schema?.global?.templateSlug;

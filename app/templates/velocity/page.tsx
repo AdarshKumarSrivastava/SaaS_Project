@@ -51,7 +51,7 @@ function ProductCard3D({ product }: { product: any }) {
         
         <div className="absolute inset-0 overflow-hidden" style={{ transform: "translateZ(0px)" }}>
           <img 
-            src={product.image} 
+            src={product.image || (product.images && product.images[0]) || "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2000&auto=format&fit=crop"} 
             alt={product.name}
             className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 mix-blend-lighten"
           />
@@ -211,7 +211,7 @@ export default function VelocityHomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
-          {VELOCITY_PRODUCTS.slice(0, 3).map((product) => (
+          {(customData?.products?.length > 0 ? customData.products : VELOCITY_PRODUCTS).slice(0, 3).map((product: any) => (
             <ProductCard3D key={product.id} product={product} />
           ))}
         </div>

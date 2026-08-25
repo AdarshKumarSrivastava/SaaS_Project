@@ -3,6 +3,7 @@ import { prisma } from '../lib/prisma';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { decrypt } from '../lib/encryption';
+import { TEMPLATE_REGISTRY } from '../../lib/template-registry';
 
 // GET /api/sites
 export const listSites = async (req: Request, res: Response) => {
@@ -42,12 +43,20 @@ export const createSite = async (req: Request, res: Response) => {
 
     const subdomain = `${name.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${crypto.randomBytes(3).toString('hex')}`;
 
+    // Extract template slug from category (e.g., 'premium-origin' -> 'origin')
+    const templateSlug = category.replace('premium-', '') || 'velocity';
+    const templateConfig = TEMPLATE_REGISTRY[templateSlug] || TEMPLATE_REGISTRY['default'];
+    
+    // Seed initial schema
+    const initialSchema = templateConfig.defaultSchema(name);
+
     const site = await prisma.site.create({
       data: {
         ownerId: userId,
         name,
         category,
         subdomain,
+        schema: initialSchema,
         roles: {
           create: {
             userId: userId,
@@ -57,8 +66,30 @@ export const createSite = async (req: Request, res: Response) => {
       }
     });
 
+    // Seed default products directly into the database
+    if (templateConfig.defaultProducts && templateConfig.defaultProducts.length > 0) {
+      const defaultProducts = templateConfig.defaultProducts.map(prod => {
+        const productSlug = (prod.name || 'product').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const images = prod.image ? [prod.image] : (prod.images || []);
+        return {
+          siteId: site.id,
+          name: prod.name,
+          slug: productSlug,
+          price: parseFloat(prod.price) || 0,
+          status: 'ACTIVE',
+          images: images,
+          categoryId: null, // Depending on if categories are seeded, null is safe fallback
+          stock: 100, // Safe default
+        };
+      });
+      await prisma.product.createMany({
+        data: defaultProducts
+      });
+    }
+
     res.status(201).json(site);
   } catch (error) {
+    console.error('Error creating site:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -114,7 +145,7 @@ export const inviteRole = async (req: Request, res: Response) => {
 export const updateSchema = async (req: Request, res: Response) => {
   try {
     const siteId = req.params.siteId as string;
-    const { schema, products } = req.body;
+    const { schema } = req.body; // Remove products from body parsing to prevent unintentional deletion
 
     const updateData: any = {};
     if (schema !== undefined) updateData.schema = schema;
@@ -124,63 +155,9 @@ export const updateSchema = async (req: Request, res: Response) => {
       data: updateData
     });
 
-    // Sync products if provided
-    if (Array.isArray(products)) {
-      const incomingIds = products.map(p => p.id).filter(id => id);
-      
-      // Delete products not in incoming list
-      await prisma.product.deleteMany({
-        where: {
-          siteId,
-          id: { notIn: incomingIds }
-        }
-      });
-
-      for (const prod of products) {
-        const productSlug = (prod.name || 'product').toLowerCase().replace(/[^a-z0-9]+/g, '-');
-        const images = prod.image ? [prod.image] : (prod.images || []);
-        
-        if (prod.id) {
-          const existing = await prisma.product.findUnique({ where: { id: prod.id } });
-          if (existing && existing.siteId === siteId) {
-             await prisma.product.update({
-               where: { id: prod.id },
-               data: {
-                 name: prod.name || 'Unnamed',
-                 slug: productSlug,
-                 price: parseFloat(prod.price) || 0,
-                 images,
-               }
-             });
-          } else if (!existing) {
-             await prisma.product.create({
-               data: {
-                 id: prod.id,
-                 siteId: siteId,
-                 name: prod.name || 'Unnamed',
-                 slug: productSlug,
-                 price: parseFloat(prod.price) || 0,
-                 images,
-               }
-             });
-          }
-        } else {
-             await prisma.product.create({
-               data: {
-                 siteId: siteId,
-                 name: prod.name || 'Unnamed',
-                 slug: productSlug,
-                 price: parseFloat(prod.price) || 0,
-                 images,
-               }
-             });
-        }
-      }
-    }
-
     res.json(site);
   } catch (error) {
-    console.error('Update schema error:', error);
+    console.error('Error updating schema:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

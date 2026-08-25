@@ -1,7 +1,33 @@
 import { PrismaClient } from '@prisma/client';
 
 const prismaClientSingleton = () => {
-  return new PrismaClient();
+  const client = new PrismaClient();
+  return client.$extends({
+    query: {
+      $allModels: {
+        async $allOperations({ model, operation, args, query }) {
+          let retries = 3;
+          let delay = 1500;
+          while (retries > 0) {
+            try {
+              return await query(args);
+            } catch (error: any) {
+              retries--;
+              const isConnectionError = 
+                error.name === 'PrismaClientInitializationError' || 
+                (error.message && error.message.includes("Can't reach database server"));
+                
+              if (retries === 0 || !isConnectionError) throw error;
+              
+              console.log(`[Database Server] Neon sleeping, waking up... Retrying ${model}.${operation} in ${delay}ms (${retries} attempts left)`);
+              await new Promise((res) => setTimeout(res, delay));
+              delay += 500; // Exponential backoff slightly
+            }
+          }
+        },
+      },
+    },
+  });
 };
 
 type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;

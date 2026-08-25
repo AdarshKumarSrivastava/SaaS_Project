@@ -54,7 +54,7 @@ function ProductCard3D({ product }: { product: any }) {
         
         <div className="absolute inset-0 overflow-hidden" style={{ transform: "translateZ(0px)" }}>
           <img 
-            src={product.image} 
+            src={product.image || (product.images && product.images[0]) || "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2000&auto=format&fit=crop"} 
             alt={product.name}
             className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 mix-blend-lighten"
           />
@@ -133,18 +133,22 @@ function ProductsContent() {
   const shopTitle = customData?.formData?.shopTitle || "Catalog";
   const rawCategories = customData?.formData?.shopCategories;
   
+  const displayProducts = customData?.products?.length > 0 ? customData.products : VELOCITY_PRODUCTS;
+  
   const categories = rawCategories
     ? rawCategories.split(",").map((c: string) => c.trim()).filter(Boolean)
-    : ["All", ...Array.from(new Set(VELOCITY_PRODUCTS.map(p => p.category)))];
+    : ["All", ...Array.from(new Set(displayProducts.map((p: any) => p.category)))];
     
   const wearTypes = ["All", "top", "bottom", "accessory", "footwear", "tech"];
 
   const filteredProducts = useMemo(() => {
-    let result = [...VELOCITY_PRODUCTS];
+    let result = [...displayProducts];
 
     if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(p => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q));
+      result = result.filter((p: any) => 
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
     }
 
     if (selectedCategory !== "All") {
