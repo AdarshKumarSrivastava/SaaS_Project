@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { authenticator } = require('otplib');
 import * as qrcode from 'qrcode';
 import { prisma } from '../lib/prisma';

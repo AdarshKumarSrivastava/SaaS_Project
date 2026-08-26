@@ -5,9 +5,11 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeft, Loader2, Save, Settings, Monitor, Smartphone, Lock, ChevronRight, ChevronLeft, CheckCircle2, LayoutTemplate,
-  Upload, Image as ImageIcon
+  Upload, Image as ImageIcon, Undo, Redo, Paintbrush, FileText, Navigation
 } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
+import { resolveSiteData } from '@/lib/schema';
+import { SchemaRenderer } from '@/components/builder/SchemaRenderer';
 
 interface PageData {
   id: string;
@@ -35,6 +37,13 @@ export default function BuilderPage() {
   // Wizard state
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop');
+  const [activeTab, setActiveTab] = useState<'pages' | 'theme' | 'navigation'>('pages');
+  
+  // History State for Undo/Redo
+  const [history, setHistory] = useState<SiteData[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const skipHistoryRecord = useRef(false);
+
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -53,8 +62,8 @@ export default function BuilderPage() {
 
         let loadedData: SiteData;
         
-        if (data.schema && typeof data.schema === 'object' && !Array.isArray(data.schema) && data.schema.pages) {
-          loadedData = data.schema as SiteData;
+        if (data.schema && typeof data.schema === 'object' && !Array.isArray(data.schema)) {
+          loadedData = resolveSiteData(data.schema, data.name) as SiteData;
         } else {
           // If for some reason legacy sites lack a schema, throw error instead of faking it
           throw new Error("Site lacks an initialized schema. Please recreate the site.");
@@ -92,25 +101,82 @@ export default function BuilderPage() {
     }
   }, [siteData, products]);
 
-  // Handle template ready signal
+  // Handle template ready signal and navigation sync
   useEffect(() => {
     const handleMessage = (e: MessageEvent) => {
-      if (e.data?.type === 'TEMPLATE_READY' && iframeRef.current && iframeRef.current.contentWindow && siteData) {
+      if (!iframeRef.current || !iframeRef.current.contentWindow || !siteData) return;
+      
+      if (e.data?.type === 'TEMPLATE_READY') {
         iframeRef.current.contentWindow.postMessage(
           { type: 'UPDATE_SCHEMA', payload: { ...siteData, products } },
           '*'
         );
+      } else if (e.data?.type === 'IFRAME_NAVIGATED') {
+        const navigatedPath = e.data.path; // e.g. /templates/origin/products
+        if (!navigatedPath) return;
+        
+        // Find matching page index from schema
+        const idx = siteData.pages.findIndex(p => {
+           if (p.path === '/') return navigatedPath.endsWith('/origin') || navigatedPath.endsWith('/velocity') || navigatedPath.endsWith('/nexus-pro');
+           return navigatedPath.includes(p.path);
+        });
+        
+        if (idx !== -1 && idx !== currentStepIndex) {
+          setCurrentStepIndex(idx);
+          router.replace(`?page=${siteData.pages[idx].id}`, { scroll: false });
+        }
       }
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
+  }, [siteData, currentStepIndex, router]);
+
+  // Push to history when siteData changes
+  useEffect(() => {
+    if (!siteData) return;
+    if (skipHistoryRecord.current) {
+       skipHistoryRecord.current = false;
+       return;
+    }
+    setHistory(prev => {
+       const newHistory = prev.slice(0, historyIndex + 1);
+       newHistory.push(JSON.parse(JSON.stringify(siteData)));
+       if (newHistory.length > 50) newHistory.shift(); // Keep last 50 edits
+       return newHistory;
+    });
+    setHistoryIndex(prev => prev + 1);
   }, [siteData]);
 
-  const handleSave = async () => {
+  // Debounced auto-save
+  useEffect(() => {
+    if (!siteData) return;
+    const timeout = setTimeout(() => {
+       handleSave(siteData);
+    }, 2000);
+    return () => clearTimeout(timeout);
+  }, [siteData]);
+
+  const undo = () => {
+    if (historyIndex > 0) {
+       skipHistoryRecord.current = true;
+       setHistoryIndex(prev => prev - 1);
+       setSiteData(JSON.parse(JSON.stringify(history[historyIndex - 1])));
+    }
+  };
+
+  const redo = () => {
+    if (historyIndex < history.length - 1) {
+       skipHistoryRecord.current = true;
+       setHistoryIndex(prev => prev + 1);
+       setSiteData(JSON.parse(JSON.stringify(history[historyIndex + 1])));
+    }
+  };
+
+  const handleSave = async (dataToSave = siteData) => {
     setSaving(true);
     try {
       await apiClient.patch(`/api/sites/${siteId}/schema`, {
-        schema: siteData
+        schema: dataToSave
       });
     } catch (err) {
       console.error('Failed to save', err);
@@ -245,76 +311,78 @@ export default function BuilderPage() {
          </motion.div>
       </div>
 
-      {/* RIGHT PANEL - Wizard Editor */}
+      {/* RIGHT PANEL - Universal Editor */}
       <div className="relative z-10 w-[420px] h-full p-6 flex flex-col shrink-0">
          
-         <div className="flex items-center justify-between mb-6 shrink-0">
+         <div className="flex items-center justify-between mb-4 shrink-0">
             <button onClick={() => router.push('/dashboard')} className="text-[10px] font-bold text-neutral-500 hover:text-neutral-900 dark:text-white/40 dark:hover:text-white uppercase tracking-widest flex items-center gap-2 transition-colors">
-               <ArrowLeft className="w-3 h-3" /> Dashboard
+               <ArrowLeft className="w-3 h-3" /> Exit
             </button>
-            <button 
-               onClick={handleSave} 
-               disabled={saving}
-               className="bg-black dark:bg-white text-white dark:text-black text-[10px] font-black uppercase tracking-widest px-6 py-3 rounded-full flex items-center gap-2 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
-            >
-               {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
-               Save
-            </button>
+            <div className="flex items-center gap-2">
+               <button onClick={undo} disabled={historyIndex <= 0} className="w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 dark:bg-white/5 text-neutral-500 disabled:opacity-30 hover:bg-neutral-200 transition">
+                  <Undo className="w-3.5 h-3.5" />
+               </button>
+               <button onClick={redo} disabled={historyIndex >= history.length - 1} className="w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 dark:bg-white/5 text-neutral-500 disabled:opacity-30 hover:bg-neutral-200 transition">
+                  <Redo className="w-3.5 h-3.5" />
+               </button>
+               <button 
+                  onClick={() => handleSave()} 
+                  disabled={saving}
+                  className="bg-black dark:bg-white text-white dark:text-black text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full flex items-center gap-2 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 ml-2"
+               >
+                  {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                  Save
+               </button>
+            </div>
          </div>
 
-         {/* The Wizard Panel */}
+         {/* The Editor Panel */}
          <div className="flex-1 min-h-0 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 rounded-[2rem] overflow-hidden flex flex-col shadow-lg relative z-10">
             
-            {/* Wizard Progress Header */}
-            <div className="shrink-0 p-6 border-b border-neutral-100 dark:border-white/5 bg-gray-50 dark:bg-white/[0.01]">
-               <div className="flex items-center justify-between mb-4">
-                  <div>
-                     <h2 className="text-sm font-bold tracking-wide">Editing: {activePage.name}</h2>
-                     <p className="text-[9px] text-neutral-400 dark:text-white/40 uppercase tracking-[0.2em] mt-1">Page Settings</p>
-                  </div>
-                  <span className="text-[10px] font-bold text-neutral-400 dark:text-white/40 tracking-widest whitespace-nowrap ml-4">
-                     STEP {Math.min(currentStepIndex + 1, siteData.pages.length)} OF {siteData.pages.length}
-                  </span>
-               </div>
-               {/* Progress bar */}
-               <div className="h-1 bg-neutral-200 dark:bg-white/5 rounded-full overflow-hidden">
-                  <motion.div 
-                     className="h-full bg-black dark:bg-white"
-                     initial={{ width: 0 }}
-                     animate={{ width: `${((currentStepIndex) / Math.max(siteData.pages.length, 1)) * 100}%` }}
-                     transition={{ duration: 0.3 }}
-                  />
+            {/* Tab Navigation */}
+            <div className="shrink-0 p-2 border-b border-neutral-100 dark:border-white/5 bg-gray-50 dark:bg-white/[0.01]">
+               <div className="flex bg-neutral-100 dark:bg-black/40 rounded-full p-1">
+                  <button onClick={() => setActiveTab('pages')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full flex items-center justify-center gap-2 transition-all ${activeTab === 'pages' ? 'bg-white dark:bg-neutral-800 text-black dark:text-white shadow-sm' : 'text-neutral-500 hover:text-black dark:hover:text-white'}`}>
+                     <FileText className="w-3 h-3" /> Pages
+                  </button>
+                  <button onClick={() => setActiveTab('theme')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full flex items-center justify-center gap-2 transition-all ${activeTab === 'theme' ? 'bg-white dark:bg-neutral-800 text-black dark:text-white shadow-sm' : 'text-neutral-500 hover:text-black dark:hover:text-white'}`}>
+                     <Paintbrush className="w-3 h-3" /> Theme
+                  </button>
+                  <button onClick={() => setActiveTab('navigation')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full flex items-center justify-center gap-2 transition-all ${activeTab === 'navigation' ? 'bg-white dark:bg-neutral-800 text-black dark:text-white shadow-sm' : 'text-neutral-500 hover:text-black dark:hover:text-white'}`}>
+                     <Navigation className="w-3 h-3" /> Nav
+                  </button>
                </div>
             </div>
 
             <div 
                data-lenis-prevent="true"
-               className="flex-1 min-h-0 relative overflow-y-auto overflow-x-hidden custom-scrollbar pointer-events-auto overscroll-contain"
+               className="flex-1 min-h-0 relative overflow-y-auto overflow-x-hidden custom-scrollbar pointer-events-auto overscroll-contain p-6"
             >
                <AnimatePresence mode="wait">
-                  {!isFinished && (
-                     <motion.div 
-                        key={activePage.id}
-                        initial={{ opacity: 0, x: 20 }} 
-                        animate={{ opacity: 1, x: 0 }} 
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.2 }}
-                        className="p-8 pb-32 space-y-8"
-                     >
-                        <div className="flex items-center gap-4 pb-6 border-b border-white/10">
-                           <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center shrink-0">
-                              <Settings className="w-5 h-5 text-white" />
-                           </div>
-                           <div>
-                              <h2 className="text-sm font-bold tracking-wide">{activePage.name} Page</h2>
-                              <p className="text-[9px] text-white/40 uppercase tracking-[0.2em] mt-1">Edit Content</p>
-                           </div>
+                  {activeTab === 'pages' && (
+                     <motion.div key="pages" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6 pb-20">
+                        
+                        {/* Page Selector */}
+                        <div className="bg-neutral-50 dark:bg-black/20 p-4 rounded-xl border border-neutral-200 dark:border-white/10">
+                           <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-2 block">Editing Page</label>
+                           <select 
+                              value={currentStepIndex}
+                              onChange={(e) => {
+                                 setCurrentStepIndex(Number(e.target.value));
+                                 router.replace(`?page=${siteData.pages[Number(e.target.value)].id}`, { scroll: false });
+                              }}
+                              className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none"
+                           >
+                              {siteData.pages.map((p, idx) => (
+                                 <option key={p.id} value={idx}>{p.name} ({p.path})</option>
+                              ))}
+                           </select>
                         </div>
 
+                        {/* Sections Editor */}
                         <div className="space-y-8">
                            {activePage.sections.map((section, sIdx) => (
                               <div key={section.id} className="relative group">
-                                 {/* Generic Section Header */}
                                  <div className="flex items-center gap-3 mb-6">
                                     <div className="flex flex-col gap-1">
                                        <div className="w-4 h-[1px] bg-neutral-300 dark:bg-white/20" />
@@ -325,176 +393,31 @@ export default function BuilderPage() {
                                     </h3>
                                     <div className="flex-1 h-[1px] bg-gradient-to-r from-neutral-200 dark:from-white/10 to-transparent" />
                                  </div>
-
-                                 {/* Inputs Grid */}
-                                 <div className="space-y-5 pl-7 border-l border-neutral-100 dark:border-white/5">
-                                    {Object.keys(section.props).map(propKey => {
-                                       const isImage = propKey.toLowerCase().includes('image') || propKey.toLowerCase().includes('logo');
-                                       const isLongText = !isImage && section.props[propKey].length > 40;
-                                       return (
-                                          <div key={propKey} className="group/input">
-                                             <label className="flex items-center gap-2 text-[9px] font-bold text-neutral-500 dark:text-white/40 uppercase tracking-[0.2em] mb-2 group-focus-within/input:text-neutral-900 dark:group-focus-within/input:text-white transition-colors">
-                                                <div className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-white/20 group-focus-within/input:bg-neutral-900 dark:group-focus-within/input:bg-white" />
-                                                {propKey.replace(/([A-Z])/g, ' $1').trim()}
-                                             </label>
-                                             {isImage ? (
-                                                <div className="relative group/upload cursor-pointer border border-dashed border-neutral-300 dark:border-white/20 rounded-xl overflow-hidden hover:border-neutral-500 dark:hover:border-white/50 transition-all bg-neutral-50 dark:bg-black/40">
-                                                   <input 
-                                                      type="file" 
-                                                      accept="image/*"
-                                                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                                      onChange={(e) => {
-                                                         const file = e.target.files?.[0];
-                                                         if (file) {
-                                                            const reader = new FileReader();
-                                                            reader.onload = (event) => {
-                                                               if (event.target?.result) {
-                                                                  updateSectionProp(section.id, propKey, event.target.result as string);
-                                                               }
-                                                            };
-                                                            reader.readAsDataURL(file);
-                                                         }
-                                                      }}
-                                                   />
-                                                   <div className="p-6 flex flex-col items-center justify-center gap-3">
-                                                      {section.props[propKey] && (section.props[propKey].startsWith('data:image') || section.props[propKey].startsWith('http')) ? (
-                                                         <div className="w-full h-32 relative rounded-lg overflow-hidden group-hover/upload:opacity-80 transition-opacity bg-neutral-100 dark:bg-black">
-                                                            <img src={section.props[propKey]} alt="Upload preview" className="w-full h-full object-cover" />
-                                                         </div>
-                                                      ) : (
-                                                         <div className="w-12 h-12 rounded-full bg-neutral-200 dark:bg-white/5 flex items-center justify-center group-hover/upload:bg-neutral-300 dark:group-hover/upload:bg-white/10 text-neutral-500 dark:text-white/60 transition-all">
-                                                            <ImageIcon className="w-5 h-5" />
-                                                         </div>
-                                                      )}
-                                                      <div className="text-center relative z-20 pointer-events-none">
-                                                         <p className="text-xs font-bold text-neutral-700 dark:text-white group-hover/upload:text-neutral-900 dark:group-hover/upload:text-white transition-colors flex items-center justify-center gap-2">
-                                                            <Upload className="w-3 h-3" /> Click to upload image
-                                                         </p>
-                                                         <p className="text-[9px] text-neutral-400 dark:text-white/40 mt-1 uppercase tracking-widest">SVG, PNG, JPG or GIF</p>
-                                                      </div>
-                                                   </div>
-                                                </div>
-                                             ) : isLongText ? (
-                                                <textarea 
-                                                   value={section.props[propKey]}
-                                                   onChange={(e) => updateSectionProp(section.id, propKey, e.target.value)}
-                                                   className="w-full bg-white dark:bg-black/40 border border-neutral-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-neutral-900 dark:text-white focus:outline-none focus:border-neutral-900 dark:focus:border-white/50 focus:ring-1 focus:ring-neutral-900 dark:focus:ring-white/50 transition-all shadow-sm custom-scrollbar min-h-[80px] resize-y"
-                                                   placeholder={`Enter ${propKey}...`}
-                                                />
-                                             ) : (
-                                                <input 
-                                                   type="text"
-                                                   value={section.props[propKey]}
-                                                   onChange={(e) => updateSectionProp(section.id, propKey, e.target.value)}
-                                                   className="w-full bg-white dark:bg-black/40 border border-neutral-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-neutral-900 dark:text-white focus:outline-none focus:border-neutral-900 dark:focus:border-white/50 focus:ring-1 focus:ring-neutral-900 dark:focus:ring-white/50 transition-all shadow-sm"
-                                                   placeholder={`Enter ${propKey}...`}
-                                                />
-                                             )}
-                                          </div>
-                                       );
-                                    })}
-                                 </div>
+                                 <SchemaRenderer 
+                                    section={section} 
+                                    onChange={(key, value) => updateSectionProp(section.id, key, value)} 
+                                 />
                               </div>
                            ))}
+                        </div>
+                     </motion.div>
+                  )}
 
-                            {activePage.id === 'products' && (
-                               <div className="relative group mt-8">
-                                  <div className="flex items-center gap-3 mb-6">
-                                     <div className="flex flex-col gap-1">
-                                        <div className="w-4 h-[1px] bg-neutral-300 dark:bg-white/20" />
-                                        <div className="w-2 h-[1px] bg-neutral-200 dark:bg-white/10" />
-                                     </div>
-                                     <h3 className="text-[10px] font-black text-neutral-900 dark:text-white uppercase tracking-[0.3em] font-mono">
-                                        Products <span className="text-neutral-400 dark:text-white/20">MANAGER</span>
-                                     </h3>
-                                     <div className="flex-1 h-[1px] bg-gradient-to-r from-neutral-200 dark:from-white/10 to-transparent" />
-                                  </div>
+                  {activeTab === 'theme' && (
+                     <motion.div key="theme" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6 pb-20 text-center text-neutral-500 mt-10">
+                        <Paintbrush className="w-8 h-8 mx-auto mb-4 opacity-50" />
+                        <p className="text-sm">Theme schema integration coming in Phase 3</p>
+                     </motion.div>
+                  )}
 
-                                  <div className="space-y-4">
-                                     {products.map((prod, idx) => (
-                                        <div key={prod.id || idx} className="bg-neutral-50 dark:bg-black/40 border border-neutral-200 dark:border-white/10 rounded-xl p-4 flex flex-col gap-3 shadow-sm">
-                                           <input 
-                                              type="text" 
-                                              value={prod.name} 
-                                              onChange={(e) => {
-                                                 const newProds = [...products];
-                                                 newProds[idx].name = e.target.value;
-                                                 setProducts(newProds);
-                                              }}
-                                              className="bg-transparent border-b border-neutral-200 dark:border-white/20 pb-1 text-sm text-neutral-900 dark:text-white focus:outline-none focus:border-neutral-900 dark:focus:border-white/50"
-                                              placeholder="Product Name"
-                                           />
-                                           <input 
-                                              type="number" 
-                                              value={prod.price} 
-                                              onChange={(e) => {
-                                                 const newProds = [...products];
-                                                 newProds[idx].price = e.target.value;
-                                                 setProducts(newProds);
-                                              }}
-                                              className="bg-transparent border-b border-neutral-200 dark:border-white/20 pb-1 text-sm text-neutral-900 dark:text-white focus:outline-none focus:border-neutral-900 dark:focus:border-white/50"
-                                              placeholder="Price"
-                                           />
-                                           <button 
-                                              onClick={() => {
-                                                 const newProds = [...products];
-                                                 newProds.splice(idx, 1);
-                                                 setProducts(newProds);
-                                              }}
-                                              className="text-[10px] text-red-500 font-bold uppercase tracking-widest text-left hover:text-red-600 dark:hover:text-red-400 mt-2 transition-colors"
-                                           >
-                                              Remove Product
-                                           </button>
-                                        </div>
-                                     ))}
-                                     <button 
-                                        onClick={() => {
-                                           setProducts([...products, { id: crypto.randomUUID(), name: 'New Product', price: 0, image: '', category: 'All' }]);
-                                        }}
-                                        className="w-full py-4 border border-dashed border-neutral-300 dark:border-white/20 rounded-xl text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-white/60 hover:text-neutral-900 hover:border-neutral-500 dark:hover:text-white dark:hover:border-white/50 transition-colors bg-white dark:bg-transparent"
-                                     >
-                                        + Add Product
-                                     </button>
-                                  </div>
-                               </div>
-                            )}
-                         </div>
-                      </motion.div>
+                  {activeTab === 'navigation' && (
+                     <motion.div key="nav" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6 pb-20 text-center text-neutral-500 mt-10">
+                        <Navigation className="w-8 h-8 mx-auto mb-4 opacity-50" />
+                        <p className="text-sm">Navigation integration coming in Phase 3</p>
+                     </motion.div>
                   )}
                </AnimatePresence>
             </div>
-
-            {/* Wizard Navigation Footer */}
-            {!isFinished && siteData.pages.length > 0 && (
-               <div className="shrink-0 p-4 border-t border-neutral-100 dark:border-white/5 bg-gray-50/80 dark:bg-black/20 backdrop-blur-xl flex items-center justify-between gap-4 z-20">
-                  <button 
-                     onClick={() => {
-                        const nextIdx = Math.max(0, currentStepIndex - 1);
-                        setCurrentStepIndex(nextIdx);
-                        router.push(`/sites/${siteId}/builder?page=${siteData.pages[nextIdx].path === '/' ? 'home' : siteData.pages[nextIdx].path.replace('/', '')}`);
-                     }}
-                     disabled={currentStepIndex === 0}
-                     className="px-6 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-neutral-500 dark:text-white/40 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200 dark:hover:bg-white/5 transition-all disabled:opacity-30 flex items-center gap-2"
-                  >
-                     <ChevronLeft className="w-4 h-4" /> Back
-                  </button>
-                  <button 
-                     onClick={async () => {
-                        if (isLastStep) {
-                           await handleSave();
-                           setCurrentStepIndex(currentStepIndex + 1);
-                        } else {
-                           const nextIdx = currentStepIndex + 1;
-                           setCurrentStepIndex(nextIdx);
-                           router.push(`/sites/${siteId}/builder?page=${siteData.pages[nextIdx].path === '/' ? 'home' : siteData.pages[nextIdx].path.replace('/', '')}`);
-                        }
-                     }}
-                     className="bg-black dark:bg-white text-white dark:text-black font-bold uppercase tracking-widest text-[10px] px-8 py-4 rounded-xl flex items-center justify-between min-w-[160px] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-black/10 dark:shadow-white/10"
-                  >
-                     {isLastStep ? 'Complete Setup' : 'Next Page'} <ChevronRight className="w-4 h-4" />
-                  </button>
-               </div>
-            )}
          </div>
       </div>
     </div>

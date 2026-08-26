@@ -1,6 +1,7 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import { CustomizationProvider } from '@/context/CustomizationContext';
+import { resolveSiteData } from '@/lib/schema';
 
 // We map template slugs directly to their root components
 import NexusProHomePage from '@/app/templates/nexus-pro/page';
@@ -31,7 +32,7 @@ export default async function LivePreviewRouter({ params }: { params: { siteId: 
   }
   
   const site = await res.json();
-  const schema = site.schema || {};
+  const schema = resolveSiteData(site.schema || {}, site.name);
   const templateSlug = schema.global?.templateSlug || 'velocity';
   
   const TemplateComponent = templateMap[templateSlug];

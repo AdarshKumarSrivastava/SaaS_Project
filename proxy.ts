@@ -7,6 +7,9 @@ export default async function middleware(request: NextRequest) {
   // Get hostname (e.g., 'my-velocity.localhost:3000' or 'localhost:3000')
   const hostname = request.headers.get('host') || '';
 
+  // If we are on standard localhost without a subdomain, just continue
+  const isBaseDomain = hostname === 'localhost:3000' || hostname === '127.0.0.1:3000' || hostname === process.env.NEXT_PUBLIC_ROOT_DOMAIN || hostname === 'buildspace.app';
+
   // Exclude static files, API routes, and core Next.js routes
   if (
       url.pathname.startsWith('/_next') || 
@@ -15,14 +18,13 @@ export default async function middleware(request: NextRequest) {
       url.pathname.startsWith('/login') ||
       url.pathname.startsWith('/signup') ||
       url.pathname.startsWith('/images') || 
-      url.pathname === '/' || // Allow main marketing page
+      (url.pathname === '/' && isBaseDomain) || // Allow main marketing page ONLY on base domain
       url.pathname.includes('.')
   ) {
     return NextResponse.next();
   }
 
-  // If we are on standard localhost without a subdomain, just continue
-  if (hostname === 'localhost:3000' || hostname === '127.0.0.1:3000') {
+  if (isBaseDomain) {
     
     // NEW: Handle /sites/[siteId]/live route explicitly
     const liveMatch = url.pathname.match(/^\/sites\/([^/]+)\/live(\/.*)?$/);

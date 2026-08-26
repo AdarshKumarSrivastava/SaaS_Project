@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { CustomizationProvider } from '@/context/CustomizationContext';
 import Link from 'next/link';
 import { Globe, Rocket } from 'lucide-react';
+import { resolveSiteData } from '@/lib/schema';
 
 // Dynamically or statically map templates
 import OriginHomePage from '@/app/templates/origin/page';
@@ -92,7 +93,7 @@ export default async function LiveSitePage({ params }: { params: Promise<{ siteI
   }
 
   // 3. Resolve template
-  const schema: any = deployment.schema || {};
+  const schema: any = resolveSiteData(deployment.schema || {}, site.name);
   const templateSlug = schema.global?.templateSlug || 'velocity';
   
   const TemplateComponent = TEMPLATES[templateSlug] || VelocityHomePage;

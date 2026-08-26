@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useCustomizationContext } from '@/context/CustomizationContext';
+import { getStorefrontProducts } from '@/lib/storefront';
 
 export const useCustomization = () => {
   const context = useCustomizationContext();
@@ -40,8 +41,19 @@ export const useCustomization = () => {
     if (typeof window === 'undefined') return;
 
     // If context exists, we don't need to listen to iframe messages
-    // We already seeded initialFormData.
     if (context) return;
+    
+    // Dispatch navigation events back to the parent builder so it syncs its state
+    const notifyParentOfNavigation = () => {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'IFRAME_NAVIGATED', path: window.location.pathname }, '*');
+      }
+    };
+    notifyParentOfNavigation();
+    
+    // Note: since this is a Next.js app router and layout doesn't rerender,
+    // we also listen for popstate if using client side routing (though usually next/navigation is better)
+    window.addEventListener('popstate', notifyParentOfNavigation);
 
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'UPDATE_SCHEMA') {
@@ -67,7 +79,11 @@ export const useCustomization = () => {
          }
 
          console.log("[useCustomization] Received UPDATE_SCHEMA:", flattenedFormData, payload.products);
-         setData({ colors: {}, fonts: {}, formData: flattenedFormData, products: payload.products || [] });
+         
+         const templateSlug = payload?.global?.templateSlug || 'velocity';
+         const mergedProducts = getStorefrontProducts(templateSlug, payload.products || []);
+         
+         setData({ colors: {}, fonts: {}, formData: flattenedFormData, products: mergedProducts });
       }
     };
 
@@ -79,7 +95,10 @@ export const useCustomization = () => {
       window.parent.postMessage({ type: 'TEMPLATE_READY' }, '*');
     }
 
-    return () => window.removeEventListener('message', handleMessage);
+    return () => {
+       window.removeEventListener('message', handleMessage);
+       window.removeEventListener('popstate', notifyParentOfNavigation);
+    };
   }, [context]);
 
   return data;

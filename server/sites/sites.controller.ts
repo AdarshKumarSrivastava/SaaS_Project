@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { decrypt } from '../lib/encryption';
 import { TEMPLATE_REGISTRY } from '../../lib/template-registry';
+import { extractOverrides } from '../../lib/schema';
 
 // GET /api/sites
 export const listSites = async (req: Request, res: Response) => {
@@ -47,8 +48,8 @@ export const createSite = async (req: Request, res: Response) => {
     const templateSlug = category.replace('premium-', '') || 'velocity';
     const templateConfig = TEMPLATE_REGISTRY[templateSlug] || TEMPLATE_REGISTRY['default'];
     
-    // Seed initial schema
-    const initialSchema = templateConfig.defaultSchema(name);
+    // Seed initial schema - only store overrides to enforce canonical template resolution
+    const initialSchema = { global: { templateSlug } };
 
     const site = await prisma.site.create({
       data: {
@@ -65,27 +66,6 @@ export const createSite = async (req: Request, res: Response) => {
         }
       }
     });
-
-    // Seed default products directly into the database
-    if (templateConfig.defaultProducts && templateConfig.defaultProducts.length > 0) {
-      const defaultProducts = templateConfig.defaultProducts.map(prod => {
-        const productSlug = (prod.name || 'product').toLowerCase().replace(/[^a-z0-9]+/g, '-');
-        const images = prod.image ? [prod.image] : (prod.images || []);
-        return {
-          siteId: site.id,
-          name: prod.name,
-          slug: productSlug,
-          price: parseFloat(prod.price) || 0,
-          status: 'ACTIVE',
-          images: images,
-          categoryId: null, // Depending on if categories are seeded, null is safe fallback
-          stock: 100, // Safe default
-        };
-      });
-      await prisma.product.createMany({
-        data: defaultProducts
-      });
-    }
 
     res.status(201).json(site);
   } catch (error) {
@@ -148,7 +128,16 @@ export const updateSchema = async (req: Request, res: Response) => {
     const { schema } = req.body; // Remove products from body parsing to prevent unintentional deletion
 
     const updateData: any = {};
-    if (schema !== undefined) updateData.schema = schema;
+    if (schema !== undefined) {
+      // Always store only the overrides relative to the canonical template
+      const site = await prisma.site.findUnique({ where: { id: siteId } });
+      const currentName = site?.name || 'My Site';
+      const templateSlug = schema?.global?.templateSlug || 'velocity';
+      const templateConfig = TEMPLATE_REGISTRY[templateSlug] || TEMPLATE_REGISTRY['default'];
+      const defaultSchema = templateConfig.defaultSchema(currentName);
+      
+      updateData.schema = extractOverrides(defaultSchema, schema);
+    }
 
     const site = await prisma.site.update({
       where: { id: siteId },
