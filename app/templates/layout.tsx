@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { PreviewModeButton } from "./PreviewModeButton";
 import { CustomizationProvider } from "@/context/CustomizationContext";
+import { BuilderOverlay } from "@/components/builder/BuilderOverlay";
 
 export default async function TemplatesLayout({ children }: { children: React.ReactNode }) {
   // Check if middleware passed live deployment data
@@ -33,6 +34,7 @@ export default async function TemplatesLayout({ children }: { children: React.Re
     <div className="relative w-full h-full">
       {children}
       <PreviewModeButton />
+      <BuilderOverlay />
     </div>
   );
 }

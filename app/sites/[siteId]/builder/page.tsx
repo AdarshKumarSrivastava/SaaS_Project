@@ -4,23 +4,38 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ArrowLeft, Loader2, Save, Settings, Monitor, Smartphone, Lock, ChevronRight, ChevronLeft, CheckCircle2, LayoutTemplate,
-  Upload, Image as ImageIcon, Undo, Redo, Paintbrush, FileText, Navigation
+  ArrowLeft, Loader2, Save, Undo, Redo, LayoutTemplate,
+  Monitor, Smartphone, Tablet, Search, X, ChevronRight, Settings, Image as ImageIcon, Type, Link as LinkIcon
 } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { resolveSiteData } from '@/lib/schema';
-import { SchemaRenderer } from '@/components/builder/SchemaRenderer';
+import { RightSidebar } from '@/components/builder/RightSidebar';
 
 interface PageData {
   id: string;
   name: string;
   path: string;
   sections: any[];
+  title?: string;
+  description?: string;
+  seoTitle?: string;
+  seoDescription?: string;
 }
 
 interface SiteData {
   pages: PageData[];
   global: { brandName: string; templateSlug?: string };
+}
+
+interface SelectedElement {
+  fieldKey: string | null;
+  sectionId: string | null;
+  pageId: string | null;
+  componentId: string | null;
+  tag: string;
+  text?: string;
+  src?: string;
+  rect: { top: number; left: number; width: number; height: number };
 }
 
 export default function BuilderPage() {
@@ -34,16 +49,15 @@ export default function BuilderPage() {
   const [siteData, setSiteData] = useState<SiteData | null>(null);
   const [products, setProducts] = useState<any[]>([]);
   
-  // Wizard state
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop');
-  const [activeTab, setActiveTab] = useState<'pages' | 'theme' | 'navigation'>('pages');
+  const [device, setDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   
-  // History State for Undo/Redo
   const [history, setHistory] = useState<SiteData[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const skipHistoryRecord = useRef(false);
 
+  const [selectedElement, setSelectedElement] = useState<SelectedElement | null>(null);
+  const [cmdKOpen, setCmdKOpen] = useState(false);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -55,29 +69,21 @@ export default function BuilderPage() {
           apiClient.get(`/api/sites/${siteId}/products`).catch(() => [])
         ]);
         
-        const data = siteRes;
-        if (Array.isArray(productsRes)) {
-           setProducts(productsRes);
-        }
+        if (Array.isArray(productsRes)) setProducts(productsRes);
 
         let loadedData: SiteData;
-        
-        if (data.schema && typeof data.schema === 'object' && !Array.isArray(data.schema)) {
-          loadedData = resolveSiteData(data.schema, data.name) as SiteData;
+        if (siteRes.schema && typeof siteRes.schema === 'object' && !Array.isArray(siteRes.schema)) {
+          loadedData = resolveSiteData(siteRes.schema, siteRes.name) as SiteData;
         } else {
-          // If for some reason legacy sites lack a schema, throw error instead of faking it
-          throw new Error("Site lacks an initialized schema. Please recreate the site.");
+          throw new Error("Site lacks an initialized schema.");
         }
         
         setSiteData(loadedData);
         
-        // Check URL query param for page index
         const pageQuery = searchParams?.get('page');
         if (pageQuery) {
           const idx = loadedData.pages.findIndex(p => p.path === pageQuery || p.id === pageQuery);
-          if (idx !== -1) {
-            setCurrentStepIndex(idx);
-          }
+          if (idx !== -1) setCurrentStepIndex(idx);
         }
       } catch (err) {
         console.error(err);
@@ -91,7 +97,6 @@ export default function BuilderPage() {
 
   const templateSlug = (siteData?.global as any)?.templateSlug || 'velocity';
 
-  // Broadcast siteData to the iframe live preview
   useEffect(() => {
     if (iframeRef.current && iframeRef.current.contentWindow && siteData) {
       iframeRef.current.contentWindow.postMessage(
@@ -101,7 +106,23 @@ export default function BuilderPage() {
     }
   }, [siteData, products]);
 
-  // Handle template ready signal and navigation sync
+  useEffect(() => {
+    // Route-level body lock to guarantee no document scrolling while in Builder
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  const focusPreviewElement = (fieldKey: string | null, sectionId: string | null) => {
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      iframeRef.current.contentWindow.postMessage({ type: 'FOCUS_ELEMENT', fieldKey, sectionId }, '*');
+    }
+  };
+
   useEffect(() => {
     const handleMessage = (e: MessageEvent) => {
       if (!iframeRef.current || !iframeRef.current.contentWindow || !siteData) return;
@@ -112,12 +133,11 @@ export default function BuilderPage() {
           '*'
         );
       } else if (e.data?.type === 'IFRAME_NAVIGATED') {
-        const navigatedPath = e.data.path; // e.g. /templates/origin/products
+        const navigatedPath = e.data.path;
         if (!navigatedPath) return;
         
-        // Find matching page index from schema
         const idx = siteData.pages.findIndex(p => {
-           if (p.path === '/') return navigatedPath.endsWith('/origin') || navigatedPath.endsWith('/velocity') || navigatedPath.endsWith('/nexus-pro');
+           if (p.path === '/') return navigatedPath.endsWith('/' + templateSlug);
            return navigatedPath.includes(p.path);
         });
         
@@ -125,13 +145,15 @@ export default function BuilderPage() {
           setCurrentStepIndex(idx);
           router.replace(`?page=${siteData.pages[idx].id}`, { scroll: false });
         }
+      } else if (e.data?.type === 'ELEMENT_SELECTED') {
+        setSelectedElement(e.data);
       }
     };
+    
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [siteData, currentStepIndex, router]);
+  }, [siteData, currentStepIndex, router, templateSlug, products]);
 
-  // Push to history when siteData changes
   useEffect(() => {
     if (!siteData) return;
     if (skipHistoryRecord.current) {
@@ -141,112 +163,218 @@ export default function BuilderPage() {
     setHistory(prev => {
        const newHistory = prev.slice(0, historyIndex + 1);
        newHistory.push(JSON.parse(JSON.stringify(siteData)));
-       if (newHistory.length > 50) newHistory.shift(); // Keep last 50 edits
+       if (newHistory.length > 50) newHistory.shift(); 
        return newHistory;
     });
     setHistoryIndex(prev => prev + 1);
   }, [siteData]);
 
-  // Debounced auto-save
   useEffect(() => {
-    if (!siteData) return;
-    const timeout = setTimeout(() => {
-       handleSave(siteData);
-    }, 2000);
-    return () => clearTimeout(timeout);
-  }, [siteData]);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setCmdKOpen(o => !o);
+      }
+      if (e.key === 'Escape') {
+        setSelectedElement(null);
+        setCmdKOpen(false);
+        if (iframeRef.current?.contentWindow) {
+           iframeRef.current.contentWindow.postMessage({ type: 'CLEAR_SELECTION' }, '*');
+        }
+      }
+      if (e.key === 'z' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      }
+      if (e.key === 'z' && (e.metaKey || e.ctrlKey) && e.shiftKey) {
+        e.preventDefault();
+        redo();
+      }
+      if (e.key === 's' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [historyIndex, history]);
 
   const undo = () => {
     if (historyIndex > 0) {
-       skipHistoryRecord.current = true;
-       setHistoryIndex(prev => prev - 1);
-       setSiteData(JSON.parse(JSON.stringify(history[historyIndex - 1])));
+      skipHistoryRecord.current = true;
+      setHistoryIndex(prev => prev - 1);
+      setSiteData(JSON.parse(JSON.stringify(history[historyIndex - 1])));
     }
   };
 
   const redo = () => {
     if (historyIndex < history.length - 1) {
-       skipHistoryRecord.current = true;
-       setHistoryIndex(prev => prev + 1);
-       setSiteData(JSON.parse(JSON.stringify(history[historyIndex + 1])));
+      skipHistoryRecord.current = true;
+      setHistoryIndex(prev => prev + 1);
+      setSiteData(JSON.parse(JSON.stringify(history[historyIndex + 1])));
     }
   };
 
-  const handleSave = async (dataToSave = siteData) => {
+  const handleSave = async () => {
+    if (!siteData) return;
     setSaving(true);
     try {
-      await apiClient.patch(`/api/sites/${siteId}/schema`, {
-        schema: dataToSave
-      });
-    } catch (err) {
-      console.error('Failed to save', err);
-      alert('Failed to save layout');
+      await apiClient.patch(`/api/sites/${siteId}`, { schema: siteData });
+    } catch (error) {
+      console.error('Failed to save:', error);
     } finally {
       setSaving(false);
     }
   };
 
-  const updateSectionProp = (sectionId: string, key: string, value: string) => {
+  
+  const moveSection = (pageId: string, sectionId: string, direction: 'up' | 'down') => {
     if (!siteData) return;
-    
     setSiteData(prev => {
       if (!prev) return prev;
       return {
         ...prev,
-        pages: prev.pages.map((page, idx) => {
-          if (idx === currentStepIndex) {
-            return {
-              ...page,
-              sections: page.sections.map((s) => {
-                if (s.id === sectionId) {
-                   return { ...s, props: { ...s.props, [key]: value } };
-                }
-                return s;
-              })
-            };
-          }
-          return page;
+        pages: prev.pages.map(page => {
+          if (page.id !== pageId) return page;
+          const idx = page.sections.findIndex(s => s.id === sectionId || s.type.toLowerCase() === sectionId.toLowerCase());
+          if (idx === -1) return page;
+          if (direction === 'up' && idx === 0) return page;
+          if (direction === 'down' && idx === page.sections.length - 1) return page;
+          
+          const newSections = [...page.sections];
+          const temp = newSections[idx];
+          newSections[idx] = newSections[direction === 'up' ? idx - 1 : idx + 1];
+          newSections[direction === 'up' ? idx - 1 : idx + 1] = temp;
+          
+          return { ...page, sections: newSections };
         })
       };
     });
   };
 
-  if (loading || !siteData) return (
-    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <Loader2 className="w-8 h-8 animate-spin text-neutral-400" />
-        <span className="text-xs uppercase tracking-widest text-neutral-500 font-bold">Initializing Engine</span>
-      </div>
-    </div>
-  );
+  
+  const addSection = (pageId: string, sectionType: string) => {
+    if (!siteData) return;
+    setSiteData(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        pages: prev.pages.map(page => {
+          if (page.id !== pageId) return page;
+          const newSection = {
+            id: sectionType.toLowerCase() + '-' + Date.now(),
+            type: sectionType,
+            props: {}
+          };
+          return {
+            ...page,
+            sections: [...page.sections, newSection]
+          };
+        })
+      };
+    });
+    setCmdKOpen(false);
+  };
+const deleteSection = (pageId: string, sectionId: string) => {
+    if (!siteData) return;
+    setSiteData(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        pages: prev.pages.map(page => {
+          if (page.id !== pageId) return page;
+          return {
+            ...page,
+            sections: page.sections.filter(s => s.id !== sectionId && s.type.toLowerCase() !== sectionId.toLowerCase())
+          };
+        })
+      };
+    });
+    setSelectedElement(null);
+  };
 
-  const isFinished = currentStepIndex >= siteData.pages.length;
-  const isLastStep = currentStepIndex === siteData.pages.length - 1;
+  const updateTheme = (newTheme: any) => {
+    if (!siteData) return;
+    setSiteData(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        global: {
+          ...prev.global,
+          theme: newTheme
+        }
+      };
+    });
+  };
 
-  if (isFinished) {
+  const updateProduct = async (updatedProduct: any) => {
+    // Optimistic UI update
+    setProducts(prev => {
+      const idx = prev.findIndex(p => p.id === updatedProduct.id);
+      if (idx !== -1) {
+        const next = [...prev];
+        next[idx] = updatedProduct;
+        return next;
+      }
+      return [...prev, updatedProduct];
+    });
+
+    try {
+      // If it's a demo product (o1, v1) or a completely new one, POST it.
+      if (updatedProduct.id.startsWith('o') || updatedProduct.id.startsWith('v') || updatedProduct.id.startsWith('new-')) {
+        const res = await apiClient.post(`/api/sites/${siteId}/products`, {
+           ...updatedProduct,
+           id: undefined, // Let DB generate ID
+           slug: undefined
+        });
+        // Replace temp ID with real ID
+        setProducts(prev => prev.map(p => p.id === updatedProduct.id ? res : p));
+      } else {
+        // Real DB product
+        await apiClient.patch(`/api/sites/${siteId}/products/${updatedProduct.id}`, updatedProduct);
+      }
+    } catch (err) {
+      console.error('Failed to save product', err);
+    }
+  };
+
+const updatePropByFieldKey = (fieldKey: string, value: any) => {
+    if (!siteData) return;
+    
+    // fieldKey format: home.hero.title
+    const parts = fieldKey.split('.');
+    const pageId = parts[0];
+    const sectionId = parts[1];
+    const propKey = parts[2];
+
+    setSiteData(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        pages: prev.pages.map(page => {
+          if (page.id !== pageId) return page;
+          return {
+            ...page,
+            sections: page.sections.map(section => {
+              if (section.id !== sectionId && section.type.toLowerCase() !== sectionId) return section;
+              return {
+                ...section,
+                props: {
+                  ...section.props,
+                  [propKey]: value
+                }
+              };
+            })
+          };
+        })
+      };
+    });
+  };
+
+  if (loading || !siteData) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 text-neutral-900 dark:text-white flex flex-col items-center justify-center p-6">
-        <div className="max-w-md w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-10 text-center shadow-xl">
-          <div className="w-20 h-20 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="w-10 h-10 text-green-500" />
-          </div>
-          <h2 className="text-2xl font-bold mb-2">Setup Complete</h2>
-          <p className="text-white/60 mb-8">Your website has been successfully configured and saved.</p>
-          <div className="flex flex-col gap-3">
-            <button 
-              onClick={() => router.push(`/sites/${siteId}/admin`)}
-              className="w-full bg-neutral-900 dark:bg-white text-white dark:text-black font-bold py-3 rounded-xl hover:opacity-90 transition-opacity"
-            >
-              Manage Website (Admin)
-            </button>
-            <button 
-              onClick={() => router.push('/dashboard')}
-              className="w-full bg-neutral-200 dark:bg-white/10 text-neutral-900 dark:text-white font-bold py-3 rounded-xl hover:bg-neutral-300 dark:hover:bg-white/20 transition-colors"
-            >
-              Return to Dashboard
-            </button>
-          </div>
-        </div>
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-white/50" />
       </div>
     );
   }
@@ -254,171 +382,146 @@ export default function BuilderPage() {
   const activePage = siteData.pages[currentStepIndex];
 
   return (
-    <div className="h-screen bg-gray-50 dark:bg-neutral-950 text-neutral-900 dark:text-white flex overflow-hidden font-sans selection:bg-neutral-200 dark:selection:bg-white/20">
+    <div className="fixed inset-0 bg-[#050505] flex flex-col font-sans overflow-hidden text-white">
       
-      {/* Background Mesh */}
-      <div className="absolute inset-0 z-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)', backgroundSize: '32px 32px' }} />
+      {/* TOP COMMAND BAR */}
+      <div className="h-14 border-b border-white/10 flex items-center justify-between px-4 shrink-0 bg-[#0A0A0A] z-50">
+        <div className="flex items-center gap-4">
+          <button onClick={() => router.push('/dashboard')} className="text-white/50 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium">
+            <ArrowLeft className="w-4 h-4" /> Dashboard
+          </button>
+          <div className="h-4 w-[1px] bg-white/10" />
+          <div className="text-sm font-semibold tracking-wide text-white/90">
+            {siteData.global?.brandName || 'Untitled Project'}
+          </div>
+        </div>
 
-      {/* LEFT STAGE - Live Canvas */}
-      <div className="flex-1 relative z-0 flex flex-col items-center justify-center p-6 lg:p-10">
-         
-         <div className="absolute top-6 left-6 flex items-center gap-4 z-20">
-            <button onClick={() => router.push('/dashboard')} className="w-10 h-10 rounded-full bg-white dark:bg-white/5 border border-neutral-200 dark:border-white/10 flex items-center justify-center text-neutral-500 hover:text-neutral-900 dark:text-white/70 dark:hover:text-white shadow-sm transition-all">
-               <ArrowLeft className="w-4 h-4" />
-            </button>
-            <div className="bg-white dark:bg-white/5 border border-neutral-200 dark:border-white/10 px-4 py-2 rounded-full flex items-center gap-2 shadow-sm">
-               <Lock className="w-3 h-3 text-neutral-400 dark:text-white/40" />
-               <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-white/60">preview</span>
-            </div>
-         </div>
+        <div className="flex items-center gap-1 bg-white/5 p-1 rounded-lg border border-white/10">
+          <button onClick={() => setDevice('desktop')} className={`p-1.5 rounded-md transition-colors ${device === 'desktop' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/80'}`}>
+            <Monitor className="w-4 h-4" />
+          </button>
+          <button onClick={() => setDevice('tablet')} className={`p-1.5 rounded-md transition-colors ${device === 'tablet' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/80'}`}>
+            <Tablet className="w-4 h-4" />
+          </button>
+          <button onClick={() => setDevice('mobile')} className={`p-1.5 rounded-md transition-colors ${device === 'mobile' ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/80'}`}>
+            <Smartphone className="w-4 h-4" />
+          </button>
+        </div>
 
-         <div className="absolute top-6 right-6 flex items-center gap-2 bg-white dark:bg-white/5 border border-neutral-200 dark:border-white/10 p-1 rounded-full z-20 shadow-sm">
-            <button onClick={() => setDevice('desktop')} className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${device === 'desktop' ? 'bg-neutral-100 dark:bg-white/10 text-neutral-900 dark:text-white' : 'text-neutral-400 hover:text-neutral-900 dark:text-white/40 dark:hover:text-white'}`}>
-               <Monitor className="w-3.5 h-3.5" />
-            </button>
-            <button onClick={() => setDevice('mobile')} className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${device === 'mobile' ? 'bg-neutral-100 dark:bg-white/10 text-neutral-900 dark:text-white' : 'text-neutral-400 hover:text-neutral-900 dark:text-white/40 dark:hover:text-white'}`}>
-               <Smartphone className="w-3.5 h-3.5" />
-            </button>
-         </div>
-
-         {/* The Device Frame */}
-         <motion.div 
-            className="w-[1200px] h-[750px] max-w-[calc(100vw-500px)] bg-black rounded-2xl shadow-2xl relative mx-auto z-10 pointer-events-auto border border-white/10 flex flex-col"
-            layout
-            initial={false}
-            animate={{ width: device === 'mobile' ? 375 : 1200 }}
-            transition={{ type: "spring", bounce: 0, duration: 0.5 }}
-         >
-            {/* Fake Mac Toolbar */}
-            <div className="h-12 border-b border-white/10 shrink-0 flex items-center px-4 bg-white/5 backdrop-blur-md rounded-t-2xl gap-2">
-               <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
-                  <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
-                  <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
-               </div>
-            </div>
-
-            {/* Live Content Area (Iframe Native Scroll) */}
-            <div className="absolute top-12 left-0 right-0 bottom-0 overflow-hidden bg-white text-black rounded-b-2xl">
-               <iframe 
-                  key={activePage.id} // Force re-render on page change
-                  ref={iframeRef}
-                  src={`/templates/${templateSlug}${activePage.path === '/' ? '' : activePage.path}?preview=true`}
-                  className="w-full h-full border-none"
-                  title="Live Template Preview"
-               />
-            </div>
-         </motion.div>
+        <div className="flex items-center gap-3">
+          <button onClick={undo} disabled={historyIndex <= 0} className="p-2 text-white/40 hover:text-white disabled:opacity-30 transition-colors">
+            <Undo className="w-4 h-4" />
+          </button>
+          <button onClick={redo} disabled={historyIndex >= history.length - 1} className="p-2 text-white/40 hover:text-white disabled:opacity-30 transition-colors">
+            <Redo className="w-4 h-4" />
+          </button>
+          <button onClick={handleSave} disabled={saving} className="bg-white text-black px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 hover:bg-white/90 transition-colors">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            Save
+          </button>
+        </div>
       </div>
 
-      {/* RIGHT PANEL - Universal Editor */}
-      <div className="relative z-10 w-[420px] h-full p-6 flex flex-col shrink-0">
-         
-         <div className="flex items-center justify-between mb-4 shrink-0">
-            <button onClick={() => router.push('/dashboard')} className="text-[10px] font-bold text-neutral-500 hover:text-neutral-900 dark:text-white/40 dark:hover:text-white uppercase tracking-widest flex items-center gap-2 transition-colors">
-               <ArrowLeft className="w-3 h-3" /> Exit
-            </button>
-            <div className="flex items-center gap-2">
-               <button onClick={undo} disabled={historyIndex <= 0} className="w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 dark:bg-white/5 text-neutral-500 disabled:opacity-30 hover:bg-neutral-200 transition">
-                  <Undo className="w-3.5 h-3.5" />
-               </button>
-               <button onClick={redo} disabled={historyIndex >= history.length - 1} className="w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 dark:bg-white/5 text-neutral-500 disabled:opacity-30 hover:bg-neutral-200 transition">
-                  <Redo className="w-3.5 h-3.5" />
-               </button>
-               <button 
-                  onClick={() => handleSave()} 
-                  disabled={saving}
-                  className="bg-black dark:bg-white text-white dark:text-black text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full flex items-center gap-2 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 ml-2"
-               >
-                  {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
-                  Save
-               </button>
-            </div>
-         </div>
+      {/* CANVAS AREA */}
+      <div className="flex-1 flex overflow-hidden min-h-0">
+        
+        {/* LEFT PREVIEW (75%) */}
+        <div className="flex-1 relative overflow-auto overscroll-contain bg-[#050505] flex justify-center items-start p-4 custom-scrollbar z-10 min-w-0 min-h-0">
+          <motion.div 
+            layout
+            className="relative bg-white shadow-2xl overflow-hidden"
+            style={{
+              width: '100%',
+              maxWidth: device === 'desktop' ? 'none' : device === 'tablet' ? '768px' : '390px',
+              height: device === 'desktop' ? '100%' : '844px',
+              minHeight: device === 'desktop' ? '100%' : '844px',
+              borderRadius: device === 'desktop' ? '0px' : '32px',
+              border: device === 'desktop' ? 'none' : '12px solid #1a1a1a',
+              transition: 'max-width 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-radius 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+              flexShrink: 0
+            }}
+          >
+            <iframe 
+              key={activePage.id}
+              ref={iframeRef}
+              src={`/sites/${siteId}/preview${activePage.path === '/' ? '' : activePage.path}?preview=true`}
+              className="w-full h-full border-none pointer-events-auto"
+              title="Canvas"
+            />
+          </motion.div>
+        </div>
 
-         {/* The Editor Panel */}
-         <div className="flex-1 min-h-0 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 rounded-[2rem] overflow-hidden flex flex-col shadow-lg relative z-10">
-            
-            {/* Tab Navigation */}
-            <div className="shrink-0 p-2 border-b border-neutral-100 dark:border-white/5 bg-gray-50 dark:bg-white/[0.01]">
-               <div className="flex bg-neutral-100 dark:bg-black/40 rounded-full p-1">
-                  <button onClick={() => setActiveTab('pages')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full flex items-center justify-center gap-2 transition-all ${activeTab === 'pages' ? 'bg-white dark:bg-neutral-800 text-black dark:text-white shadow-sm' : 'text-neutral-500 hover:text-black dark:hover:text-white'}`}>
-                     <FileText className="w-3 h-3" /> Pages
-                  </button>
-                  <button onClick={() => setActiveTab('theme')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full flex items-center justify-center gap-2 transition-all ${activeTab === 'theme' ? 'bg-white dark:bg-neutral-800 text-black dark:text-white shadow-sm' : 'text-neutral-500 hover:text-black dark:hover:text-white'}`}>
-                     <Paintbrush className="w-3 h-3" /> Theme
-                  </button>
-                  <button onClick={() => setActiveTab('navigation')} className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full flex items-center justify-center gap-2 transition-all ${activeTab === 'navigation' ? 'bg-white dark:bg-neutral-800 text-black dark:text-white shadow-sm' : 'text-neutral-500 hover:text-black dark:hover:text-white'}`}>
-                     <Navigation className="w-3 h-3" /> Nav
-                  </button>
-               </div>
-            </div>
+        {/* RIGHT SIDEBAR (25%) */}
+        <RightSidebar 
+          siteData={siteData}
+          activePage={activePage}
+          selectedElement={selectedElement}
+          updatePropByFieldKey={updatePropByFieldKey}
+          moveSection={moveSection}
+          deleteSection={deleteSection}
+          products={products}
+          updateProduct={updateProduct}
+          updateTheme={updateTheme}
+          focusPreviewElement={focusPreviewElement}
+        />
 
-            <div 
-               data-lenis-prevent="true"
-               className="flex-1 min-h-0 relative overflow-y-auto overflow-x-hidden custom-scrollbar pointer-events-auto overscroll-contain p-6"
+        {/* Command Palette Overlay */}
+        <AnimatePresence>
+          {cmdKOpen && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="absolute inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+              onClick={() => setCmdKOpen(false)}
             >
-               <AnimatePresence mode="wait">
-                  {activeTab === 'pages' && (
-                     <motion.div key="pages" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6 pb-20">
-                        
-                        {/* Page Selector */}
-                        <div className="bg-neutral-50 dark:bg-black/20 p-4 rounded-xl border border-neutral-200 dark:border-white/10">
-                           <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-2 block">Editing Page</label>
-                           <select 
-                              value={currentStepIndex}
-                              onChange={(e) => {
-                                 setCurrentStepIndex(Number(e.target.value));
-                                 router.replace(`?page=${siteData.pages[Number(e.target.value)].id}`, { scroll: false });
-                              }}
-                              className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-neutral-900 dark:text-white focus:outline-none"
-                           >
-                              {siteData.pages.map((p, idx) => (
-                                 <option key={p.id} value={idx}>{p.name} ({p.path})</option>
-                              ))}
-                           </select>
-                        </div>
+              <div 
+                className="w-full max-w-lg bg-[#111] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="flex items-center gap-3 p-4 border-b border-white/10">
+                  <Search className="w-5 h-5 text-white/40" />
+                  <input 
+                    autoFocus
+                    placeholder="Search commands, pages, or sections..."
+                    className="flex-1 bg-transparent border-none text-lg focus:outline-none placeholder:text-white/30"
+                  />
+                  <div className="text-[10px] bg-white/10 px-2 py-1 rounded text-white/50 font-mono">ESC</div>
+                </div>
+                <div className="p-2 space-y-1 max-h-[300px] overflow-y-auto">
+                  
+                  <div className="text-xs font-bold text-white/30 px-3 pt-2 pb-1 uppercase tracking-wider">Pages</div>
+                  {siteData.pages.map((p, i) => (
+                    <button 
+                      key={p.id}
+                      onClick={() => {
+                        setCurrentStepIndex(i);
+                        setCmdKOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-blue-500/10 hover:text-blue-400 transition-colors flex items-center justify-between group"
+                    >
+                      <span className="font-medium">{p.name}</span>
+                      <span className="text-xs text-white/30 group-hover:text-blue-400/50 font-mono">{p.path}</span>
+                    </button>
+                  ))}
+                  <div className="text-xs font-bold text-white/30 px-3 pt-4 pb-1 uppercase tracking-wider">Add Section to {activePage.name}</div>
+                  {['Hero', 'FeaturedProducts', 'Manifesto', 'Testimonials', 'Gallery', 'FAQ'].map(sec => (
+                    <button 
+                      key={sec}
+                      onClick={() => addSection(activePage.id, sec)}
+                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-green-500/10 hover:text-green-400 transition-colors flex items-center justify-between group"
+                    >
+                      <span className="font-medium">Add {sec}</span>
+                      <span className="text-xs text-white/30 group-hover:text-green-400/50 font-mono">Component</span>
+                    </button>
+                  ))}
 
-                        {/* Sections Editor */}
-                        <div className="space-y-8">
-                           {activePage.sections.map((section, sIdx) => (
-                              <div key={section.id} className="relative group">
-                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="flex flex-col gap-1">
-                                       <div className="w-4 h-[1px] bg-neutral-300 dark:bg-white/20" />
-                                       <div className="w-2 h-[1px] bg-neutral-200 dark:bg-white/10" />
-                                    </div>
-                                    <h3 className="text-[10px] font-black text-neutral-900 dark:text-white uppercase tracking-[0.3em] font-mono">
-                                       {section.type} <span className="text-neutral-400 dark:text-white/20">BLOCK</span>
-                                    </h3>
-                                    <div className="flex-1 h-[1px] bg-gradient-to-r from-neutral-200 dark:from-white/10 to-transparent" />
-                                 </div>
-                                 <SchemaRenderer 
-                                    section={section} 
-                                    onChange={(key, value) => updateSectionProp(section.id, key, value)} 
-                                 />
-                              </div>
-                           ))}
-                        </div>
-                     </motion.div>
-                  )}
+              </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-                  {activeTab === 'theme' && (
-                     <motion.div key="theme" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6 pb-20 text-center text-neutral-500 mt-10">
-                        <Paintbrush className="w-8 h-8 mx-auto mb-4 opacity-50" />
-                        <p className="text-sm">Theme schema integration coming in Phase 3</p>
-                     </motion.div>
-                  )}
-
-                  {activeTab === 'navigation' && (
-                     <motion.div key="nav" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6 pb-20 text-center text-neutral-500 mt-10">
-                        <Navigation className="w-8 h-8 mx-auto mb-4 opacity-50" />
-                        <p className="text-sm">Navigation integration coming in Phase 3</p>
-                     </motion.div>
-                  )}
-               </AnimatePresence>
-            </div>
-         </div>
       </div>
     </div>
   );

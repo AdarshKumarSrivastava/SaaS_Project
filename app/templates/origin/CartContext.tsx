@@ -1,4 +1,5 @@
 "use client";
+import { useCustomizationContext } from "@/context/CustomizationContext";
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
@@ -73,6 +74,11 @@ type CartContextType = {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children , initialCustomData }: { children: ReactNode, initialCustomData?: any  }) {
+  const __customContext = useCustomizationContext();
+  const basePath = __customContext?.basePath || "/templates/origin";
+
+
+
   const [items, setItems] = useState<CartItem[]>([]);
 
   const symbolMap: Record<string, string> = {
@@ -83,6 +89,7 @@ export function CartProvider({ children , initialCustomData }: { children: React
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
+
       if (event.data?.type === "MONOLITH_CUSTOMIZATION") {
         const currency = event.data.data?.formData?.currency || "USD";
         setCurrencySymbol(symbolMap[currency] || "$");
@@ -134,6 +141,7 @@ export function CartProvider({ children , initialCustomData }: { children: React
   }, [items, wishlist, reviews]);
 
   const addToCart = (product: Product) => {
+
     setItems((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {
@@ -152,10 +160,12 @@ export function CartProvider({ children , initialCustomData }: { children: React
   const clearToast = () => setToastMessage(null);
 
   const removeFromCart = (productId: string) => {
+
     setItems((prev) => prev.filter((item) => item.product.id !== productId));
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
+
     if (quantity < 1) {
       removeFromCart(productId);
       return;
@@ -168,6 +178,7 @@ export function CartProvider({ children , initialCustomData }: { children: React
   };
 
   const clearCart = () => {
+
     setItems([]);
   };
 
@@ -176,6 +187,7 @@ export function CartProvider({ children , initialCustomData }: { children: React
 
   // Wishlist logic
   const toggleWishlist = (product: Product) => {
+
     setWishlist((prev) => {
       const exists = prev.some((p) => p.id === product.id);
       if (exists) {
@@ -224,6 +236,7 @@ export function CartProvider({ children , initialCustomData }: { children: React
   };;
 
   const removeCoupon = () => {
+
     setAppliedCoupon(null);
     setCouponError(null);
   };
@@ -295,6 +308,8 @@ export function CartProvider({ children , initialCustomData }: { children: React
 }
 
 export function useCart() {
+
+
   const context = useContext(CartContext);
   if (context === undefined) {
     throw new Error("useCart must be used within a CartProvider");

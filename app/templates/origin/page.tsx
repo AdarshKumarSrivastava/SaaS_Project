@@ -1,4 +1,5 @@
 "use client";
+import { useCustomizationContext } from "@/context/CustomizationContext";
 
 import Link from "next/link";
 import { ALL_PRODUCTS, useCart } from "./CartContext";
@@ -6,6 +7,11 @@ import { ArrowRight } from "lucide-react";
 import { useCustomization } from "@/hooks/useCustomization";
 
 export default function OriginHomePage() {
+  const __customContext = useCustomizationContext();
+  const basePath = __customContext?.basePath || "/templates/origin";
+
+
+
   const { addToCart , currencySymbol } = useCart();
   const customData = useCustomization();
   
@@ -27,25 +33,27 @@ export default function OriginHomePage() {
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="relative w-full bg-[#402c21] text-[#fdfbf7] min-h-[100vh] flex items-center pt-16">
+      <section data-page-id="home" data-section-id="Hero" className="relative w-full bg-[#402c21] text-[#fdfbf7] min-h-[100vh] flex items-center pt-16">
         <div className="absolute inset-0 z-0">
           <img 
             src={heroImage} 
+            data-field-key="home.Hero.heroImage"
             alt="Hero Background" 
             className="w-full h-full object-cover opacity-30 mix-blend-overlay"
           />
         </div>
         <div className="max-w-[1400px] mx-auto px-6 relative z-10 w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div>
-            <h1 className="font-serif text-5xl md:text-7xl font-bold leading-[1.1] mb-6 animate-in slide-in-from-bottom-10 fade-in duration-700">
+            <h1 data-field-key="home.Hero.heroTitle" className="font-serif text-5xl md:text-7xl font-bold leading-[1.1] mb-6 animate-in slide-in-from-bottom-10 fade-in duration-700">
               {heroTitle}
             </h1>
-            <p className="text-[#fdfbf7]/80 text-lg md:text-xl max-w-md mb-10 leading-relaxed font-medium animate-in slide-in-from-bottom-10 fade-in duration-700 delay-150">
+            <p data-field-key="home.Hero.heroSubtitle" className="text-[#fdfbf7]/80 text-lg md:text-xl max-w-md mb-10 leading-relaxed font-medium animate-in slide-in-from-bottom-10 fade-in duration-700 delay-150">
               {heroSubtitle}
             </p>
             <div className="animate-in slide-in-from-bottom-10 fade-in duration-700 delay-300">
               <Link 
-                href="/templates/origin/products" 
+                href={`\${basePath}/products`} 
+                data-field-key="home.Hero.primaryCta"
                 className="inline-flex items-center gap-4 bg-[#fdfbf7] text-[#402c21] px-8 py-4 text-sm font-bold tracking-widest uppercase hover:bg-[#a38c7f] hover:text-[#fdfbf7] transition-colors group"
               >
                 {primaryCta}
@@ -57,15 +65,16 @@ export default function OriginHomePage() {
       </section>
 
       {/* Featured Products */}
-      <section className="py-24 px-6 bg-[#efebe9]">
+      <section data-page-id="home" data-section-id="FeaturedProducts" className="py-24 px-6 bg-[#efebe9]">
         <div className="max-w-[1400px] mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
             <div>
-              <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#402c21] mb-2">{featuredTitle}</h2>
-              <p className="text-[#402c21]/70 font-medium">{featuredDesc}</p>
+              <h2 data-field-key="home.FeaturedProducts.featuredTitle" className="font-serif text-3xl md:text-4xl font-bold text-[#402c21] mb-2">{featuredTitle}</h2>
+              <p data-field-key="home.FeaturedProducts.featuredDesc" className="text-[#402c21]/70 font-medium">{featuredDesc}</p>
             </div>
             <Link 
-              href="/templates/origin/products" 
+              href={`\${basePath}/products`} 
+              data-field-key="home.FeaturedProducts.viewAllText"
               className="text-sm font-bold uppercase tracking-widest text-[#402c21] hover:text-[#a38c7f] transition-colors border-b-2 border-transparent hover:border-[#a38c7f] pb-1"
             >
               {viewAllText}
@@ -79,7 +88,7 @@ export default function OriginHomePage() {
                 className="group flex flex-col gap-4 animate-in slide-in-from-bottom-5 fade-in duration-700" 
                 style={{ animationDelay: `${idx * 150}ms`, animationFillMode: 'both' }}
               >
-                <Link href={`/templates/origin/products/${product.id}`} className="block relative aspect-[4/5] overflow-hidden bg-[#e5e0dc] rounded-sm">
+                <Link href={`\${basePath}/products/${product.id}`} className="block relative aspect-[4/5] overflow-hidden bg-[#e5e0dc] rounded-sm">
                   <img 
                     src={product.image || (product.images && product.images[0]) || "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=2000&auto=format&fit=crop"} 
                     alt={product.name} 
@@ -89,7 +98,7 @@ export default function OriginHomePage() {
                 </Link>
                 <div className="flex flex-col">
                   <div className="text-[10px] uppercase tracking-widest text-[#a38c7f] font-bold mb-1">{product.category || 'Product'}</div>
-                  <Link href={`/templates/origin/products/${product.id}`}>
+                  <Link href={`\${basePath}/products/${product.id}`}>
                     <h3 className="font-serif text-xl font-bold text-[#402c21] group-hover:text-[#a38c7f] transition-colors mb-2">{product.name}</h3>
                   </Link>
                   <div className="text-base font-bold text-[#402c21]/80">{currencySymbol}{typeof product.price === 'number' ? product.price.toFixed(2) : parseFloat(product.price || 0).toFixed(2)}</div>
@@ -110,15 +119,16 @@ export default function OriginHomePage() {
       </section>
 
       {/* Materials Highlight */}
-      <section className="py-0 flex flex-col md:flex-row h-auto min-h-[60vh]">
+      <section data-page-id="home" data-section-id="Manifesto" className="py-0 flex flex-col md:flex-row h-auto min-h-[60vh]">
         <div className="w-full md:w-1/2 p-12 md:p-24 bg-[#efebe9] text-[#402c21] flex flex-col justify-center items-start">
           <div className="text-[10px] uppercase tracking-widest font-bold text-[#a38c7f] mb-6">Sourcing</div>
-          <h2 className="font-serif text-4xl md:text-5xl font-bold mb-8">{manifestoTitle}</h2>
-          <p className="text-[#402c21]/80 text-lg leading-relaxed mb-10 font-medium">
+          <h2 data-field-key="home.Manifesto.manifestoTitle" className="font-serif text-4xl md:text-5xl font-bold mb-8">{manifestoTitle}</h2>
+          <p data-field-key="home.Manifesto.manifestoText" className="text-[#402c21]/80 text-lg leading-relaxed mb-10 font-medium">
             {manifestoText}
           </p>
           <Link 
-            href="/templates/origin/about" 
+            href={`\${basePath}/about`} 
+            data-field-key="home.Manifesto.manifestoCta"
             className="border-b-2 border-[#a38c7f] pb-1 text-[#402c21] hover:text-[#a38c7f] font-bold tracking-widest text-xs uppercase transition-colors"
           >
             {manifestoCta}
@@ -127,6 +137,7 @@ export default function OriginHomePage() {
         <div className="w-full md:w-1/2 h-[50vh] md:h-auto">
           <img 
             src={manifestoImage} 
+            data-field-key="home.Manifesto.manifestoImage"
             alt="Materials" 
             className="w-full h-full object-cover"
           />

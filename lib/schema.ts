@@ -10,7 +10,32 @@ export function mergeSchema(defaultSchema: any, overrides: any) {
   const merged = { ...defaultSchema, ...overrides };
 
   if (defaultSchema.global) {
-    merged.global = { ...defaultSchema.global, ...(overrides.global || {}) };
+    const defaultTheme = {
+      colors: {
+        background: '#fdfbf7',
+        foreground: '#402c21',
+        primary: '#a38c7f',
+        accent: '#e5e0dc'
+      },
+      typography: {
+        headingFont: 'Playfair Display',
+        bodyFont: 'Inter'
+      },
+      layout: {
+        containerWidth: '1400px',
+        spacing: '1rem'
+      }
+    };
+    
+    merged.global = { 
+      ...defaultSchema.global, 
+      ...(overrides.global || {}),
+      theme: {
+        ...defaultTheme,
+        ...(defaultSchema.global.theme || {}),
+        ...(overrides.global?.theme || {})
+      }
+    };
   }
 
   if (defaultSchema.pages) {
@@ -52,6 +77,9 @@ export function extractOverrides(defaultSchema: any, modifiedSchema: any) {
 
   if (modifiedSchema.global) {
     overrides.global = { ...modifiedSchema.global };
+    if (modifiedSchema.global.theme) {
+      overrides.global.theme = { ...modifiedSchema.global.theme };
+    }
   }
 
   if (modifiedSchema.pages && defaultSchema.pages) {
@@ -63,6 +91,10 @@ export function extractOverrides(defaultSchema: any, modifiedSchema: any) {
         id: page.id,
         name: page.name,
         path: page.path,
+        title: page.title,
+        description: page.description,
+        seoTitle: page.seoTitle,
+        seoDescription: page.seoDescription,
         sections: page.sections.map((section: any, sIdx: number) => {
           const defaultSec = defaultPage.sections[sIdx];
           if (!defaultSec) return section;

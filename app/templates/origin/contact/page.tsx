@@ -1,9 +1,11 @@
 "use client";
-
 import { Mail, MapPin, Phone } from "lucide-react";
 import { useCustomization } from "@/hooks/useCustomization";
-
+import { useCustomizationContext } from "@/context/CustomizationContext";
 export default function OriginContactPage() {
+  const __customContext = useCustomizationContext();
+  const basePath = __customContext?.basePath || "/templates/origin";
+
   const customData = useCustomization();
   
   const tPreTitle = customData?.formData?.contactPreTitle || "Contact Us";

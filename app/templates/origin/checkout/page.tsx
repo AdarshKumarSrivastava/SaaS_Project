@@ -1,5 +1,4 @@
 "use client";
-
 import { motion } from "framer-motion";
 import { useCart } from "../CartContext";
 import Link from "next/link";
@@ -8,11 +7,14 @@ import { PremiumPaymentSelector, PaymentMethod } from "@/components/storefront/P
 import { useRouter } from "next/navigation";
 import { PremiumLoader } from "@/components/auth/PremiumLoader";
 import { ArrowLeft, Check, ArrowRight } from "lucide-react";
-
+import { useCustomizationContext } from "@/context/CustomizationContext";
 type CheckoutStep = 'shipping' | 'payment' | 'placed';
 
 export default function OriginCheckoutPage() {
-  const { items, totalPrice, clearCart, appliedCoupon, applyCoupon, removeCoupon, discountAmount, couponError , basePath} = useCart();
+  const __customContext = useCustomizationContext();
+  const basePath = __customContext?.basePath || "/templates/origin";
+
+  const { items, totalPrice, clearCart, appliedCoupon, applyCoupon, removeCoupon, discountAmount, couponError } = useCart();
   const router = useRouter();
   const [checkoutStep, setCheckoutStep] = useState<CheckoutStep>('shipping');
   const [shippingDetails, setShippingDetails] = useState({ name: '', address: '', mobile: '', landmark: '' });

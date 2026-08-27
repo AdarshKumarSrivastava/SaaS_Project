@@ -1,4 +1,5 @@
 "use client";
+import { useCustomizationContext } from "@/context/CustomizationContext";
 
 import { useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -10,6 +11,7 @@ import { PremiumMagneticButton } from "@/components/auth/PremiumMagneticButton";
 import { Suspense } from "react";
 
 function LoginContent() {
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = `/templates/origin`;
@@ -73,7 +75,7 @@ function LoginContent() {
         
         <div className="text-center mt-6">
           <Link 
-            href={`/templates/origin/auth/signup`} 
+            href={`\${basePath}/auth/signup`} 
             className="text-xs font-bold uppercase tracking-widest text-black/50 hover:text-black transition-colors cursor-pointer"
           >
             Don't have an account? <span className="text-black border-b border-black">Create One</span>
@@ -85,6 +87,11 @@ function LoginContent() {
 }
 
 export default function PremiumLoginPage() {
+  const __customContext = useCustomizationContext();
+  const basePath = __customContext?.basePath || "/templates/origin";
+
+
+
   return (
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
       <LoginContent />

@@ -37,7 +37,7 @@ function ProductCard3D({ product }: { product: any }) {
   };
 
   return (
-    <div className="relative perspective-1000">
+    <div data-component-id={`product-${product.id}`} className="relative perspective-1000">
       <motion.div
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}

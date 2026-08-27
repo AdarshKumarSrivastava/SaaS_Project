@@ -2,43 +2,37 @@ import React from 'react';
 import { notFound } from 'next/navigation';
 import { CustomizationProvider } from '@/context/CustomizationContext';
 import { resolveSiteData } from '@/lib/schema';
+import { TEMPLATE_COMPONENTS } from '@/lib/template-components';
+import { prisma } from '@/lib/prisma';
 
-// We map template slugs directly to their root components
-import NexusProHomePage from '@/app/templates/nexus-pro/page';
-import VelocityHomePage from '@/app/templates/velocity/page';
-import QuantumHomePage from '@/app/templates/quantum/page';
-// For multi-page we can also map the paths if needed, 
-// e.g. /products maps to NexusProProductsPage.
-// But wait, the prompt doesn't ask me to implement EVERY single page of EVERY template.
-// I will implement the root pages and basic routing.
-
-const templateMap: Record<string, React.ComponentType<any>> = {
-  'nexus-pro': NexusProHomePage,
-  'velocity': VelocityHomePage,
-  'quantum': QuantumHomePage,
-  // Add fallback placeholders if other templates are requested
-};
-
-export default async function LivePreviewRouter({ params }: { params: { siteId: string, path?: string[] } }) {
-  const { siteId, path } = params;
+export default async function LivePreviewRouter({ params }: { params: Promise<{ siteId: string, path?: string[] }> | { siteId: string, path?: string[] } }) {
+  const resolvedParams = await params;
+  const { siteId, path } = resolvedParams;
   
-  // Fetch from the public endpoint
-  const res = await fetch(`/api/public/sites/${siteId}`, {
-    cache: 'no-store'
+  // Directly query the database for the preview (since this runs in the same backend)
+  const site = await prisma.site.findUnique({
+    where: { id: siteId },
+    include: {
+      products: { where: { status: 'ACTIVE' } }
+    }
   });
-  
-  if (!res.ok) {
+
+  if (!site) {
     return notFound();
   }
   
-  const site = await res.json();
   const schema = resolveSiteData(site.schema || {}, site.name);
   const templateSlug = schema.global?.templateSlug || 'velocity';
   
-  const TemplateComponent = templateMap[templateSlug];
+  // Resolve path
+  let relativePath = '/';
+  if (path && path.length > 0) {
+    relativePath = '/' + path.join('/');
+  }
 
-  if (!TemplateComponent) {
-    // Fallback if template component not wired up yet
+  // Find component map for template
+  const templateRoutes = TEMPLATE_COMPONENTS[templateSlug];
+  if (!templateRoutes) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <h1>Template {templateSlug} not connected to live router yet.</h1>
@@ -46,14 +40,27 @@ export default async function LivePreviewRouter({ params }: { params: { siteId: 
     );
   }
 
-  // Handle basic multi-page routing
-  // Note: For a fully production scalable app, each template should export a component map
-  // matching paths like `['products']` or `['products', '[id]']`. 
-  // We will route just to the home page for now, as that's the core.
+  // Exact match, or fallback to root if not found
+  // For dynamic routes (like /products/123), a basic static router won't match exactly.
+  // In a robust implementation, we would use a regex router for `[id]` paths.
+  // We'll implement a simple matcher for `[id]`.
+  let TemplateComponent = templateRoutes[relativePath];
+
+  if (!TemplateComponent) {
+    // Try to match dynamic routes like /products/[id]
+    if (path && path.length === 2 && path[0] === 'products') {
+       TemplateComponent = templateRoutes['/products/[id]'];
+    }
+  }
+
+  // If still not found, render 404 or fallback to home
+  if (!TemplateComponent) {
+     TemplateComponent = templateRoutes['/'];
+  }
 
   return (
     <CustomizationProvider siteData={schema} products={site.products}>
-      <TemplateComponent />
+      <TemplateComponent params={resolvedParams} />
     </CustomizationProvider>
   );
 }

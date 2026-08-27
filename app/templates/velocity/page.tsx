@@ -35,15 +35,16 @@ function ProductCard3D({ product }: { product: any }) {
   };
 
   return (
-    <Link href={`/templates/velocity/products/${product.id}`} className="block perspective-1000">
-      <motion.div
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        animate={{ rotateX, rotateY }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        style={{ transformStyle: "preserve-3d" }}
-        className="relative aspect-[3/4] rounded-sm border border-[#00f0ff]/20 bg-[#050505] overflow-visible group"
-      >
+    <div data-component-id={`product-${product.id}`} className="block perspective-1000">
+      <Link href={`/templates/velocity/products/${product.id}`}>
+        <motion.div
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          animate={{ rotateX, rotateY }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          style={{ transformStyle: "preserve-3d" }}
+          className="relative aspect-[3/4] rounded-sm border border-[#00f0ff]/20 bg-[#050505] overflow-visible group"
+        >
         <div 
           className="absolute inset-0 bg-[#00f0ff] opacity-0 group-hover:opacity-10 transition-opacity duration-300 blur-xl"
           style={{ transform: "translateZ(-20px)" }}
@@ -85,8 +86,9 @@ function ProductCard3D({ product }: { product: any }) {
             V.2 Activated
           </div>
         )}
-      </motion.div>
-    </Link>
+        </motion.div>
+      </Link>
+    </div>
   );
 }
 

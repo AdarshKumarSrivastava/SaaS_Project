@@ -1,4 +1,5 @@
 "use client";
+import { useCustomizationContext } from "@/context/CustomizationContext";
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -6,6 +7,11 @@ import { ArrowRight } from "lucide-react";
 import { useCustomization } from "@/hooks/useCustomization";
 
 export default function OriginAboutPage() {
+  const __customContext = useCustomizationContext();
+  const basePath = __customContext?.basePath || "/templates/origin";
+
+
+
   const customData = useCustomization();
   
   const tTitle = customData?.formData?.aboutTitle || "Rooted in tradition, built for today.";
@@ -59,7 +65,7 @@ export default function OriginAboutPage() {
         <div className="text-center py-24 bg-[#402c21] text-[#fdfbf7] rounded-sm">
           <h2 className="font-serif text-3xl md:text-4xl font-bold mb-8">Discover the Collection</h2>
           <Link 
-            href="/templates/origin/products" 
+            href={`\${basePath}/products`} 
             className="inline-flex items-center gap-4 bg-[#fdfbf7] text-[#402c21] px-8 py-4 text-sm font-bold tracking-widest uppercase hover:bg-[#a38c7f] hover:text-[#fdfbf7] transition-colors group"
           >
             Shop Now

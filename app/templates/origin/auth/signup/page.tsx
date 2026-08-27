@@ -1,8 +1,14 @@
 "use client";
+import { useCustomizationContext } from "@/context/CustomizationContext";
 
 import { FirebasePhoneSignup } from "@/components/auth/FirebasePhoneSignup";
 
 export default function originSignupPage() {
+  const __customContext = useCustomizationContext();
+  const basePath = __customContext?.basePath || "/templates/origin";
+
+
+
   return (
     <FirebasePhoneSignup
       title="Sign Up"
