@@ -38,32 +38,11 @@ export function mergeSchema(defaultSchema: any, overrides: any) {
     };
   }
 
-  if (defaultSchema.pages) {
-    merged.pages = defaultSchema.pages.map((defaultPage: any, pIdx: number) => {
-      // Find override by page path or ID, or simply index
-      let overridePage = (overrides.pages || []).find((p: any) => p.id === defaultPage.id);
-      if (!overridePage) {
-        overridePage = (overrides.pages || [])[pIdx];
-      }
-
-      if (!overridePage) return defaultPage;
-
-      return {
-        ...defaultPage,
-        ...overridePage,
-        sections: defaultPage.sections.map((defaultSec: any, sIdx: number) => {
-          let overrideSec = overridePage.sections?.[sIdx];
-          
-          if (!overrideSec) return defaultSec;
-
-          return {
-            ...defaultSec,
-            ...overrideSec,
-            props: { ...defaultSec.props, ...(overrideSec.props || {}) }
-          };
-        })
-      };
-    });
+  // If overrides have explicitly defined pages, they represent the absolute source of truth.
+  // We do NOT attempt to merge them line-by-line with defaultSchema because that destroys
+  // section reordering, section deletion, and dynamic additions.
+  if (overrides.pages && Array.isArray(overrides.pages) && overrides.pages.length > 0) {
+    merged.pages = overrides.pages;
   }
 
   return merged;
@@ -82,41 +61,11 @@ export function extractOverrides(defaultSchema: any, modifiedSchema: any) {
     }
   }
 
-  if (modifiedSchema.pages && defaultSchema.pages) {
-    overrides.pages = modifiedSchema.pages.map((page: any, pIdx: number) => {
-      const defaultPage = defaultSchema.pages[pIdx];
-      if (!defaultPage) return page; // new page entirely
-
-      return {
-        id: page.id,
-        name: page.name,
-        path: page.path,
-        title: page.title,
-        description: page.description,
-        seoTitle: page.seoTitle,
-        seoDescription: page.seoDescription,
-        sections: page.sections.map((section: any, sIdx: number) => {
-          const defaultSec = defaultPage.sections[sIdx];
-          if (!defaultSec) return section;
-
-          const propsOverride: any = {};
-          if (section.props) {
-            Object.keys(section.props).forEach(key => {
-              // Only save if it actually differs from default
-              if (section.props[key] !== defaultSec.props[key]) {
-                propsOverride[key] = section.props[key];
-              }
-            });
-          }
-
-          return {
-            id: section.id,
-            type: section.type,
-            props: propsOverride
-          };
-        })
-      };
-    });
+  // The new architecture treats the Builder's modified schema as the absolute source of truth.
+  // We no longer attempt to extract minimal diffs, because doing so destroys structural
+  // changes like reordering, adding, or deleting sections.
+  if (modifiedSchema.pages && Array.isArray(modifiedSchema.pages)) {
+    overrides.pages = modifiedSchema.pages;
   }
 
   return overrides;

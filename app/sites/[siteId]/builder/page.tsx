@@ -10,6 +10,7 @@ import {
 import { apiClient } from '@/lib/api-client';
 import { resolveSiteData } from '@/lib/schema';
 import { RightSidebar } from '@/components/builder/RightSidebar';
+import { TemplateRenderer } from '@/components/TemplateRenderer';
 
 interface PageData {
   id: string;
@@ -46,6 +47,9 @@ export default function BuilderPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const editorScrollRef = useRef<HTMLDivElement>(null);
   const [siteData, setSiteData] = useState<SiteData | null>(null);
   const [products, setProducts] = useState<any[]>([]);
   
@@ -54,7 +58,12 @@ export default function BuilderPage() {
   
   const [history, setHistory] = useState<SiteData[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const historyIndexRef = useRef(-1);
   const skipHistoryRecord = useRef(false);
+
+  useEffect(() => {
+    historyIndexRef.current = historyIndex;
+  }, [historyIndex]);
 
   const [selectedElement, setSelectedElement] = useState<SelectedElement | null>(null);
   const [cmdKOpen, setCmdKOpen] = useState(false);
@@ -99,12 +108,13 @@ export default function BuilderPage() {
 
   useEffect(() => {
     if (iframeRef.current && iframeRef.current.contentWindow && siteData) {
+      const activePage = siteData.pages[currentStepIndex];
       iframeRef.current.contentWindow.postMessage(
-        { type: 'UPDATE_SCHEMA', payload: { ...siteData, products } },
+        { type: 'UPDATE_SCHEMA', payload: { siteData, products, activePath: activePage?.path === '/' ? '/' : activePage?.path } },
         '*'
       );
     }
-  }, [siteData, products]);
+  }, [siteData, products, currentStepIndex]);
 
   useEffect(() => {
     // Route-level body lock to guarantee no document scrolling while in Builder
@@ -118,41 +128,56 @@ export default function BuilderPage() {
   }, []);
 
   const focusPreviewElement = (fieldKey: string | null, sectionId: string | null) => {
-    if (iframeRef.current && iframeRef.current.contentWindow) {
-      iframeRef.current.contentWindow.postMessage({ type: 'FOCUS_ELEMENT', fieldKey, sectionId }, '*');
-    }
+    window.postMessage({
+      type: 'FOCUS_ELEMENT',
+      fieldKey,
+      sectionId
+    }, '*');
   };
 
   useEffect(() => {
     const handleMessage = (e: MessageEvent) => {
-      if (!iframeRef.current || !iframeRef.current.contentWindow || !siteData) return;
+      if (!siteData) return;
       
-      if (e.data?.type === 'TEMPLATE_READY') {
-        iframeRef.current.contentWindow.postMessage(
-          { type: 'UPDATE_SCHEMA', payload: { ...siteData, products } },
-          '*'
-        );
-      } else if (e.data?.type === 'IFRAME_NAVIGATED') {
-        const navigatedPath = e.data.path;
-        if (!navigatedPath) return;
-        
-        const idx = siteData.pages.findIndex(p => {
-           if (p.path === '/') return navigatedPath.endsWith('/' + templateSlug);
-           return navigatedPath.includes(p.path);
-        });
-        
-        if (idx !== -1 && idx !== currentStepIndex) {
-          setCurrentStepIndex(idx);
-          router.replace(`?page=${siteData.pages[idx].id}`, { scroll: false });
-        }
-      } else if (e.data?.type === 'ELEMENT_SELECTED') {
+      if (e.data?.type === 'ELEMENT_SELECTED') {
         setSelectedElement(e.data);
+      } else if (e.data?.type === 'TEMPLATE_READY') {
+        if (iframeRef.current && iframeRef.current.contentWindow && siteData) {
+          const activePage = siteData.pages[currentStepIndex];
+          iframeRef.current.contentWindow.postMessage(
+            { type: 'UPDATE_SCHEMA', payload: { siteData, products, activePath: activePage?.path === '/' ? '/' : activePage?.path } },
+            '*'
+          );
+        }
+      } else if (e.data?.type === 'NAVIGATE') {
+        const path = e.data.path;
+        const activePathStr = path.replace(`/sites/${siteId}/builder`, '') || '/';
+        const page = siteData.pages.find((p: any) => p.path === activePathStr || activePathStr.startsWith(p.path + '/') || (p.path === '/' && activePathStr === ''));
+        if (page) {
+          const idx = siteData.pages.findIndex((p: any) => p.id === page.id);
+          if (idx !== -1 && idx !== currentStepIndex) {
+            setCurrentStepIndex(idx);
+            router.replace(`?page=${siteData.pages[idx].id}`, { scroll: false });
+          }
+        }
       }
     };
     
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [siteData, currentStepIndex, router, templateSlug, products]);
+  }, [siteData, currentStepIndex]);
+
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
 
   useEffect(() => {
     if (!siteData) return;
@@ -160,13 +185,20 @@ export default function BuilderPage() {
        skipHistoryRecord.current = false;
        return;
     }
+    
     setHistory(prev => {
-       const newHistory = prev.slice(0, historyIndex + 1);
+       const newHistory = prev.slice(0, historyIndexRef.current + 1);
        newHistory.push(JSON.parse(JSON.stringify(siteData)));
-       if (newHistory.length > 50) newHistory.shift(); 
+       
+       if (newHistory.length > 50) {
+           newHistory.shift(); 
+       }
+       
+       setHistoryIndex(newHistory.length - 1);
+       setIsDirty(true);
+       
        return newHistory;
     });
-    setHistoryIndex(prev => prev + 1);
   }, [siteData]);
 
   useEffect(() => {
@@ -216,13 +248,19 @@ export default function BuilderPage() {
   };
 
   const handleSave = async () => {
-    if (!siteData) return;
+    if (!siteData || saving) return;
     setSaving(true);
     try {
-      await apiClient.patch(`/api/sites/${siteId}`, { schema: siteData });
+      // Must use /schema endpoint to persist full builder schema state
+      await apiClient.patch(`/api/sites/${siteId}/schema`, { schema: siteData });
+      setIsDirty(false);
+      setSaveSuccess(true);
+      setTimeout(() => {
+        router.push(`/sites/${siteId}/admin`);
+      }, 1000);
     } catch (error) {
       console.error('Failed to save:', error);
-    } finally {
+      alert('Unable to save changes. Your edits are still here. Please try again.');
       setSaving(false);
     }
   };
@@ -382,7 +420,7 @@ const updatePropByFieldKey = (fieldKey: string, value: any) => {
   const activePage = siteData.pages[currentStepIndex];
 
   return (
-    <div className="fixed inset-0 bg-[#050505] flex flex-col font-sans overflow-hidden text-white">
+    <div className="fixed inset-0 h-[100dvh] bg-[#050505] flex flex-col font-sans overflow-hidden text-white">
       
       {/* TOP COMMAND BAR */}
       <div className="h-14 border-b border-white/10 flex items-center justify-between px-4 shrink-0 bg-[#0A0A0A] z-50">
@@ -415,9 +453,9 @@ const updatePropByFieldKey = (fieldKey: string, value: any) => {
           <button onClick={redo} disabled={historyIndex >= history.length - 1} className="p-2 text-white/40 hover:text-white disabled:opacity-30 transition-colors">
             <Redo className="w-4 h-4" />
           </button>
-          <button onClick={handleSave} disabled={saving} className="bg-white text-black px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 hover:bg-white/90 transition-colors">
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            Save
+          <button onClick={handleSave} disabled={saving || (!isDirty && !saveSuccess)} className={`px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 transition-colors ${saveSuccess ? 'bg-green-500 text-white' : 'bg-white text-black hover:bg-white/90 disabled:opacity-50'}`}>
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saveSuccess ? <span className="flex items-center gap-1">Saved ✓</span> : <Save className="w-4 h-4" />}
+            {!saveSuccess && 'Save'}
           </button>
         </div>
       </div>
@@ -442,11 +480,10 @@ const updatePropByFieldKey = (fieldKey: string, value: any) => {
             }}
           >
             <iframe 
-              key={activePage.id}
-              ref={iframeRef}
-              src={`/sites/${siteId}/preview${activePage.path === '/' ? '' : activePage.path}?preview=true`}
-              className="w-full h-full border-none pointer-events-auto"
-              title="Canvas"
+              ref={iframeRef} 
+              src={`/sites/${siteId}/builder/preview-frame`} 
+              className="w-full h-full border-0 bg-white"
+              title="Builder Preview"
             />
           </motion.div>
         </div>
@@ -463,6 +500,7 @@ const updatePropByFieldKey = (fieldKey: string, value: any) => {
           updateProduct={updateProduct}
           updateTheme={updateTheme}
           focusPreviewElement={focusPreviewElement}
+          editorScrollRef={editorScrollRef}
         />
 
         {/* Command Palette Overlay */}

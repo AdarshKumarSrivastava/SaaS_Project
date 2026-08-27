@@ -31,7 +31,11 @@ export function ProductsTab({ products, updateProduct, selectedProductId }: Prod
           ← Back to Products
         </button>
 
-        <div className="bg-[#111] border border-white/10 rounded-xl p-5 space-y-5">
+        <div className="editor-section bg-[#111] border border-white/10 rounded-xl overflow-hidden flex flex-col">
+          <div className="section-header px-5 py-4 bg-white/[0.02] border-b border-white/5">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-white/80">Product Details</h3>
+          </div>
+          <div className="section-content p-5 space-y-5">
           <div className="space-y-1.5">
             <label className="text-[11px] font-medium text-white/60">Product Name</label>
             <input 
@@ -96,6 +100,7 @@ export function ProductsTab({ products, updateProduct, selectedProductId }: Prod
               Editing this demo product will automatically clone it into your project's database.
             </div>
           ) : null}
+          </div>
         </div>
       </div>
     );

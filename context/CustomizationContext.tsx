@@ -7,24 +7,87 @@ interface CustomizationContextType {
   basePath?: string;
   siteData: any;
   products: any[];
+  isBuilderContext?: boolean;
+  onNavigate?: (path: string) => void;
 }
 
 const CustomizationContext = createContext<CustomizationContextType | undefined>(undefined);
 
 export function CustomizationProvider({ 
   children, 
-  siteData,
-  products,
-  basePath
+  siteData: initialSiteData,
+  products: initialProducts,
+  basePath,
+  isBuilderContext,
+  onNavigate
 }: { 
   children: ReactNode; 
   siteData: any;
   products: any[];
   basePath?: string;
+  isBuilderContext?: boolean;
+  onNavigate?: (path: string) => void;
 }) {
+  const [siteData, setSiteData] = React.useState(initialSiteData);
+  const [products, setProducts] = React.useState(initialProducts);
+
+  useEffect(() => {
+    setSiteData(initialSiteData);
+  }, [initialSiteData]);
+
+  useEffect(() => {
+    setProducts(initialProducts);
+  }, [initialProducts]);
+
   const templateSlug = siteData?.global?.templateSlug || 'velocity';
   const mergedProducts = getStorefrontProducts(templateSlug, products || []);
   const theme = siteData?.global?.theme;
+
+  useEffect(() => {
+    // If not in browser, abort
+    if (typeof window === 'undefined') return;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'UPDATE_SCHEMA') {
+         setSiteData(event.data.payload);
+         if (event.data.payload.products) {
+           setProducts(event.data.payload.products);
+         }
+      } else if (event.data?.type === 'FOCUS_ELEMENT') {
+         const { fieldKey, sectionId } = event.data;
+         
+         const target = ((fieldKey ? document.querySelector(`[data-field-key="${fieldKey}"]`) : null) 
+                     || (sectionId ? document.querySelector(`[data-section-id="${sectionId}"]`) : null)) as HTMLElement;
+
+         if (!target) {
+            console.warn(`Preview target not found: ${fieldKey || sectionId}`);
+            return;
+         }
+
+         // Calculate safe scroll offset (ensuring only the preview scrolls)
+         const scrollContainer = document.getElementById('preview-scroll-container') || (document.scrollingElement || document.documentElement) as HTMLElement;
+         const containerRect = scrollContainer.getBoundingClientRect();
+         const targetRect = target.getBoundingClientRect();
+         
+         const offset = targetRect.top - containerRect.top + scrollContainer.scrollTop;
+         
+         scrollContainer.scrollTo({
+           top: offset - (containerRect.height / 2) + (targetRect.height / 2),
+           behavior: "smooth"
+         });
+      }
+    };
+    window.addEventListener('message', handleMessage);
+
+    // Request initial data from parent if we are in an iframe
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: 'TEMPLATE_READY' }, '*');
+    }
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, []);
 
   useEffect(() => {
     if (!theme) return;
@@ -47,7 +110,7 @@ export function CustomizationProvider({
   }, [theme]);
 
   return (
-    <CustomizationContext.Provider value={{ siteData, products: mergedProducts, basePath }}>
+    <CustomizationContext.Provider value={{ siteData, products: mergedProducts, basePath, isBuilderContext, onNavigate }}>
       {children}
     </CustomizationContext.Provider>
   );

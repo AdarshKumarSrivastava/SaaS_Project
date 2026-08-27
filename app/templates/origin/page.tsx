@@ -33,28 +33,28 @@ export default function OriginHomePage() {
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section data-page-id="home" data-section-id="Hero" className="relative w-full bg-[#402c21] text-[#fdfbf7] min-h-[100vh] flex items-center pt-16">
+      <section data-page-id="home" data-section-id="Hero" className="relative w-full bg-[#402c21] text-[#fdfbf7] min-h-[100svh] flex items-center pt-24 pb-12 md:py-0">
         <div className="absolute inset-0 z-0">
           <img 
             src={heroImage} 
             data-field-key="home.Hero.heroImage"
             alt="Hero Background" 
-            className="w-full h-full object-cover opacity-30 mix-blend-overlay"
+            className="w-full h-full object-cover md:object-center object-[center_top] opacity-30 mix-blend-overlay"
           />
         </div>
-        <div className="max-w-[1400px] mx-auto px-6 relative z-10 w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          <div>
-            <h1 data-field-key="home.Hero.heroTitle" className="font-serif text-5xl md:text-7xl font-bold leading-[1.1] mb-6 animate-in slide-in-from-bottom-10 fade-in duration-700">
+        <div className="max-w-[1400px] mx-auto px-6 relative z-10 w-full grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center h-full">
+          <div className="flex flex-col justify-center h-full">
+            <h1 data-field-key="home.Hero.heroTitle" className="font-serif text-[clamp(42px,10vw,72px)] md:text-[clamp(48px,7vw,110px)] font-bold leading-[1.1] mb-4 md:mb-6 animate-in slide-in-from-bottom-10 fade-in duration-700 w-full max-w-[600px] md:max-w-none">
               {heroTitle}
             </h1>
-            <p data-field-key="home.Hero.heroSubtitle" className="text-[#fdfbf7]/80 text-lg md:text-xl max-w-md mb-10 leading-relaxed font-medium animate-in slide-in-from-bottom-10 fade-in duration-700 delay-150">
+            <p data-field-key="home.Hero.heroSubtitle" className="text-[#fdfbf7]/80 text-base md:text-xl w-full max-w-[600px] md:max-w-md mb-8 md:mb-10 leading-relaxed font-medium animate-in slide-in-from-bottom-10 fade-in duration-700 delay-150">
               {heroSubtitle}
             </p>
             <div className="animate-in slide-in-from-bottom-10 fade-in duration-700 delay-300">
               <Link 
                 href={`\${basePath}/products`} 
                 data-field-key="home.Hero.primaryCta"
-                className="inline-flex items-center gap-4 bg-[#fdfbf7] text-[#402c21] px-8 py-4 text-sm font-bold tracking-widest uppercase hover:bg-[#a38c7f] hover:text-[#fdfbf7] transition-colors group"
+                className="inline-flex items-center justify-center w-full sm:w-auto gap-4 bg-[#fdfbf7] text-[#402c21] px-6 md:px-8 py-4 text-xs md:text-sm font-bold tracking-widest uppercase hover:bg-[#a38c7f] hover:text-[#fdfbf7] transition-colors group min-h-[44px]"
               >
                 {primaryCta}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

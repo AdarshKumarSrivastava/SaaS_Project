@@ -117,32 +117,32 @@ export default function VelocityHomePage() {
     <div className="flex flex-col w-full bg-[#050505] overflow-x-hidden" ref={containerRef}>
       
       {/* Glitch Hero */}
-      <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
+      <section className="relative h-[100svh] min-h-[100svh] w-full flex items-center justify-center overflow-hidden pt-20 md:pt-0">
         <motion.div style={{ scale, y: yOffset }} className="absolute inset-0 z-0">
           <img 
             src={heroImage} 
             alt="Cyberpunk City" 
-            className="w-full h-full object-cover opacity-30"
+            className="w-full h-full object-cover md:object-center object-[center_top] opacity-30"
           />
           {/* Cyberpunk grid overlay */}
           <div className="absolute inset-0 bg-[linear-gradient(rgba(0,240,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.05)_1px,transparent_1px)] bg-[size:40px_40px] [transform:perspective(500px)_rotateX(60deg)_translateY(-100px)_translateZ(200px)]" />
         </motion.div>
 
-        <div className="relative z-10 text-center flex flex-col items-center">
+        <div className="relative z-10 text-center flex flex-col items-center px-4 md:px-0">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: "spring", bounce: 0.5 }}
             className="relative"
           >
-            <h1 className="text-7xl md:text-[10rem] font-black uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] via-white to-[#ff003c] font-orbitron drop-shadow-[0_0_30px_rgba(0,240,255,0.3)]">
+            <h1 className="text-5xl sm:text-7xl md:text-[10rem] font-black uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] via-white to-[#ff003c] font-orbitron drop-shadow-[0_0_30px_rgba(0,240,255,0.3)] max-w-[95vw] md:max-w-none break-words">
               {brandName}
             </h1>
             {/* Glitch layers */}
-            <h1 className="absolute inset-0 text-7xl md:text-[10rem] font-black uppercase tracking-tighter text-[#00f0ff] font-orbitron opacity-50 mix-blend-screen translate-x-1 animate-pulse">
+            <h1 className="absolute inset-0 text-5xl sm:text-7xl md:text-[10rem] font-black uppercase tracking-tighter text-[#00f0ff] font-orbitron opacity-50 mix-blend-screen translate-x-1 animate-pulse max-w-[95vw] md:max-w-none break-words">
               {brandName}
             </h1>
-            <h1 className="absolute inset-0 text-7xl md:text-[10rem] font-black uppercase tracking-tighter text-[#ff003c] font-orbitron opacity-50 mix-blend-screen -translate-x-1 animate-pulse" style={{ animationDelay: '100ms' }}>
+            <h1 className="absolute inset-0 text-5xl sm:text-7xl md:text-[10rem] font-black uppercase tracking-tighter text-[#ff003c] font-orbitron opacity-50 mix-blend-screen -translate-x-1 animate-pulse max-w-[95vw] md:max-w-none break-words" style={{ animationDelay: '100ms' }}>
               {brandName}
             </h1>
           </motion.div>

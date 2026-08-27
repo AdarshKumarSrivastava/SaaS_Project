@@ -3,6 +3,7 @@
 import React from 'react';
 import Link, { LinkProps } from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
+import { useCustomizationContext } from '@/context/CustomizationContext';
 
 interface TransitionLinkProps extends LinkProps {
   children: React.ReactNode;
@@ -18,6 +19,7 @@ function sleep(ms: number) {
 export const TransitionLink = ({ children, className, onClick, ...props }: TransitionLinkProps) => {
   const router = useRouter();
   const pathname = usePathname();
+  const __customContext = useCustomizationContext();
   const isHashLink = props.href.toString().startsWith('#') || props.href.toString().includes('/#');
 
   const handleTransition = async (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -39,6 +41,12 @@ export const TransitionLink = ({ children, className, onClick, ...props }: Trans
     }
 
     const targetUrl = props.href.toString();
+
+    if (__customContext?.isBuilderContext && __customContext.onNavigate) {
+       __customContext.onNavigate(targetUrl);
+       return;
+    }
+
     if (targetUrl === pathname) {
        return;
     }

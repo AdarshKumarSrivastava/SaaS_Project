@@ -30,12 +30,12 @@ export function RightSidebar({
   products,
   updateProduct,
   updateTheme,
-  focusPreviewElement
-}: RightSidebarProps) {
+  focusPreviewElement,
+  editorScrollRef
+}: RightSidebarProps & { editorScrollRef?: React.RefObject<HTMLDivElement | null> }) {
   const [activeTab, setActiveTab] = useState<'PAGES' | 'THEME' | 'PRODUCTS'>('PAGES');
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const sidebarRef = useRef<HTMLDivElement>(null);
 
   // Auto-expand and scroll to section when selectedElement changes (triggered by Left Panel click)
   useEffect(() => {
@@ -50,8 +50,8 @@ export function RightSidebar({
       
       setTimeout(() => {
         const el = sectionRefs.current[selectedElement.sectionId!];
-        if (el && sidebarRef.current) {
-          const container = sidebarRef.current;
+        if (el && editorScrollRef?.current) {
+          const container = editorScrollRef.current;
           const topPos = el.offsetTop - 20; // 20px padding
           container.scrollTo({ top: topPos, behavior: 'smooth' });
           
@@ -68,23 +68,23 @@ export function RightSidebar({
         
         setTimeout(() => {
           const inputEl = document.getElementById(`field-${selectedElement.fieldKey}`);
-          if (inputEl && sidebarRef.current) {
-            const container = sidebarRef.current;
+          if (inputEl && editorScrollRef?.current) {
+            const container = editorScrollRef.current;
             // Get offset relative to the scroll container
             const inputOffset = inputEl.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop;
             container.scrollTo({ top: inputOffset - 100, behavior: 'smooth' });
             inputEl.focus();
           } else {
              const sectionEl = sectionRefs.current[sId];
-             if (sectionEl && sidebarRef.current) {
-               const container = sidebarRef.current;
+             if (sectionEl && editorScrollRef?.current) {
+               const container = editorScrollRef.current;
                container.scrollTo({ top: sectionEl.offsetTop - 20, behavior: 'smooth' });
              }
           }
         }, 150);
       }
     }
-  }, [selectedElement]);
+  }, [selectedElement, editorScrollRef]);
 
   const toggleSection = (sectionId: string) => {
     setOpenSections(prev => ({ ...prev, [sectionId]: !prev[sectionId] }));
@@ -121,7 +121,7 @@ export function RightSidebar({
         </button>
       </div>
 
-      <div ref={sidebarRef} className="flex-1 overflow-y-auto custom-scrollbar overscroll-contain min-h-0">
+      <div ref={editorScrollRef} className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar relative bg-[#050505]">
         <AnimatePresence mode="wait">
           
           {/* PAGES TAB */}
@@ -147,12 +147,12 @@ export function RightSidebar({
                   <div 
                     key={sId}
                     ref={el => { sectionRefs.current[sId] = el; }}
-                    className="border border-white/10 rounded-xl overflow-hidden bg-[#111] transition-colors duration-500"
+                    className="editor-section border border-white/10 rounded-xl overflow-hidden bg-[#111] transition-colors duration-500"
                   >
                     {/* Section Header */}
                     <button 
                       onClick={() => toggleSection(sId)}
-                      className="w-full flex items-center justify-between p-4 bg-white/[0.02] hover:bg-white/[0.04] transition-colors text-left"
+                      className="section-header w-full flex items-center justify-between px-5 py-4 bg-white/[0.02] hover:bg-white/[0.04] transition-colors text-left"
                     >
                       <div className="flex items-center gap-3">
                         <GripVertical className="w-4 h-4 text-white/20 cursor-grab active:cursor-grabbing" />
@@ -173,7 +173,7 @@ export function RightSidebar({
                           }}
                           className="overflow-hidden border-t border-white/5"
                         >
-                          <div className="p-5 space-y-6">
+                          <div className="section-content p-5 space-y-6">
                             
                             {/* Fields */}
                             {schema ? (
@@ -183,7 +183,10 @@ export function RightSidebar({
                                 
                                 return (
                                   <div key={field.id} className="space-y-2">
-                                    <label className="flex items-center gap-2 text-[10px] font-bold text-white/40 uppercase tracking-[0.1em]">
+                                    <label 
+                                      onClick={() => handleFieldClick(fieldKey)}
+                                      className="flex items-center gap-2 text-[10px] font-bold text-white/40 uppercase tracking-[0.1em] cursor-pointer hover:text-white/80 transition-colors"
+                                    >
                                       <div className="w-1 h-1 rounded-full bg-white/20" />
                                       {field.label}
                                     </label>
@@ -193,7 +196,6 @@ export function RightSidebar({
                                         id={`field-${fieldKey}`}
                                         type="text"
                                         value={val}
-                                        onClick={() => handleFieldClick(fieldKey)}
                                         onChange={(e) => updatePropByFieldKey(fieldKey, e.target.value)}
                                         className="w-full bg-[#1A1A1A] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all placeholder:text-white/20"
                                       />
@@ -203,7 +205,6 @@ export function RightSidebar({
                                       <textarea 
                                         id={`field-${fieldKey}`}
                                         value={val}
-                                        onClick={() => handleFieldClick(fieldKey)}
                                         onChange={(e) => updatePropByFieldKey(fieldKey, e.target.value)}
                                         className="w-full bg-[#1A1A1A] border border-white/10 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 transition-all min-h-[80px] custom-scrollbar placeholder:text-white/20 resize-y"
                                       />
@@ -212,7 +213,6 @@ export function RightSidebar({
                                     {field.type === 'image' && (
                                       <div 
                                         id={`field-${fieldKey}`}
-                                        onClick={() => handleFieldClick(fieldKey)}
                                         className="relative group/upload cursor-pointer border border-dashed border-white/20 rounded-lg overflow-hidden hover:border-white/40 transition-all bg-[#1A1A1A]"
                                       >
                                         <input 

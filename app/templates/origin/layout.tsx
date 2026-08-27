@@ -55,10 +55,10 @@ function Header() {
         className="fixed top-0 left-0 right-0 z-50 py-4 px-4 md:px-8"
       >
         <div className="max-w-[1400px] mx-auto">
-          <div className="flex items-center justify-between bg-[#fdfbf7]/90 backdrop-blur-xl border border-[#402c21]/10 rounded-full px-8 py-3 shadow-lg">
-            <div className="flex items-center gap-12">
-              <Link href={`\${basePath}`} className="font-serif text-3xl font-bold tracking-tight text-[#402c21]">
-                {logoUrl ? <img src={logoUrl} alt={brandName} className="h-8 w-auto object-contain" /> : <div className="flex items-center gap-2"><Leaf className="w-6 h-6" /><span>{brandName}</span></div>}
+          <div className="flex items-center justify-between bg-[#fdfbf7]/90 backdrop-blur-xl border border-[#402c21]/10 rounded-full px-4 md:px-8 py-2 md:py-3 shadow-lg">
+            <div className="flex items-center gap-4 md:gap-12 flex-shrink-0">
+              <Link href={`\${basePath}`} className="font-serif text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[#402c21] whitespace-nowrap">
+                {logoUrl ? <img src={logoUrl} alt={brandName} className="h-6 md:h-8 w-auto object-contain" /> : <div className="flex items-center gap-1.5 md:gap-2"><Leaf className="w-4 h-4 md:w-6 md:h-6 flex-shrink-0" /><span className="truncate">{brandName}</span></div>}
               </Link>
               <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-[#402c21]/70">
                 {['Home', 'Shop', 'About', 'Contact', 'Orders'].map((item) => {
@@ -74,8 +74,8 @@ function Header() {
               </nav>
             </div>
 
-            <div className="flex items-center gap-4 sm:gap-8">
-              <div className="relative">
+            <div className="flex items-center gap-3 sm:gap-6 flex-shrink-0">
+              <div className="relative flex-shrink-0 hidden sm:block">
                 <AnimatePresence mode="wait">
                   {isSearchOpen ? (
                     <motion.div
@@ -88,7 +88,7 @@ function Header() {
                       <input
                         autoFocus
                         type="text"
-                        placeholder="Search collection..."
+                        placeholder="Search..."
                         value={searchQuery}
                         onChange={(e) => {
                           setSearchQuery(e.target.value);
@@ -109,35 +109,35 @@ function Header() {
                       onClick={() => setIsSearchOpen(true)}
                       className="hover:text-[#a38c7f] transition-colors text-[#402c21] flex items-center gap-2 text-sm font-medium"
                     >
-                      <Search className="w-4 h-4" />
+                      <Search className="w-4 h-4 md:w-5 md:h-5" />
                     </motion.button>
                   )}
                 </AnimatePresence>
               </div>
 
-              <Link href={`\${basePath}/profile`} className="group flex items-center gap-2 text-sm font-medium text-[#402c21] transition-colors hover:text-[#a38c7f]">
-                <User className="w-5 h-5" />
+              <Link href={`\${basePath}/profile`} className="group flex items-center gap-2 text-sm font-medium text-[#402c21] transition-colors hover:text-[#a38c7f] flex-shrink-0">
+                <User className="w-4 h-4 md:w-5 md:h-5" />
               </Link>
 
-              <Link href={`\${basePath}/wishlist`} className="group flex items-center gap-2 text-sm font-medium text-[#402c21] transition-colors hover:text-[#a38c7f]">
-                <Heart className="w-5 h-5" />
-                <span className="bg-[#402c21] text-[#fdfbf7] text-xs px-2 py-0.5 rounded-full transition-colors group-hover:bg-[#a38c7f]">
+              <Link href={`\${basePath}/wishlist`} className="group flex items-center gap-1.5 md:gap-2 text-sm font-medium text-[#402c21] transition-colors hover:text-[#a38c7f] flex-shrink-0">
+                <Heart className="w-4 h-4 md:w-5 md:h-5" />
+                <span className="bg-[#402c21] text-[#fdfbf7] text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-full transition-colors group-hover:bg-[#a38c7f]">
                   {wishlist.length}
                 </span>
               </Link>
 
-              <Link href={`\${basePath}/cart`} className="group flex items-center gap-2 text-sm font-medium text-[#402c21] transition-colors hover:text-[#a38c7f]">
-                <span className="hidden sm:block">Cart</span>
-                <span className="bg-[#402c21] text-[#fdfbf7] text-xs px-2 py-0.5 rounded-full transition-colors group-hover:bg-[#a38c7f]">
+              <Link href={`\${basePath}/cart`} className="group flex items-center gap-1.5 md:gap-2 text-sm font-medium text-[#402c21] transition-colors hover:text-[#a38c7f] flex-shrink-0">
+                <span className="hidden lg:block">Cart</span>
+                <span className="bg-[#402c21] text-[#fdfbf7] text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-full transition-colors group-hover:bg-[#a38c7f]">
                   {totalItems}
                 </span>
               </Link>
 
               <button
-                className="md:hidden text-[#402c21]"
+                className="md:hidden text-[#402c21] flex-shrink-0 ml-1"
                 onClick={() => setIsMobileMenuOpen(true)}
               >
-                <Menu className="w-6 h-6" />
+                <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
             </div>
           </div>
