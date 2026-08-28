@@ -31,7 +31,7 @@ export const useCustomization = () => {
       formData: flattenedFormData,
       products: context?.products || []
     };
-  }, [context?.siteData, context?.products, pathname]);
+  }, [context, pathname]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
