@@ -38,11 +38,36 @@ export function mergeSchema(defaultSchema: any, overrides: any) {
     };
   }
 
-  // If overrides have explicitly defined pages, they represent the absolute source of truth.
-  // We do NOT attempt to merge them line-by-line with defaultSchema because that destroys
-  // section reordering, section deletion, and dynamic additions.
   if (overrides.pages && Array.isArray(overrides.pages) && overrides.pages.length > 0) {
-    merged.pages = overrides.pages;
+    merged.pages = overrides.pages.map((overridePage: any) => {
+      const defaultPage = defaultSchema.pages?.find((p: any) => p.path === overridePage.path);
+      
+      if (!defaultPage) return overridePage;
+
+      return {
+        ...overridePage,
+        sections: (overridePage.sections || []).map((overrideSection: any) => {
+          // Find matching default section by type
+          // We match by relative order of that type in the page
+          const defaultSectionsOfType = defaultPage.sections.filter((s: any) => s.type === overrideSection.type);
+          const overrideSectionsOfType = overridePage.sections.filter((s: any) => s.type === overrideSection.type);
+          
+          const typeIndex = overrideSectionsOfType.indexOf(overrideSection);
+          const defaultSection = defaultSectionsOfType[typeIndex];
+
+          if (defaultSection) {
+            return {
+              ...overrideSection,
+              props: {
+                ...defaultSection.props,
+                ...(overrideSection.props || {})
+              }
+            };
+          }
+          return overrideSection;
+        })
+      };
+    });
   }
 
   return merged;
