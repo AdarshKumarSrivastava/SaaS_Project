@@ -48,12 +48,7 @@ export function CustomizationProvider({
     if (typeof window === 'undefined') return;
 
     const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'UPDATE_SCHEMA') {
-         setSiteData(event.data.payload);
-         if (event.data.payload.products) {
-           setProducts(event.data.payload.products);
-         }
-      } else if (event.data?.type === 'FOCUS_ELEMENT') {
+      if (event.data?.type === 'FOCUS_ELEMENT') {
          const { fieldKey, sectionId } = event.data;
          
          const target = ((fieldKey ? document.querySelector(`[data-field-key="${fieldKey}"]`) : null) 
