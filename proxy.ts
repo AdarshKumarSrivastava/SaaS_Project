@@ -73,34 +73,9 @@ export default async function middleware(request: NextRequest) {
   }
 
   // If there is a valid project subdomain (and it's not 'www' or 'app' or 'admin')
-  if (subdomain && !['www', 'app', 'admin'].includes(subdomain)) {
-    try {
-      // Fetch live configuration for this subdomain
-      const apiUrl = new URL(`/api/sites/live/${subdomain}`, request.url);
-      const res = await fetch(apiUrl);
-      if (res.ok) {
-        const data = await res.json();
-        const templateSlug = data.deployment?.schema?.global?.templateSlug;
-        
-        if (templateSlug) {
-          // Rewrite to the actual template route (e.g., /templates/velocity/...)
-          url.pathname = `/templates/${templateSlug}${url.pathname}`;
-          
-          const response = NextResponse.rewrite(url);
-          // Pass the live data through a header so the layout can inject it
-          // We use btoa to base64 encode it for safe header transport in Edge runtime
-          const base64Data = btoa(JSON.stringify(data));
-          response.headers.set('x-live-data', base64Data);
-          return response;
-        }
-      }
-    } catch (err) {
-      console.error('Proxy live fetch error:', err);
-    }
-    
-    // If not found or not live, rewrite to a generic not-live page
-    url.pathname = `/s/not-live`;
-    return NextResponse.rewrite(url);
+  if (subdomain && !['www', 'app', 'admin', 'api'].includes(subdomain)) {
+    // Rewrite to our new public-site catch-all route
+    return NextResponse.rewrite(new URL(`/public-site/${subdomain}${url.pathname}`, request.url));
   }
 
   return NextResponse.next();
