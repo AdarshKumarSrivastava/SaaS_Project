@@ -348,6 +348,8 @@ model Deployment {
   versionId   String   @default(uuid())
   status      String   // PUBLISHING, LIVE, FAILED, ARCHIVED
   schema      Json     // The builder schema snapshot
+  deploymentUrl String?
+  publicUrl   String?
   errorLogs   String?
   createdAt   DateTime @default(now())
   completedAt DateTime?

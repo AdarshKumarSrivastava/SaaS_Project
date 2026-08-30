@@ -60,7 +60,7 @@ export default function AdminPanelPage() {
     );
   }
 
-  const liveUrl = getLiveSiteUrl(site.subdomain);
+  const liveUrl = site?.publishedDeployment?.publicUrl || (site.subdomain && site.subdomain !== site.id ? getLiveSiteUrl(site.subdomain) : '');
 
   return (
     <div className="min-h-screen bg-[#020202] text-white font-sans selection:bg-white/20 overflow-x-hidden">
@@ -83,9 +83,13 @@ export default function AdminPanelPage() {
             <div className="h-6 w-px bg-white/10 hidden sm:block" />
             <div className="flex flex-col">
               <h1 className="text-sm font-bold tracking-widest uppercase">{site.name}</h1>
-              <a href={liveUrl} target="_blank" rel="noreferrer" className="text-[10px] text-white/40 hover:text-white transition-colors flex items-center gap-1.5 uppercase font-mono">
-                {site.subdomain}.buildspace.app
-              </a>
+              {liveUrl ? (
+                <a href={liveUrl} target="_blank" rel="noreferrer" className="text-[10px] text-white/40 hover:text-white transition-colors flex items-center gap-1.5 uppercase font-mono">
+                  {liveUrl.replace(/^https?:\/\//, '')}
+                </a>
+              ) : (
+                <span className="text-[10px] text-white/40 uppercase font-mono">Not deployed</span>
+              )}
             </div>
           </div>
         </div>

@@ -78,7 +78,12 @@ export const createSite = async (req: Request, res: Response) => {
 export const getSite = async (req: Request, res: Response) => {
   try {
     const siteId = req.params.siteId as string;
-    const site = await prisma.site.findUnique({ where: { id: siteId } });
+    const site = await prisma.site.findUnique({ 
+      where: { id: siteId },
+      include: {
+        publishedDeployment: true
+      }
+    });
     if (!site) return res.status(404).json({ error: 'Site not found' });
     res.json(site);
   } catch (error) {

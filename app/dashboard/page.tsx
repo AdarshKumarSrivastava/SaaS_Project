@@ -200,13 +200,35 @@ export default function DashboardPage() {
     }
   };
 
+  const handleViewLive = (site: any) => {
+    setActiveSiteMenu(null);
+
+    const deployment = site.deployments?.[0];
+    
+    if (deployment && deployment.status === 'LIVE' && deployment.publicUrl) {
+      window.open(deployment.publicUrl, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    if (site.subdomain && site.subdomain !== site.id) {
+       const recoveredUrl = getLiveSiteUrl(site.subdomain);
+       window.open(recoveredUrl, "_blank", "noopener,noreferrer");
+       return;
+    }
+
+    toast('Live URL unavailable. Redeploying...', { id: `redeploy-${site.id}` });
+    handleDeployLive(site.id);
+  };
+
   const onDeploySuccess = (siteId: string) => {
     setSites(sites.map(s => {
       if (s.id === siteId) {
+        // Also ensure publicUrl is injected conceptually so it works immediately without reload
+        const newUrl = getLiveSiteUrl(s.subdomain);
         return { 
           ...s, 
           status: 'published',
-          deployments: [{ status: 'LIVE' }] 
+          deployments: [{ status: 'LIVE', publicUrl: newUrl, deploymentUrl: newUrl }] 
         };
       }
       return s;
@@ -598,14 +620,12 @@ export default function DashboardPage() {
                                   >
                                     <Rocket className="w-3.5 h-3.5 text-emerald-500" /> {(!site.deployments || site.deployments.length === 0 || site.deployments[0].status !== 'LIVE') ? 'Deploy Live' : 'Redeploy'}
                                   </button>
-                                  <a 
-                                    href={getLiveSiteUrl(site.subdomain)} 
-                                    target="_blank" 
-                                    rel="noreferrer"
+                                  <button 
+                                    onClick={() => handleViewLive(site)} 
                                     className="w-full px-4 py-2 text-left text-xs text-ink hover:bg-bg-subtle flex items-center gap-2 transition-colors"
                                   >
                                     <ExternalLink className="w-3.5 h-3.5 text-ink-soft" /> View Live
-                                  </a>
+                                  </button>
                                   <div className="h-px bg-line/60 my-1" />
                                   <button 
                                     onClick={() => handleDeleteSite(site.id)}

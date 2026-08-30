@@ -53,12 +53,20 @@ export const updateDeploymentStatus = async (req: Request, res: Response) => {
 
     // 1. Check deployment belongs to site
     const deployment = await prisma.deployment.findFirst({
-       where: { id: deploymentId, siteId }
+       where: { id: deploymentId, siteId },
+       include: { site: true }
     });
 
     if (!deployment) {
        return res.status(404).json({ error: 'Deployment not found' });
     }
+
+    // Determine the canonical public URL for this deployment
+    const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'buildspace.app';
+    const isProd = process.env.NODE_ENV === 'production' && !rootDomain.includes('localhost');
+    const publicUrl = isProd 
+      ? `https://${deployment.site.subdomain}.${rootDomain}`
+      : `http://${deployment.site.subdomain}.localhost:3000`;
 
     let updated;
 
@@ -74,6 +82,8 @@ export const updateDeploymentStatus = async (req: Request, res: Response) => {
              where: { id: deploymentId },
              data: { 
                 status,
+                deploymentUrl: publicUrl,
+                publicUrl: publicUrl,
                 errorLogs: errorLogs || null,
                 completedAt: new Date()
              }
@@ -95,6 +105,8 @@ export const updateDeploymentStatus = async (req: Request, res: Response) => {
           where: { id: deploymentId },
           data: { 
              status,
+             deploymentUrl: publicUrl,
+             publicUrl: publicUrl,
              errorLogs: errorLogs || null,
              completedAt: new Date()
           }

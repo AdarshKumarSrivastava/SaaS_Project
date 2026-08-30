@@ -115,7 +115,7 @@ export default function SettingsPage() {
             <div>
               <label className="block text-sm font-medium mb-1.5">Primary Subdomain</label>
               <div className="w-full bg-bg-subtle border border-line rounded-xl px-4 py-3 text-ink-soft text-sm cursor-not-allowed">
-                {getLiveSiteUrl(site.id)}
+                {site.publishedDeployment?.publicUrl || getLiveSiteUrl(site.subdomain)}
               </div>
               <p className="text-xs text-ink-soft mt-1.5">This is your permanent BuildSpace assigned URL.</p>
             </div>

@@ -27,6 +27,7 @@ export function DeploymentModal({ isOpen, onClose, siteId, siteName, siteSubdoma
   const [status, setStatus] = useState<'idle' | 'running' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const [logs, setLogs] = useState<string[]>([]);
+  const [liveUrl, setLiveUrl] = useState<string>('');
 
 
   const addLog = (msg: string) => {
@@ -57,10 +58,16 @@ export function DeploymentModal({ isOpen, onClose, siteId, siteName, siteSubdoma
 
       // 3. Mark as LIVE
       addLog('Finalizing edge deployment...');
-      await apiClient.patch(`/api/sites/${siteId}/deployments/${res.id}/status`, {
+      const patchRes = await apiClient.patch(`/api/sites/${siteId}/deployments/${res.id}/status`, {
         status: 'LIVE'
       });
       addLog('Deployment marked as LIVE successfully.');
+      
+      if (patchRes?.publicUrl) {
+        setLiveUrl(patchRes.publicUrl);
+      } else {
+        setLiveUrl(siteSubdomain ? getLiveSiteUrl(siteSubdomain) : '');
+      }
 
       setStatus('success');
       onDeploySuccess(siteId);
@@ -94,10 +101,10 @@ export function DeploymentModal({ isOpen, onClose, siteId, siteName, siteSubdoma
     setDeploymentId(null);
     setCurrentStepIndex(-1);
     setLogs([]);
+    setLiveUrl('');
     onClose();
   };
 
-  const liveUrl = siteId ? getLiveSiteUrl(siteId) : '';
 
   return (
     <AnimatePresence>

@@ -3,3 +3,18 @@
 - [x] Completely overhaul the Admin Panel to feature a cinematic, Awwwards-level design experience (fullscreen dark mode, floating elements, glassmorphism, Framer Motion animations).
 - [x] Refactor the Product/Inventory management UI to reflect a premium digital asset approach.
 - [x] Finalize the implementation walkthrough for user review.
+- [x] **Database Schema Update:**
+  - Added `deploymentUrl` and `publicUrl` fields to the `Deployment` model.
+  - Ran `npx prisma db push --accept-data-loss` and `npx prisma generate`.
+- [x] **Backend Controller Update (`deployments.controller.ts` & `sites.controller.ts`):**
+  - Updated `updateDeploymentStatus` (which patches status to 'LIVE') to fetch the site, generate the canonical URL based on the subdomain, and save it to `deploymentUrl` and `publicUrl` in the DB.
+  - Updated `getSite` to return the `publishedDeployment` so its `publicUrl` is readily available on fetch.
+- [x] **Frontend Modal (`DeploymentModal.tsx`):**
+  - Updated to read the returned `publicUrl` from the API response instead of generating it with `siteId`.
+- [x] **Frontend Dashboard (`app/dashboard/page.tsx`):**
+  - Updated `onDeploySuccess` to inject the new `publicUrl` into the state.
+  - Replaced the simple `href` anchor tag with a robust `handleViewLive(site)` function that checks the deployment's canonical URL first, falls back to the valid subdomain generator (never a UUID), or seamlessly prompts a redeployment.
+- [x] **Frontend Settings & Admin (`app/sites/[siteId]/settings/page.tsx` & `admin/page.tsx`):**
+  - Updated to display the `site.publishedDeployment.publicUrl` or fallback subdomain.
+- [x] **Command Palette (`CommandPalette.tsx`):**
+  - Fixed the hardcoded `getLiveSiteUrl(site.id)` to use the valid `publicUrl` or subdomain.ew.

@@ -149,7 +149,7 @@ export const CommandPalette = () => {
                     <Globe className={`w-5 h-5 ${index === selectedIndex ? 'text-accent' : 'text-ink-soft'}`} />
                     <div>
                       <div className={`font-medium ${index === selectedIndex ? 'text-accent' : 'text-ink'}`}>{site.name}</div>
-                      <div className="text-sm opacity-60 text-ink-soft">{getLiveSiteUrl(site.id)}</div>
+                      <div className="text-sm opacity-60 text-ink-soft">{site.deployments?.[0]?.publicUrl || getLiveSiteUrl(site.subdomain)}</div>
                     </div>
                   </div>
                   {index === selectedIndex && <ArrowRight className="w-5 h-5 text-accent" />}
