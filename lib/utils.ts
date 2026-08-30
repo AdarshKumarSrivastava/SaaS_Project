@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function getLiveSiteUrl(projectId: string) {
+export function getLiveSiteUrl(subdomain: string) {
   // SSR fallback
   const isProd = process.env.NODE_ENV === 'production';
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'buildspace.app';
@@ -14,11 +14,11 @@ export function getLiveSiteUrl(projectId: string) {
     const host = window.location.host;
     // If we're on production buildspace.app
     if (host.includes('buildspace.app') || isProd) {
-      return `https://${rootDomain}/sites/${projectId}/live`;
+      return `https://${subdomain}.${rootDomain}`;
     }
     // For local development
-    return `http://localhost:3000/sites/${projectId}/live`;
+    return `http://${subdomain}.localhost:3000`;
   }
   
-  return isProd ? `https://${rootDomain}/sites/${projectId}/live` : `http://localhost:3000/sites/${projectId}/live`;
+  return isProd ? `https://${subdomain}.${rootDomain}` : `http://${subdomain}.localhost:3000`;
 }

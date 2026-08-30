@@ -60,7 +60,7 @@ export default function AdminPanelPage() {
     );
   }
 
-  const liveUrl = getLiveSiteUrl(site.id);
+  const liveUrl = getLiveSiteUrl(site.subdomain);
 
   return (
     <div className="min-h-screen bg-[#020202] text-white font-sans selection:bg-white/20 overflow-x-hidden">

@@ -6,8 +6,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, X, LayoutTemplate, ShoppingBag, Scissors, Utensils, Settings, 
   ArrowRight, Globe, Search, Bell, Zap, BarChart3, Database, ShieldCheck, 
-  LayoutGrid, List, Sparkles, Layers, Cpu, ExternalLink, Activity, MoreHorizontal, Trash2, Copy, Rocket
+  LayoutGrid, List, Sparkles, Layers, Cpu, ExternalLink, Activity, MoreHorizontal, Trash2, Copy, Rocket, Eye, Loader2, Box, Users
 } from 'lucide-react';
+import { getLiveSiteUrl } from '@/lib/utils';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'react-hot-toast';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
@@ -598,7 +599,7 @@ export default function DashboardPage() {
                                     <Rocket className="w-3.5 h-3.5 text-emerald-500" /> {(!site.deployments || site.deployments.length === 0 || site.deployments[0].status !== 'LIVE') ? 'Deploy Live' : 'Redeploy'}
                                   </button>
                                   <a 
-                                    href={`/sites/${site.id}/live`} 
+                                    href={getLiveSiteUrl(site.subdomain)} 
                                     target="_blank" 
                                     rel="noreferrer"
                                     className="w-full px-4 py-2 text-left text-xs text-ink hover:bg-bg-subtle flex items-center gap-2 transition-colors"
