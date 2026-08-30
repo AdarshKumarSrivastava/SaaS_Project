@@ -3,6 +3,7 @@
 import React, { useMemo } from 'react';
 import { TEMPLATE_COMPONENTS, TEMPLATE_LAYOUTS } from '@/lib/template-components';
 import { CustomizationProvider } from '@/context/CustomizationContext';
+import { CustomerAuthProvider } from '@/context/CustomerAuthContext';
 import { BuilderOverlay } from '@/components/builder/BuilderOverlay';
 
 interface TemplateRendererProps {
@@ -12,9 +13,10 @@ interface TemplateRendererProps {
   activePath: string;
   isBuilderContext?: boolean;
   onNavigate?: (path: string) => void;
+  siteId?: string;
 }
 
-export function TemplateRenderer({ siteData, products, basePath, activePath, isBuilderContext, onNavigate }: TemplateRendererProps) {
+export function TemplateRenderer({ siteData, products, basePath, activePath, isBuilderContext, onNavigate, siteId }: TemplateRendererProps) {
   const templateSlug = siteData?.global?.templateSlug || 'velocity';
 
   const templateRoutes = TEMPLATE_COMPONENTS[templateSlug];
@@ -56,11 +58,13 @@ export function TemplateRenderer({ siteData, products, basePath, activePath, isB
       isBuilderContext={isBuilderContext}
       onNavigate={onNavigate}
     >
-      <TemplateLayout>
-        {isBuilderContext && <BuilderOverlay />}
-        {/* Pass dummy params for dynamic components that expect it */}
-        <TemplateComponent params={{ id: activePath.split('/')[2] || 'preview' }} />
-      </TemplateLayout>
+      <CustomerAuthProvider siteId={siteId || ''}>
+        <TemplateLayout>
+          {isBuilderContext && <BuilderOverlay />}
+          {/* Pass dummy params for dynamic components that expect it */}
+          <TemplateComponent params={{ id: activePath.split('/')[2] || 'preview' }} />
+        </TemplateLayout>
+      </CustomerAuthProvider>
     </CustomizationProvider>
   );
 }

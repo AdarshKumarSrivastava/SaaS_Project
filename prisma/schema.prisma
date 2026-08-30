@@ -217,17 +217,19 @@ model ProductVariant {
 }
 
 model Customer {
-  id        String   @id @default(uuid())
-  siteId    String
-  email     String
-  firstName String?
-  lastName  String?
-  phone     String?
-  site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  orders    Order[]
-  reviews   Review[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(uuid())
+  siteId       String
+  email        String
+  passwordHash String?
+  firstName    String?
+  lastName     String?
+  phone        String?
+  lastLoginAt  DateTime?
+  site         Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  orders       Order[]
+  reviews      Review[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@unique([siteId, email])
 }

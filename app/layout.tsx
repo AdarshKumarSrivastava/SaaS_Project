@@ -11,6 +11,17 @@ const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-serif'
 export const metadata: Metadata = {
   title: 'BuildSpace',
   description: 'Design, build, and scale with elegance.',
+  openGraph: {
+    title: 'BuildSpace',
+    description: 'Design, build, and scale with elegance.',
+    siteName: 'BuildSpace',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'BuildSpace',
+    description: 'Design, build, and scale with elegance.',
+  },
 };
 import { Toaster } from 'sonner';
 import { Chatbot } from '@/components/Chatbot';

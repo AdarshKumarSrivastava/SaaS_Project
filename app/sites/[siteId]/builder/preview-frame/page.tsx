@@ -47,6 +47,7 @@ export default function PreviewFramePage() {
         basePath={`/sites/${params?.siteId}/builder`}
         activePath={activePath}
         isBuilderContext={true}
+        siteId={params?.siteId as string}
         onNavigate={(path) => {
           // Send navigation intent to the parent
           window.parent.postMessage({ type: 'NAVIGATE', path }, '*');

@@ -2,6 +2,51 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/server/lib/prisma';
 import { TemplateRenderer } from '@/components/TemplateRenderer';
 import { CustomizationProvider } from '@/context/CustomizationContext';
+import type { Metadata } from 'next';
+
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: Promise<{ domain: string, path?: string[] }> 
+}): Promise<Metadata> {
+  const { domain } = await params;
+  const subdomain = domain.replace('%3A', ':').split(':')[0];
+  
+  const site = await prisma.site.findUnique({
+    where: { subdomain }
+  });
+
+  if (!site || site.status !== 'published') {
+    return {
+      title: 'Not Found'
+    };
+  }
+
+  const deployment = await prisma.deployment.findFirst({
+    where: { siteId: site.id, status: 'LIVE' },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  const schema = deployment?.schema as any;
+  const siteName = schema?.global?.name || site.name;
+  const description = schema?.global?.description || `Welcome to ${siteName}, powered by BuildSpace.`;
+
+  return {
+    title: siteName,
+    description,
+    openGraph: {
+      title: siteName,
+      description,
+      siteName,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: siteName,
+      description,
+    },
+  };
+}
 
 export default async function PublicSitePage({ 
   params 
@@ -55,6 +100,7 @@ export default async function PublicSitePage({
         activePath={activePath}
         basePath=""
         isBuilderContext={false}
+        siteId={site.id}
       />
     </CustomizationProvider>
   );

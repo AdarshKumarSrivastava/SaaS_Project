@@ -9,6 +9,7 @@ interface CustomizationContextType {
   products: any[];
   isBuilderContext?: boolean;
   onNavigate?: (path: string) => void;
+  resolveRoute: (path: string) => string;
 }
 
 const CustomizationContext = createContext<CustomizationContextType | undefined>(undefined);
@@ -104,8 +105,14 @@ export function CustomizationProvider({
     }
   }, [theme]);
 
+  const resolveRoute = (path: string) => {
+    if (basePath && path.startsWith(basePath)) return path;
+    const safePath = path.startsWith('/') ? path : `/${path}`;
+    return `${basePath || ''}${safePath}`;
+  };
+
   return (
-    <CustomizationContext.Provider value={{ siteData, products: mergedProducts, basePath, isBuilderContext, onNavigate }}>
+    <CustomizationContext.Provider value={{ siteData, products: mergedProducts, basePath, isBuilderContext, onNavigate, resolveRoute }}>
       {children}
     </CustomizationContext.Provider>
   );

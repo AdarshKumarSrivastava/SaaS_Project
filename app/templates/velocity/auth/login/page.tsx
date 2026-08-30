@@ -7,10 +7,12 @@ import { PremiumAuthLayout } from "@/components/auth/PremiumAuthLayout";
 import { PremiumInput } from "@/components/auth/PremiumInput";
 import { PremiumMagneticButton } from "@/components/auth/PremiumMagneticButton";
 
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { Suspense } from "react";
 
 function LoginContent() {
   const router = useRouter();
+  const { login } = useCustomerAuth();
   const searchParams = useSearchParams();
   const next = `/templates/velocity`;
 
@@ -22,7 +24,7 @@ function LoginContent() {
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!phone || !password) {
-      setError("Please enter phone and password.");
+      setError("Please enter email and password.");
       return;
     }
     setError("");
@@ -30,10 +32,13 @@ function LoginContent() {
 
     
     // MOCK LOGIN FOR TEMPLATES
-    setTimeout(() => {
-      localStorage.setItem('mock_template_logged_in', 'true');
+    const res = await login(phone, password);
+    if (res.success) {
       router.push(next);
-    }, 800);
+    } else {
+      setError(res.error || "Login failed");
+    }
+    setIsLoading(false);
     
   };
 
@@ -52,11 +57,11 @@ function LoginContent() {
 
       <form onSubmit={handleLoginSubmit} className="flex flex-col gap-8">
         <PremiumInput
-          label="Phone Number"
-          type="tel"
+          label="Email Address"
+          type="email"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          autoComplete="tel"
+          autoComplete="email"
         />
         <PremiumInput
           label="Password"
