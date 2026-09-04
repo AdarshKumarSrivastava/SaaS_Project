@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -63,7 +63,9 @@ export default function DashboardPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newSiteName, setNewSiteName] = useState('');
   const [newSiteCategory, setNewSiteCategory] = useState('portfolio');
-  const [isCreating, setIsCreating] = useState(false);
+  const [isModalCreating, setIsModalCreating] = useState(false);
+  const [creatingTemplateId, setCreatingTemplateId] = useState<string | null>(null);
+  const isCreatingRef = useRef(false);
 
   // Deployment Modal State
   const [isDeployModalOpen, setIsDeployModalOpen] = useState(false);
@@ -132,30 +134,32 @@ export default function DashboardPage() {
 
   const handleCreateSite = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsCreating(true);
+    setIsModalCreating(true);
     try {
       const data = await apiClient.post(`/api/sites`, {
         name: newSiteName,
         category: newSiteCategory
       });
       router.push(`/sites/${data.id}/setup`);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setIsCreating(false);
+      toast.error(err?.message || 'Failed to create project');
+      setIsModalCreating(false);
     }
   };
 
-  const handleOwnThisTemplate = async (template: typeof templatesList[0]) => {
-    setIsCreating(true);
+  const handleOwnThisTemplate = useCallback(async (template: typeof templatesList[0]) => {
+    if (isCreatingRef.current) return;
+    isCreatingRef.current = true;
+    setCreatingTemplateId(template.id);
+
     try {
       const data = await apiClient.post(`/api/sites`, {
         name: `My ${template.name}`,
         category: template.category
       });
 
-      const slug = template.id.replace(/^(starter|growth|premium)-/, '');
-      const config = getTemplateConfig(slug);
-      
+      const config = getTemplateConfig(template.id, template);
       const schema = config.defaultSchema(`My ${template.name}`);
       const productsToSeed = config.defaultProducts;
 
@@ -168,11 +172,13 @@ export default function DashboardPage() {
       });
 
       router.push(`/sites/${data.id}/builder`);
-    } catch (err) {
-      console.error(err);
-      setIsCreating(false);
+    } catch (err: any) {
+      console.error('Template creation error:', err);
+      toast.error(err?.message || 'Failed to create project from template');
+      setCreatingTemplateId(null);
+      isCreatingRef.current = false;
     }
-  };
+  }, [router]);
 
   const handleDeleteSite = async (siteId: string) => {
     if (window.confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
@@ -246,12 +252,14 @@ export default function DashboardPage() {
   });
 
   // Filter templates based on active category & search query
-  const filteredTemplates = templatesList.filter((template) => {
-    const matchesCategory = activeCategory === 'all' || template.category === activeCategory;
-    const matchesSearch = template.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          template.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const filteredTemplates = useMemo(() => {
+    return templatesList.filter((template) => {
+      const matchesCategory = activeCategory === 'all' || template.category === activeCategory;
+      const matchesSearch = template.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            template.description.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [activeCategory, searchQuery]);
 
   if (loading) {
     return (
@@ -765,7 +773,7 @@ export default function DashboardPage() {
                     <InteractiveTemplateCard
                       template={template}
                       onUseTemplate={handleOwnThisTemplate}
-                      isCreating={isCreating}
+                      isCreating={creatingTemplateId === template.id}
                     />
                   </motion.div>
                 ))}
@@ -802,7 +810,7 @@ export default function DashboardPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={async (name, category, subdomain) => {
-          setIsCreating(true);
+          setIsModalCreating(true);
           try {
             const data = await apiClient.post(`/api/sites`, {
               name,
@@ -812,11 +820,11 @@ export default function DashboardPage() {
             router.push(`/sites/${data.id}/setup`);
           } catch (err: any) {
             console.error(err);
-            setIsCreating(false);
+            setIsModalCreating(false);
             throw err;
           }
         }}
-        isCreating={isCreating}
+        isCreating={isModalCreating}
         categories={categories}
       />
 

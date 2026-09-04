@@ -39,8 +39,8 @@ function MagneticButton({ children, className, onClick }: { children: React.Reac
 }
 
 // Split text for word-by-word animation
-const AnimatedText = ({ text, className }: { text: string, className?: string }) => {
-  const words = text.split(" ");
+const AnimatedText = ({ text, className }: { text?: string, className?: string }) => {
+  const words = (text || "").split(" ");
   return (
     <div className={`overflow-hidden flex flex-wrap ${className}`}>
       {words.map((word, index) => (
@@ -66,15 +66,15 @@ export default function QuantumHome() {
   
   const customData = useCustomization();
   const heroTitle = customData?.formData?.heroTitle || "Future Living Objects.";
-  const heroSubtitle = customData?.formData?.heroSubtitle || "Discover our curated collection of avant-garde conceptual art and functional masterpieces that transcend ordinary space.";
-  const primaryCta = customData?.formData?.primaryCta || "Explore Collection";
-  const shopTitle = customData?.formData?.shopTitle || "Masterpieces.";
-  const marqueeText1 = customData?.formData?.marqueeText1 || "Limitless Design";
-  const marqueeText2 = customData?.formData?.marqueeText2 || "Conceptual Art";
-  const marqueeText3 = customData?.formData?.marqueeText3 || "Avant-Garde";
+  const heroSubtitle = customData?.formData?.heroSubtitle;
+  const primaryCta = customData?.formData?.primaryCta;
+  const shopTitle = customData?.formData?.shopTitle;
+  const marqueeText1 = customData?.formData?.marqueeText1;
+  const marqueeText2 = customData?.formData?.marqueeText2;
+  const marqueeText3 = customData?.formData?.marqueeText3;
   
   // Split hero title into max 3 parts for styling
-  const words = heroTitle.split(" ");
+  const words = (heroTitle || "").split(" ");
   const word1 = words[0] || "Future";
   const word2 = words[1] || "Living";
   const word3 = words.slice(2).join(" ") || "Objects.";

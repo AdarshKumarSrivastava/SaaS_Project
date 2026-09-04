@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, memo } from 'react';
 import { motion } from 'framer-motion';
-import { ExternalLink, Sparkles, ArrowRight, Check, Eye } from 'lucide-react';
+import { ExternalLink, Sparkles, ArrowRight, Check, Eye, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export interface TemplateItem {
@@ -22,7 +22,7 @@ interface InteractiveTemplateCardProps {
   isCreating?: boolean;
 }
 
-export function InteractiveTemplateCard({
+export const InteractiveTemplateCard = memo(function InteractiveTemplateCard({
   template,
   onUseTemplate,
   isCreating = false,
@@ -177,14 +177,27 @@ export function InteractiveTemplateCard({
                 onUseTemplate(template);
               }}
               disabled={isCreating}
-              className="flex-1 bg-bg-subtle hover:bg-bg-base text-ink text-xs font-semibold py-3 px-4 rounded-xl transition-all duration-300 border border-line flex items-center justify-center gap-1.5 disabled:opacity-50"
+              className={`flex-1 text-xs font-semibold py-3 px-4 rounded-xl transition-all duration-300 border flex items-center justify-center gap-1.5 ${
+                isCreating
+                  ? 'bg-accent/10 border-accent/30 text-accent cursor-not-allowed'
+                  : 'bg-bg-subtle hover:bg-bg-base text-ink border-line hover:border-accent/40 active:scale-98'
+              }`}
             >
-              <Sparkles className="w-3.5 h-3.5 text-accent" />
-              <span>{isCreating ? 'Creating...' : 'Use Template'}</span>
+              {isCreating ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-accent" />
+                  <span>Creating...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5 text-accent" />
+                  <span>Use Template</span>
+                </>
+              )}
             </button>
           )}
         </div>
       </div>
     </motion.div>
   );
-}
+});

@@ -79,7 +79,7 @@ function ProductsContent() {
   }, [searchParams]);
 
   const customData = useCustomization();
-  const shopTitle = customData?.formData?.shopTitle || "Archive.";
+  const shopTitle = customData?.formData?.shopTitle;
   const rawCategories = customData?.formData?.shopCategories;
   
   const categories = rawCategories
@@ -143,7 +143,7 @@ function ProductsContent() {
             transition={{ duration: 0.8 }}
           >
             <h1 className="text-5xl md:text-8xl font-black uppercase tracking-tighter leading-[0.8] whitespace-pre-line">
-              {shopTitle.replace(" ", "\n")}
+              {shopTitle?.replace(" ", "\n")}
             </h1>
             <p className="text-white/50 text-sm uppercase tracking-widest mt-6">Explore the full collection</p>
           </motion.div>

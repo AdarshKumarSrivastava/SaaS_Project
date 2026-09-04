@@ -20,9 +20,9 @@ export default function EssenceProductsPage() {
   });
   const customData = useCustomization();
   
-  const shopTitle = customData?.formData?.shopTitle || "The Collection";
-  const rawCategories = customData?.formData?.shopCategories || "All, Ceramics, Textiles, Glassware, Furniture";
-  const tCategories = rawCategories.split(",").map((c: string) => c.trim()).filter(Boolean);
+  const shopTitle = customData?.formData?.shopTitle;
+  const rawCategories = customData?.formData?.shopCategories;
+  const tCategories = (rawCategories || "").split(",").map((c: string) => c.trim()).filter(Boolean);
 
   return (
     <div className="w-full bg-[#F3EDE2] min-h-screen pt-12 pb-32 px-6 md:px-12">

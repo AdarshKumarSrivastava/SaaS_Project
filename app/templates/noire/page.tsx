@@ -26,11 +26,11 @@ export default function NoireTemplateHome({ initialCustomData, initialProducts }
     }
   }, []);
 
-  const tHeroTitle = customData?.formData?.heroTitle || "THE ART\nOF SKIN";
-  const tTagline = customData?.formData?.tagline || "Scientifically proven, organically sourced. Elevate your daily ritual with our premium formulations.";
-  const tCta = customData?.formData?.primaryCta || "Shop Formulations";
-  const tAboutTitle = customData?.formData?.aboutTitle || "PURITY IN EVERY DROP.";
-  const tAboutDescription = customData?.formData?.aboutDescription || "We believe skincare should be an indulgent ritual. Our clinically backed formulas harness the power of nature to restore, protect, and illuminate your skin from within.";
+  const tHeroTitle = customData?.formData?.heroTitle;
+  const tTagline = customData?.formData?.tagline;
+  const tCta = customData?.formData?.primaryCta;
+  const tAboutTitle = customData?.formData?.aboutTitle;
+  const tAboutDescription = customData?.formData?.aboutDescription;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -125,7 +125,7 @@ export default function NoireTemplateHome({ initialCustomData, initialProducts }
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col items-center text-center mb-24">
             <h2 className="text-4xl md:text-5xl font-light tracking-tight text-[#2A2A2A] mb-4">
-              {customData?.formData?.featuredTitle || "Signature Rituals"}
+              {customData?.formData?.featuredTitle}
             </h2>
             <div className="w-12 h-[1px] bg-[#A38D7D] mb-6" />
             <Link href={`${basePath}/products`} className="text-xs font-medium uppercase tracking-[0.2em] text-[#2A2A2A]/60 hover:text-[#2A2A2A] transition-colors">

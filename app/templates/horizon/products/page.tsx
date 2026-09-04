@@ -23,10 +23,10 @@ export default function HorizonProducts({ initialCustomData, initialProducts }: 
   ];
 
   const customData = useCustomization();
-  const shopTitle = customData?.formData?.shopTitle || "Digital Vault.";
+  const shopTitle = customData?.formData?.shopTitle;
   const rawCategories = customData?.formData?.shopCategories;
 
-  const titleWords = shopTitle.split(" ");
+  const titleWords = (shopTitle || "Selected Works").split(" ");
   const lastWord = titleWords.pop() || "";
   const initialTitle = titleWords.join(" ");
 

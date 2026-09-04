@@ -7,10 +7,10 @@ import { useCustomization } from "@/hooks/useCustomization";
 export default function StarterContactPage() {
   const customData = useCustomization();
 
-  const tPreTitle = customData?.formData?.contactPreTitle || "Get In Touch";
-  const tTitle = customData?.formData?.contactTitle || "Contact Us";
-  const tEmail = customData?.formData?.contactEmail || "hello@example.com";
-  const tPhone = customData?.formData?.contactPhone || "+1 (555) 123-4567";
+  const tPreTitle = customData?.formData?.contactPreTitle;
+  const tTitle = customData?.formData?.contactTitle;
+  const tEmail = customData?.formData?.contactEmail;
+  const tPhone = customData?.formData?.contactPhone;
 
   return (
     <div className="px-6 py-24 md:py-32 max-w-2xl mx-auto w-full flex flex-col items-center">

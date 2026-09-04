@@ -7,13 +7,13 @@ import { useCustomization } from "@/hooks/useCustomization";
 export default function StarterAboutPage() {
   const customData = useCustomization();
 
-  const tTitle = customData?.formData?.aboutTitle || "Our Story";
-  const tContent = customData?.formData?.aboutText1 || "Founded on the principle that less is more, we create everyday essentials that strip away the excess to focus on what truly matters: quality, fit, and timeless design.";
-  const tImage = customData?.formData?.aboutHeroImage || "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?q=80&w=2000&auto=format&fit=crop";
-  const tFeature1Title = customData?.formData?.feature1Title || "Uncompromising Quality";
-  const tFeature1Desc = customData?.formData?.aboutText2 || "We partner with the world's most ethical factories to source premium materials. Every stitch is considered, every seam is tested. We don't believe in planned obsolescence.";
-  const tFeature2Title = customData?.formData?.feature2Title || "Radical Transparency";
-  const tFeature2Desc = customData?.formData?.aboutText3 || "We believe you have the right to know what your clothes cost to make. We reveal the true costs behind all of our products—from materials to labor to transportation.";
+  const tTitle = customData?.formData?.aboutTitle;
+  const tContent = customData?.formData?.aboutText1;
+  const tImage = customData?.formData?.aboutHeroImage;
+  const tFeature1Title = customData?.formData?.feature1Title;
+  const tFeature1Desc = customData?.formData?.aboutText2;
+  const tFeature2Title = customData?.formData?.feature2Title;
+  const tFeature2Desc = customData?.formData?.aboutText3;
 
   return (
     <div className="px-6 py-24 md:py-32 max-w-4xl mx-auto w-full flex flex-col gap-24">

@@ -7,10 +7,10 @@ import { useCustomization } from "@/hooks/useCustomization";
 export default function QuantumAboutPage() {
   const customData = useCustomization();
   
-  const tTitle = customData?.formData?.aboutTitle || "Beyond Form. \nBeyond Function.";
-  const tContent1 = customData?.formData?.aboutText1 || "Quantum was founded on a singular premise: that the objects we interact with every day should not merely serve a purpose, but should elevate our consciousness.";
-  const tContent2 = customData?.formData?.aboutText2 || "We collaborate with visionary designers and avant-garde artists to blur the lines between conceptual art and functional homeware. Every artifact in our collection is a testament to what happens when imagination is unconstrained by traditional manufacturing limitations.";
-  const tContent3 = customData?.formData?.aboutText3 || "We don't sell furniture. We curate experiences.";
+  const tTitle = customData?.formData?.aboutTitle;
+  const tContent1 = customData?.formData?.aboutText1;
+  const tContent2 = customData?.formData?.aboutText2;
+  const tContent3 = customData?.formData?.aboutText3;
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start end", "end start"] });
   const yImage = useTransform(scrollYProgress, [0, 1], [-100, 100]);
@@ -27,7 +27,7 @@ export default function QuantumAboutPage() {
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
               className="font-playfair text-5xl md:text-7xl font-bold text-[#121212] mb-8 leading-tight"
             >
-              {tTitle.split('\\n').map((line: string, i: number) => (
+              {(tTitle || "").split('\\n').map((line: string, i: number) => (
                 <span key={i} className={i === 1 ? "text-[#111111] italic" : ""}>{line}{i === 0 && <br/>}</span>
               ))}
             </motion.h1>

@@ -7,11 +7,11 @@ import { useCustomization } from "@/hooks/useCustomization";
 export default function QuantumContactPage() {
   const customData = useCustomization();
   
-  const tTitle = customData?.formData?.contactTitle || "Let's Connect.";
-  const tPreTitle = customData?.formData?.contactPreTitle || "Whether you're inquiring about a bespoke commission or need support with a recent acquisition, our concierge is at your disposal.";
-  const tAddress = customData?.formData?.contactAddress || "100 Quantum Way\nNeo-Tokyo, 100-0001";
-  const tEmail = customData?.formData?.contactEmail || "concierge@quantum.design";
-  const tPhone = customData?.formData?.contactPhone || "+81 3 1234 5678";
+  const tTitle = customData?.formData?.contactTitle;
+  const tPreTitle = customData?.formData?.contactPreTitle;
+  const tAddress = customData?.formData?.contactAddress;
+  const tEmail = customData?.formData?.contactEmail;
+  const tPhone = customData?.formData?.contactPhone;
   const [formState, setFormState] = useState({ name: "", email: "", message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -48,7 +48,7 @@ export default function QuantumContactPage() {
               <div>
                 <h3 className="text-[#111111] font-bold uppercase tracking-widest text-xs mb-2">Studio</h3>
                 <p className="text-[#121212] font-medium text-lg whitespace-pre-wrap">
-                  {tAddress.split('\\n').map((line: string, i: number) => (
+                  {(tAddress || "").split('\\n').map((line: string, i: number) => (
                     <span key={i}>{line}<br/></span>
                   ))}
                 </p>

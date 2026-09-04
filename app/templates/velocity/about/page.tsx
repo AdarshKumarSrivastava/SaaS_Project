@@ -9,15 +9,15 @@ import { useCustomization } from "@/hooks/useCustomization";
 export default function VelocityAboutPage() {
   const customData = useCustomization();
   
-  const tTitle = customData?.formData?.aboutTitle || "Protocol // 01";
-  const tContent1 = customData?.formData?.aboutText1 || "We are the architects of the future. We don't just design clothes; we engineer armor for the digital age.";
-  const tContent2 = customData?.formData?.aboutText2 || "Second text block.";
-  const tContent3 = customData?.formData?.aboutText3 || "Third text block.";
-  const tImage = customData?.formData?.aboutHeroImage || "https://images.unsplash.com/photo-1555680202-c86f0e12f086?q=80&w=2000&auto=format&fit=crop";
-  const tFeature1Title = customData?.formData?.feature1Title || "The Construct";
-  const tFeature1Desc = customData?.formData?.aboutText2 || "Every garment is a piece of hardware. We source advanced synthetics, utilize laser-cut precision, and engineer for maximum mobility in urban environments.";
-  const tFeature2Title = customData?.formData?.feature2Title || "The Directive";
-  const tFeature2Desc = customData?.formData?.aboutText3 || "We outfit the vanguard of the new world. Those who move fast, think critically, and demand gear that can keep pace with an accelerating reality.";
+  const tTitle = customData?.formData?.aboutTitle;
+  const tContent1 = customData?.formData?.aboutText1;
+  const tContent2 = customData?.formData?.aboutText2;
+  const tContent3 = customData?.formData?.aboutText3;
+  const tImage = customData?.formData?.aboutHeroImage;
+  const tFeature1Title = customData?.formData?.feature1Title;
+  const tFeature1Desc = customData?.formData?.aboutText2;
+  const tFeature2Title = customData?.formData?.feature2Title;
+  const tFeature2Desc = customData?.formData?.aboutText3;
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: containerRef });
   

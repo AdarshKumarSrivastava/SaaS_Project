@@ -26,11 +26,11 @@ export default function VantaTemplateHome({ initialCustomData, initialProducts }
     }
   }, []);
 
-  const tHeroTitle = customData?.formData?.heroTitle || "Intelligence.\nAbsolute.";
-  const tTagline = customData?.formData?.tagline || "The most advanced neural engine ever built. Pro-level performance meets unprecedented efficiency.";
-  const tCta = customData?.formData?.primaryCta || "Pre-order";
-  const tAboutTitle = customData?.formData?.aboutTitle || "Pro to the core.";
-  const tAboutDescription = customData?.formData?.aboutDescription || "Built on a revolutionary 3nm architecture, pushing the boundaries of what is physically possible in consumer electronics.";
+  const tHeroTitle = customData?.formData?.heroTitle;
+  const tTagline = customData?.formData?.tagline;
+  const tCta = customData?.formData?.primaryCta;
+  const tAboutTitle = customData?.formData?.aboutTitle;
+  const tAboutDescription = customData?.formData?.aboutDescription;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -138,7 +138,7 @@ export default function VantaTemplateHome({ initialCustomData, initialProducts }
       <section className="py-24 bg-black overflow-hidden border-y border-white/5">
         <div className="max-w-[1400px] mx-auto px-6">
           <div className="flex justify-between items-end mb-16">
-            <h2 className="text-3xl md:text-5xl font-semibold tracking-tight">{customData?.formData?.featuredTitle || "Explore Lineup"}</h2>
+            <h2 className="text-3xl md:text-5xl font-semibold tracking-tight">{customData?.formData?.featuredTitle}</h2>
             <Link href={`${basePath}/products`} className="text-[15px] font-semibold text-white/60 hover:text-white flex items-center gap-1 group transition-colors">
               Compare models <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>

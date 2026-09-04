@@ -20,8 +20,8 @@ function QuantumNavigation() {
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
   const pathname = usePathname();
   const customData = useCustomization();
-  const brandName = customData?.formData?.brandName || "Quantum";
-  const logoUrl = customData?.formData?.logoUrl || "";
+  const brandName = customData?.formData?.brandName;
+  const logoUrl = customData?.formData?.logoUrl;
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -262,13 +262,13 @@ function QuantumNavigation() {
 
 function QuantumFooter() {
   const customData = useCustomization();
-  const brandName = customData?.formData?.brandName || "Quantum";
-  const logoUrl = customData?.formData?.logoUrl || "";
-  const footerText = customData?.formData?.footerText || "Designing the future of living spaces. We merge conceptual art with functional everyday objects to create a truly transcendent environment.";
+  const brandName = customData?.formData?.brandName;
+  const logoUrl = customData?.formData?.logoUrl;
+  const footerText = customData?.formData?.footerText;
   const copyrightText = customData?.formData?.copyrightText || `© ${new Date().getFullYear()} ${logoUrl ? <img src={logoUrl} alt={brandName} className="h-8 w-auto object-contain" /> : <div className="flex items-center gap-2"><Atom className="w-6 h-6" /><span>{brandName}</span></div>} Design Studio. All rights reserved.`;
-  const socialInsta = customData?.formData?.socialInsta || "#";
-  const socialTwitter = customData?.formData?.socialTwitter || "#";
-  const socialFacebook = customData?.formData?.socialFacebook || "#";
+  const socialInsta = customData?.formData?.socialInsta;
+  const socialTwitter = customData?.formData?.socialTwitter;
+  const socialFacebook = customData?.formData?.socialFacebook;
 
   return (
     <footer className="bg-white border-t border-gray-100 pt-24 pb-12 relative overflow-hidden">
@@ -303,9 +303,9 @@ function QuantumFooter() {
         <div className={`pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400 ${inter.className}`}>
           <p>{copyrightText}</p>
           <div className="flex gap-6">
-            {socialInsta !== "#" && <Link href={socialInsta} className="hover:text-[#121212] transition-colors">Instagram</Link>}
-            {socialTwitter !== "#" && <Link href={socialTwitter} className="hover:text-[#121212] transition-colors">Twitter</Link>}
-            {socialFacebook !== "#" && <Link href={socialFacebook} className="hover:text-[#121212] transition-colors">Facebook</Link>}
+            {socialInsta && socialInsta !== "#" && <a href={socialInsta} target="_blank" rel="noopener noreferrer" className="hover:text-[#121212] transition-colors">Instagram</a>}
+            {socialTwitter && socialTwitter !== "#" && <a href={socialTwitter} target="_blank" rel="noopener noreferrer" className="hover:text-[#121212] transition-colors">Twitter</a>}
+            {socialFacebook && socialFacebook !== "#" && <a href={socialFacebook} target="_blank" rel="noopener noreferrer" className="hover:text-[#121212] transition-colors">Facebook</a>}
           </div>
         </div>
       </div>

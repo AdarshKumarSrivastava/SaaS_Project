@@ -9,11 +9,11 @@ export default function CanvasContactPage() {
   const customData = useCustomization();
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
   
-  const tPreTitle = customData?.formData?.contactPreTitle || "Concierge";
-  const tTitle = customData?.formData?.contactTitle || "Inquiries.";
-  const tAddress = customData?.formData?.contactAddress || "1984 Monolith Blvd\nSector 4\nNew York, NY 10001";
-  const tEmail = customData?.formData?.contactEmail || "inquiries@canvas.studio";
-  const tPhone = customData?.formData?.contactPhone || "+1 (555) 019-8472";
+  const tPreTitle = customData?.formData?.contactPreTitle;
+  const tTitle = customData?.formData?.contactTitle;
+  const tAddress = customData?.formData?.contactAddress;
+  const tEmail = customData?.formData?.contactEmail;
+  const tPhone = customData?.formData?.contactPhone;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +58,7 @@ export default function CanvasContactPage() {
             <div>
               <h3 className="text-[10px] font-mono tracking-widest text-white mb-6 uppercase border-b border-white/20 pb-2 inline-block">Atelier</h3>
               <p className="text-[10px] uppercase tracking-[0.2em] leading-loose text-white/50">
-                {tAddress.split('\\n').map((line: string, i: number) => (
+                {(tAddress || "").split('\\n').map((line: string, i: number) => (
                   <span key={i}>{line}<br/></span>
                 ))}
               </p>

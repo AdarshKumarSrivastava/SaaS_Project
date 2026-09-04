@@ -9,10 +9,10 @@ import { useCustomization } from "@/hooks/useCustomization";
 export default function EssenceAboutPage() {
   const customData = useCustomization();
   
-  const tTitle = customData?.formData?.aboutTitle || "Our Story";
-  const tContent1 = customData?.formData?.aboutText1 || "Founded in 2026, Essence was born out of a desire to create spaces that evoke calm and clarity. We believe that the objects we surround ourselves with have a profound impact on our well-being.";
-  const tContent2 = customData?.formData?.aboutText2 || "Our design philosophy is rooted in minimalism, not as an aesthetic, but as a way of life. By stripping away the non-essential, we make room for what truly matters.";
-  const tContent3 = customData?.formData?.aboutText3 || "Every piece in our collection is carefully curated or crafted by master artisans using ethically sourced, natural materials. Our products are designed to age gracefully, bearing the patina of a life well-lived.";
+  const tTitle = customData?.formData?.aboutTitle;
+  const tContent1 = customData?.formData?.aboutText1;
+  const tContent2 = customData?.formData?.aboutText2;
+  const tContent3 = customData?.formData?.aboutText3;
   return (
     <div className="w-full bg-[#F3EDE2] min-h-screen pt-12 pb-32">
       <div className="max-w-[1600px] mx-auto px-6 md:px-12">

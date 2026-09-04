@@ -1,4 +1,4 @@
-import { TEMPLATE_REGISTRY } from './template-registry';
+import { TEMPLATE_REGISTRY, normalizeTemplateKey } from './template-registry';
 
 /**
  * Merges template default products with custom site products.
@@ -6,7 +6,8 @@ import { TEMPLATE_REGISTRY } from './template-registry';
  * alongside any new custom products created by the admin.
  */
 export const getStorefrontProducts = (templateSlug: string, customProducts: any[]) => {
-  const template = TEMPLATE_REGISTRY[templateSlug];
+  const normalizedSlug = normalizeTemplateKey(templateSlug);
+  const template = TEMPLATE_REGISTRY[normalizedSlug] || TEMPLATE_REGISTRY['default'];
   const templateProducts = template ? template.defaultProducts || [] : [];
   
   // Create a merged list. Custom products append to the end of template products.

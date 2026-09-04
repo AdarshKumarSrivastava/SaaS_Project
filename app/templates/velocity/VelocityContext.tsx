@@ -127,13 +127,13 @@ export function VelocityProvider({ children , initialCustomData }: { children: R
   const symbolMap: Record<string, string> = {
     USD: "$", EUR: "€", GBP: "£", CAD: "C$", AUD: "A$", INR: "₹"
   };
-  const initCurrency = initialCustomData?.formData?.currency || "USD";
+  const initCurrency = initialCustomData?.formData?.currency;
   const [currencySymbol, setCurrencySymbol] = useState(symbolMap[initCurrency] || "$");
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === "MONOLITH_CUSTOMIZATION") {
-        const currency = event.data.data?.formData?.currency || "USD";
+        const currency = event.data.data?.formData?.currency;
         setCurrencySymbol(symbolMap[currency] || "$");
       }
     };

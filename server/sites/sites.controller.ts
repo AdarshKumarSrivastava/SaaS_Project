@@ -3,7 +3,7 @@ import { prisma } from '../lib/prisma';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { decrypt } from '../lib/encryption';
-import { TEMPLATE_REGISTRY } from '../../lib/template-registry';
+import { TEMPLATE_REGISTRY, normalizeTemplateKey, getTemplateConfig } from '../../lib/template-registry';
 import { extractOverrides } from '../../lib/schema';
 
 // GET /api/sites
@@ -44,11 +44,11 @@ export const createSite = async (req: Request, res: Response) => {
 
     const subdomain = `${name.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${crypto.randomBytes(3).toString('hex')}`;
 
-    // Extract template slug from category (e.g., 'premium-origin' -> 'origin')
-    const templateSlug = category.replace('premium-', '') || 'velocity';
-    const templateConfig = TEMPLATE_REGISTRY[templateSlug] || TEMPLATE_REGISTRY['default'];
+    // Canonical template slug resolution
+    const templateSlug = normalizeTemplateKey(category, name);
+    const templateConfig = getTemplateConfig(templateSlug, name);
     
-    // Seed initial schema - only store overrides to enforce canonical template resolution
+    // Seed initial schema
     const initialSchema = { global: { templateSlug } };
 
     const site = await prisma.site.create({
@@ -137,8 +137,8 @@ export const updateSchema = async (req: Request, res: Response) => {
       // Always store only the overrides relative to the canonical template
       const site = await prisma.site.findUnique({ where: { id: siteId } });
       const currentName = site?.name || 'My Site';
-      const templateSlug = schema?.global?.templateSlug || 'velocity';
-      const templateConfig = TEMPLATE_REGISTRY[templateSlug] || TEMPLATE_REGISTRY['default'];
+      const templateSlug = normalizeTemplateKey(schema?.global?.templateSlug, schema || site);
+      const templateConfig = getTemplateConfig(templateSlug, site || currentName);
       const defaultSchema = templateConfig.defaultSchema(currentName);
       
       updateData.schema = extractOverrides(defaultSchema, schema);

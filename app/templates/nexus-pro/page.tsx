@@ -21,28 +21,28 @@ export default function NexusProHomePage() {
   const featuredProducts = products.slice(0, 3);
   const customData = useCustomization();
   
-  const preTitle = customData?.formData?.preTitle || "The Evolution of Style";
-  const heroTitle1 = customData?.formData?.heroTitle1 || "Form Meets";
-  const heroTitle2 = customData?.formData?.heroTitle2 || "Function.";
-  const heroDesc = customData?.formData?.heroDesc || "Engineered garments and essentials designed for the modern metropolitan landscape.";
-  const heroCta = customData?.formData?.heroCta || "Explore Collection";
+  const preTitle = customData?.formData?.preTitle;
+  const heroTitle1 = customData?.formData?.heroTitle1;
+  const heroTitle2 = customData?.formData?.heroTitle2;
+  const heroDesc = customData?.formData?.heroDesc;
+  const heroCta = customData?.formData?.heroCta;
   
-  const marqueeText1 = customData?.formData?.marqueeText1 || "Engineered Precision";
-  const marqueeText2 = customData?.formData?.marqueeText2 || "Aesthetic Dominance";
-  const marqueeText3 = customData?.formData?.marqueeText3 || "Urban Utility";
+  const marqueeText1 = customData?.formData?.marqueeText1;
+  const marqueeText2 = customData?.formData?.marqueeText2;
+  const marqueeText3 = customData?.formData?.marqueeText3;
   
-  const featuredTitle = customData?.formData?.featuredTitle || "New Arrivals";
-  const featuredSubtitle = customData?.formData?.featuredSubtitle || "Curated selection";
+  const featuredTitle = customData?.formData?.featuredTitle;
+  const featuredSubtitle = customData?.formData?.featuredSubtitle;
   
-  const featureTitle = customData?.formData?.featureTitle || "Redefining \nBoundaries.";
-  const featureDesc = customData?.formData?.featureDesc || "We construct garments utilizing avant-garde materials that challenge the status quo. Our designs are driven by uncompromising utility and striking minimalism.";
-  const featureBullet1 = customData?.formData?.featureBullet1 || "Advanced Weatherproof Fabrics";
-  const featureBullet2 = customData?.formData?.featureBullet2 || "Ergonomic Articulation";
-  const featureBullet3 = customData?.formData?.featureBullet3 || "Sustainable Production Methods";
-  const featureCta = customData?.formData?.featureCta || "Read Our Story";
-  const featureImage = customData?.formData?.featureImage || "https://images.unsplash.com/photo-1550684376-efcbd6e3f031?q=80&w=2000&auto=format&fit=crop";
-  const heroImage = customData?.formData?.heroImage || "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?q=80&w=2564&auto=format&fit=crop";
-  const viewAllText = customData?.formData?.viewAllText || "View All";
+  const featureTitle = customData?.formData?.featureTitle;
+  const featureDesc = customData?.formData?.featureDesc;
+  const featureBullet1 = customData?.formData?.featureBullet1;
+  const featureBullet2 = customData?.formData?.featureBullet2;
+  const featureBullet3 = customData?.formData?.featureBullet3;
+  const featureCta = customData?.formData?.featureCta;
+  const featureImage = customData?.formData?.featureImage;
+  const heroImage = customData?.formData?.heroImage;
+  const viewAllText = customData?.formData?.viewAllText;
 
   return (
     <div className="flex flex-col w-full bg-[#0a0a0a]" ref={containerRef}>
@@ -209,7 +209,7 @@ export default function NexusProHomePage() {
             transition={{ duration: 1 }}
           >
             <h2 className="text-4xl md:text-7xl font-black uppercase tracking-tighter leading-[0.9] mb-8">
-              {featureTitle.split('\\n').map((line: string, i: number) => (
+              {(featureTitle || "Engineered Performance").split('\\n').map((line: string, i: number) => (
                 <span key={i}>{line}{i === 0 && <br/>}</span>
               ))}
             </h2>

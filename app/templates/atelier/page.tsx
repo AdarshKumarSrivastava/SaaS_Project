@@ -26,11 +26,11 @@ export default function AtelierTemplateHome({ initialCustomData, initialProducts
     }
   }, []);
 
-  const tHeroTitle = customData?.formData?.heroTitle || "DIGITAL\nCRAFT";
-  const tTagline = customData?.formData?.tagline || "We are a creative studio operating at the intersection of culture, technology, and art. Blurring the lines between physical and digital.";
-  const tCta = customData?.formData?.primaryCta || "View Showreel";
-  const tAboutTitle = customData?.formData?.aboutTitle || "WE BUILD WORLDS.";
-  const tAboutDescription = customData?.formData?.aboutDescription || "Challenging the conventional web through motion, 3D, and experimental typography.";
+  const tHeroTitle = customData?.formData?.heroTitle;
+  const tTagline = customData?.formData?.tagline;
+  const tCta = customData?.formData?.primaryCta;
+  const tAboutTitle = customData?.formData?.aboutTitle;
+  const tAboutDescription = customData?.formData?.aboutDescription;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -154,7 +154,7 @@ export default function AtelierTemplateHome({ initialCustomData, initialProducts
       <section className="py-32 px-6 md:px-12 bg-[#111111] text-[#EFEFEF] rounded-t-[3rem] md:rounded-t-[5rem] relative z-30 mt-[-5rem]">
         <div className="max-w-[1600px] mx-auto">
           <div className="flex justify-between items-end mb-24">
-            <h2 className="text-5xl md:text-8xl font-black tracking-tighter uppercase">{customData?.formData?.featuredTitle || "Work"}</h2>
+            <h2 className="text-5xl md:text-8xl font-black tracking-tighter uppercase">{customData?.formData?.featuredTitle}</h2>
             <Link href={`${basePath}/projects`} className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest hover:text-[#FF4D00] transition-colors pb-4">
               All Projects <ArrowUpRight className="w-5 h-5" />
             </Link>

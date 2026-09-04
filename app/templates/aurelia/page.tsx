@@ -34,11 +34,11 @@ export default function StarterTemplateHome({ initialCustomData, initialProducts
     }
   }, []);
 
-  const tHeroTitle = customData?.formData?.heroTitle || "NEW FORM\nNEW ATTITUDE";
-  const tTagline = customData?.formData?.tagline || "Defining the modern silhouette with uncompromising luxury and architectural precision.";
-  const tCta = customData?.formData?.primaryCta || "Discover Collection";
-  const tAboutTitle = customData?.formData?.aboutTitle || "THE ATELIER";
-  const tAboutDescription = customData?.formData?.aboutDescription || "Our garments are constructed with rigorous attention to detail, combining heritage craftsmanship with avant-garde proportions.";
+  const tHeroTitle = customData?.formData?.heroTitle;
+  const tTagline = customData?.formData?.tagline;
+  const tCta = customData?.formData?.primaryCta;
+  const tAboutTitle = customData?.formData?.aboutTitle;
+  const tAboutDescription = customData?.formData?.aboutDescription;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -146,7 +146,7 @@ export default function StarterTemplateHome({ initialCustomData, initialProducts
       <section className="px-6 py-24 bg-white border-t border-black/5">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-end mb-20 border-b border-black/10 pb-8">
-            <h2 className="font-serif text-3xl md:text-5xl tracking-tight uppercase">{customData?.formData?.featuredTitle || "Selected Pieces"}</h2>
+            <h2 className="font-serif text-3xl md:text-5xl tracking-tight uppercase">{customData?.formData?.featuredTitle}</h2>
             <Link href={`${basePath}/products`} className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#111111] hover:text-black/50 transition-colors">
               Explore All
             </Link>

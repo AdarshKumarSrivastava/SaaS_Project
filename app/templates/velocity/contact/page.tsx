@@ -8,11 +8,11 @@ import { useCustomization } from "@/hooks/useCustomization";
 export default function VelocityContactPage() {
   const customData = useCustomization();
   
-  const tPreTitle = customData?.formData?.contactPreTitle || "Contact Information";
-  const tTitle = customData?.formData?.contactTitle || "Contact Us";
-  const tAddress = customData?.formData?.contactAddress || "35.6762° N, 139.6503° E\nTokyo, Japan";
-  const tEmail = customData?.formData?.contactEmail || "support@velocity.com";
-  const tPhone = customData?.formData?.contactPhone || "Usually within 24 hours";
+  const tPreTitle = customData?.formData?.contactPreTitle;
+  const tTitle = customData?.formData?.contactTitle;
+  const tAddress = customData?.formData?.contactAddress;
+  const tEmail = customData?.formData?.contactEmail;
+  const tPhone = customData?.formData?.contactPhone;
   const [formState, setFormState] = useState({
     name: "",
     email: "",
@@ -62,7 +62,7 @@ export default function VelocityContactPage() {
               <div>
                 <p className="text-white/40 mb-1">OUR LOCATION</p>
                 <p className="font-bold tracking-widest whitespace-pre-wrap">
-                  {tAddress.split('\\n').map((line: string, i: number) => (
+                  {(tAddress || "").split('\\n').map((line: string, i: number) => (
                     <span key={i}>{line}<br/></span>
                   ))}
                 </p>

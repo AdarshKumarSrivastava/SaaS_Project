@@ -18,17 +18,17 @@ export default function OriginHomePage() {
   const displayProducts = customData?.products?.length > 0 ? customData.products : ALL_PRODUCTS;
   const featuredProducts = displayProducts.slice(0, 4);
   
-  const heroTitle = customData?.formData?.heroTitle || "Return to The Source.";
-  const heroSubtitle = customData?.formData?.heroSubtitle || "Goods crafted with intention, deeply rooted in natural materials and timeless design.";
-  const primaryCta = customData?.formData?.primaryCta || "Shop Collection";
-  const manifestoTitle = customData?.formData?.manifestoTitle || "Honest Materials.";
-  const manifestoText = customData?.formData?.manifestoText || "From vegetable-tanned leathers that develop a rich patina over time, to sustainably harvested walnut wood. We don't believe in shortcuts. Quality is at the heart of everything we make.";
-  const featuredTitle = customData?.formData?.featuredTitle || "Featured Goods";
-  const featuredDesc = customData?.formData?.featuredDesc || "Carefully selected staples for everyday living.";
-  const heroImage = customData?.formData?.heroImage || "https://images.unsplash.com/photo-1618220179428-22790b461013?q=80&w=2940&auto=format&fit=crop";
-  const manifestoCta = customData?.formData?.manifestoCta || "Read Our Story";
-  const manifestoImage = customData?.formData?.manifestoImage || "https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=2940&auto=format&fit=crop";
-  const viewAllText = customData?.formData?.viewAllText || "View All";
+  const heroTitle = customData?.formData?.heroTitle;
+  const heroSubtitle = customData?.formData?.heroSubtitle;
+  const primaryCta = customData?.formData?.primaryCta;
+  const manifestoTitle = customData?.formData?.manifestoTitle;
+  const manifestoText = customData?.formData?.manifestoText;
+  const featuredTitle = customData?.formData?.featuredTitle;
+  const featuredDesc = customData?.formData?.featuredDesc;
+  const heroImage = customData?.formData?.heroImage;
+  const manifestoCta = customData?.formData?.manifestoCta;
+  const manifestoImage = customData?.formData?.manifestoImage;
+  const viewAllText = customData?.formData?.viewAllText;
 
   return (
     <div className="w-full">

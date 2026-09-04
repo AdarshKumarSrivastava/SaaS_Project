@@ -28,8 +28,8 @@ function HorizonNavigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [couponInput, setCouponInput] = useState("");
   const customData = useCustomization();
-  const brandName = customData?.formData?.brandName || "HORIZON";
-  const logoUrl = customData?.formData?.logoUrl || "";
+  const brandName = customData?.formData?.brandName;
+  const logoUrl = customData?.formData?.logoUrl;
   
   // Checkout States
   const [checkoutStep, setCheckoutStep] = useState<"cart" | "form" | "processing" | "success">("cart");
@@ -132,7 +132,7 @@ function HorizonNavigation() {
         <div className="max-w-[1600px] mx-auto px-6 md:px-12 flex items-center justify-between">
           
           <Link href="/templates/horizon" className="flex items-center gap-3 group z-50 relative pointer-events-auto" style={{ cursor: "none" }}>
-            {logoUrl ? (<img src={logoUrl} alt={brandName} className="h-8 w-auto object-contain" />) : (<div className="flex items-center gap-2"><Sun className="w-6 h-6" /><span className={`text-2xl font-medium tracking-widest text-black uppercase ${outfit.className}`}>{brandName.charAt(0)}<span className="text-black/40">{brandName.slice(1)}</span></span></div>)}
+            {logoUrl ? (<img src={logoUrl} alt={brandName || "Horizon"} className="h-8 w-auto object-contain" />) : (<div className="flex items-center gap-2"><Sun className="w-6 h-6" /><span className={`text-2xl font-medium tracking-widest text-black uppercase ${outfit.className}`}>{(brandName || "Horizon").charAt(0)}<span className="text-black/40">{(brandName || "Horizon").slice(1)}</span></span></div>)}
           </Link>
 
           <nav className="hidden md:flex items-center justify-center absolute left-1/2 -translate-x-1/2 gap-12">
@@ -277,7 +277,7 @@ function HorizonNavigation() {
                   </div>
                   <h3 className={`text-3xl text-black mb-4 ${cormorant.className} italic`}>Order Confirmed</h3>
                   <p className={`text-black/50 ${outfit.className} font-light text-sm leading-relaxed mb-4`}>
-                    Thank you, {formData.name || 'Client'}. Your elegant assets are being prepared for delivery to {formData.address}.
+                    Thank you, {formData.name}. Your elegant assets are being prepared for delivery to {formData.address}.
                   </p>
                   <p className={`text-black/40 ${outfit.className} text-[10px] uppercase tracking-widest`}>
                     Paid via {paymentMethod.toUpperCase()}
@@ -551,13 +551,13 @@ function HorizonNavigation() {
 
 function HorizonFooter() {
   const customData = useCustomization();
-  const brandName = customData?.formData?.brandName || "HORIZON";
-  const logoUrl = customData?.formData?.logoUrl || "";
-  const footerText = customData?.formData?.footerText || "A curated collection of exceptionally crafted digital assets. Designed for the most discerning creators and agencies aiming for unparalleled aesthetic excellence.";
+  const brandName = customData?.formData?.brandName;
+  const logoUrl = customData?.formData?.logoUrl;
+  const footerText = customData?.formData?.footerText;
   const copyrightText = customData?.formData?.copyrightText || `© ${new Date().getFullYear()} ${logoUrl ? <img src={logoUrl} alt={brandName} className="h-8 w-auto object-contain" /> : <div className="flex items-center gap-2"><Sun className="w-6 h-6" /><span>{brandName}</span></div>} STUDIO.`;
-  const socialInsta = customData?.formData?.socialInsta || "#";
-  const socialTwitter = customData?.formData?.socialTwitter || "#";
-  const socialFacebook = customData?.formData?.socialFacebook || "#";
+  const socialInsta = customData?.formData?.socialInsta;
+  const socialTwitter = customData?.formData?.socialTwitter;
+  const socialFacebook = customData?.formData?.socialFacebook;
 
   return (
     <footer className="bg-[#FAFAFA] border-t border-black/5 pt-32 pb-12 relative overflow-hidden">
@@ -566,7 +566,7 @@ function HorizonFooter() {
           <div className="md:col-span-2">
             <Link href="/templates/horizon" className="flex items-center gap-3 mb-8 pointer-events-auto" style={{ cursor: "none" }}>
               <span className={`text-3xl text-black tracking-widest uppercase ${outfit.className}`}>
-                {brandName.charAt(0)}<span className="text-black/30">{brandName.slice(1)}</span>
+                {(brandName || "Horizon").charAt(0)}<span className="text-black/30">{(brandName || "Horizon").slice(1)}</span>
               </span>
             </Link>
             <p className={`text-black/50 max-w-md text-sm leading-loose font-light ${outfit.className}`}>
@@ -584,9 +584,9 @@ function HorizonFooter() {
           <div>
             <h4 className={`text-[10px] text-black/40 tracking-[0.3em] font-medium uppercase mb-8 ${outfit.className}`}>Connect</h4>
             <ul className={`space-y-4 text-sm font-light text-black/70 ${outfit.className}`}>
-              {socialInsta !== "#" && <li><Link href={socialInsta} className="hover:text-black transition-colors pointer-events-auto" style={{ cursor: "none" }}>Instagram</Link></li>}
-              {socialTwitter !== "#" && <li><Link href={socialTwitter} className="hover:text-black transition-colors pointer-events-auto" style={{ cursor: "none" }}>Twitter (X)</Link></li>}
-              {socialFacebook !== "#" && <li><Link href={socialFacebook} className="hover:text-black transition-colors pointer-events-auto" style={{ cursor: "none" }}>Facebook</Link></li>}
+              {socialInsta && socialInsta !== "#" && <li><a href={socialInsta} target="_blank" rel="noopener noreferrer" className="hover:text-black transition-colors pointer-events-auto" style={{ cursor: "none" }}>Instagram</a></li>}
+              {socialTwitter && socialTwitter !== "#" && <li><a href={socialTwitter} target="_blank" rel="noopener noreferrer" className="hover:text-black transition-colors pointer-events-auto" style={{ cursor: "none" }}>Twitter (X)</a></li>}
+              {socialFacebook && socialFacebook !== "#" && <li><a href={socialFacebook} target="_blank" rel="noopener noreferrer" className="hover:text-black transition-colors pointer-events-auto" style={{ cursor: "none" }}>Facebook</a></li>}
             </ul>
           </div>
         </div>

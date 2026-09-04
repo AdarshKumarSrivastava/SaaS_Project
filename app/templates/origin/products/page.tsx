@@ -26,9 +26,9 @@ export default function OriginProductsPage() {
     return matchesSearch && matchesCategory;
   });
   
-  const shopTitle = customData?.formData?.shopTitle || "All Goods";
-  const rawCategories = customData?.formData?.shopCategories || "All, Accessories, Home, Pantry, Decor, Apparel, Brewing, Apothecary, Office";
-  const tCategories = rawCategories.split(",").map((c: string) => c.trim()).filter(Boolean);
+  const shopTitle = customData?.formData?.shopTitle;
+  const rawCategories = customData?.formData?.shopCategories;
+  const tCategories = (rawCategories || "").split(",").map((c: string) => c.trim()).filter(Boolean);
 
   return (
     <div className="w-full bg-[#fdfbf7] min-h-screen pt-12 pb-32 px-6">

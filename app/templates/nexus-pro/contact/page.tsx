@@ -6,12 +6,12 @@ import { useCustomization } from "@/hooks/useCustomization";
 export default function NexusProContactPage() {
   const customData = useCustomization();
   
-  const tPreTitle = customData?.formData?.contactPreTitle || "Support";
-  const tTitle = customData?.formData?.contactTitle || "Contact Us.";
-  const tAddress = customData?.formData?.contactAddress || "123 Innovation Drive, Silicon Valley, CA 94025";
-  const tEmail = customData?.formData?.contactEmail || "support@nexuspro.com";
-  const tPhone = customData?.formData?.contactPhone || "+1 (800) 555-0199";
-  const tHours = customData?.formData?.contactHours || "Our customer service team is available Monday through Friday, from 9 AM to 6 PM PST. We aim to respond to all inquiries within 24 hours.";
+  const tPreTitle = customData?.formData?.contactPreTitle;
+  const tTitle = customData?.formData?.contactTitle;
+  const tAddress = customData?.formData?.contactAddress;
+  const tEmail = customData?.formData?.contactEmail;
+  const tPhone = customData?.formData?.contactPhone;
+  const tHours = customData?.formData?.contactHours;
   return (
     <div className="flex flex-col w-full bg-[#0a0a0a] text-[#ededed] pt-32 pb-32">
       
@@ -98,7 +98,7 @@ export default function NexusProContactPage() {
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-[#d4af37] mb-1">Location</p>
                 <p>
-                  {tAddress.split('\\n').map((line: string, i: number) => (
+                  {(tAddress || "").split('\\n').map((line: string, i: number) => (
                     <span key={i}>{line}<br/></span>
                   ))}
                 </p>
@@ -118,7 +118,7 @@ export default function NexusProContactPage() {
           
           <div className="mt-8 pt-6 border-t border-white/10">
             <p className="text-xs text-white/50 leading-relaxed">
-              {tHours.split('\\n').map((line: string, i: number) => (
+              {(tHours || "").split('\\n').map((line: string, i: number) => (
                 <span key={i}>{line}<br/></span>
               ))}
             </p>

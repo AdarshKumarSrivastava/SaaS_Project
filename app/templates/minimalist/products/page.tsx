@@ -44,10 +44,10 @@ export default function StarterProductsPage({ initialProducts }: { initialProduc
     return matchesCategory && matchesSearch;
   });
 
-  const tTitle = customData?.formData?.shopTitle || "Collection";
-  const tDescription = customData?.formData?.shopDescription || "Explore our full range of minimalist essentials. Carefully designed for longevity and timeless style.";
-  const rawCategories = customData?.formData?.shopCategories || "All, Tops, Bottoms, Accessories, Bags, Shoes";
-  const tCategories = rawCategories.split(",").map((c: string) => c.trim()).filter(Boolean);
+  const tTitle = customData?.formData?.shopTitle;
+  const tDescription = customData?.formData?.shopDescription;
+  const rawCategories = customData?.formData?.shopCategories;
+  const tCategories = (rawCategories || "").split(",").map((c: string) => c.trim()).filter(Boolean);
 
   return (
     <div className="px-6 py-16 md:py-24 max-w-7xl mx-auto w-full">

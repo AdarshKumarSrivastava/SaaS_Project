@@ -26,8 +26,8 @@ function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const customData = useCustomization();
-  const brandName = customData?.formData?.brandName || "ORIGIN.";
-  const logoUrl = customData?.formData?.logoUrl || "";
+  const brandName = customData?.formData?.brandName;
+  const logoUrl = customData?.formData?.logoUrl;
 
   const { scrollY } = useScroll();
   const [hidden, setHidden] = useState(false);
@@ -62,7 +62,7 @@ function Header() {
               </Link>
               <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-[#402c21]/70">
                 {['Home', 'Shop', 'About', 'Contact', 'Orders'].map((item) => {
-                  const href = item === 'Home' ? '/templates/origin' : item === 'Shop' ? '/templates/origin/products' : `/templates/origin/${item.toLowerCase()}`;
+                  const href = item === 'Home' ? `${basePath}` : item === 'Shop' ? `${basePath}/products` : `${basePath}/${item.toLowerCase()}`;
                   const isActive = pathname === href;
                   return (
                     <Link key={item} href={href} className={`relative group py-2 overflow-hidden`}>
@@ -162,7 +162,7 @@ function Header() {
             </button>
             <nav className="flex flex-col gap-8 text-4xl font-serif font-bold text-[#402c21]">
               {['Home', 'Shop', 'About', 'Contact', 'Orders'].map((item) => {
-                const href = item === 'Home' ? '/templates/origin' : item === 'Shop' ? '/templates/origin/products' : `/templates/origin/${item.toLowerCase()}`;
+                const href = item === 'Home' ? `${basePath}` : item === 'Shop' ? `${basePath}/products` : `${basePath}/${item.toLowerCase()}`;
                 return (
                   <Link
                     key={item}
@@ -189,16 +189,16 @@ function Footer() {
 
   const customData = useCustomization();
   
-  const footerText = customData?.formData?.footerText || "Embracing the earth's natural palette. Goods crafted for the modern soul.";
-  const socialInsta = customData?.formData?.socialInsta || "#";
-  const socialTwitter = customData?.formData?.socialTwitter || "#";
-  const socialFacebook = customData?.formData?.socialFacebook || "#";
-  const copyrightText = customData?.formData?.copyrightText || "© 2026 Origin. All rights reserved.";
-  const footerCol1 = customData?.formData?.footerCol1 || "Explore";
-  const footerCol2 = customData?.formData?.footerCol2 || "Company";
-  const footerCol3 = customData?.formData?.footerCol3 || "Support";
-  const tBrandName = customData?.formData?.brandName || "ORIGIN.";
-  const tLogoUrl = customData?.formData?.logoUrl || "";
+  const footerText = customData?.formData?.footerText;
+  const socialInsta = customData?.formData?.socialInsta;
+  const socialTwitter = customData?.formData?.socialTwitter;
+  const socialFacebook = customData?.formData?.socialFacebook;
+  const copyrightText = customData?.formData?.copyrightText;
+  const footerCol1 = customData?.formData?.footerCol1;
+  const footerCol2 = customData?.formData?.footerCol2;
+  const footerCol3 = customData?.formData?.footerCol3;
+  const tBrandName = customData?.formData?.brandName;
+  const tLogoUrl = customData?.formData?.logoUrl;
   return (
     <footer className="bg-[#402c21] text-[#fdfbf7] py-20 px-6 mt-auto border-t border-[#fdfbf7]/10">
       <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
@@ -228,11 +228,11 @@ function Footer() {
         </div>
 
         <div className="md:col-span-1">
-          <h4 className="text-sm font-bold mb-6 text-[#a38c7f]">{footerCol3}</h4>
+          <h4 className="text-sm font-bold mb-6 text-[#a38c7f]">{footerCol3 || 'Connect'}</h4>
           <ul className="space-y-3 text-sm text-[#fdfbf7]/80">
-            {socialInsta !== "#" && <li><Link href={socialInsta} className="hover:text-white transition-colors">Instagram</Link></li>}
-            {socialTwitter !== "#" && <li><Link href={socialTwitter} className="hover:text-white transition-colors">Twitter</Link></li>}
-            {socialFacebook !== "#" && <li><Link href={socialFacebook} className="hover:text-white transition-colors">Facebook</Link></li>}
+            {socialInsta && socialInsta !== "#" && <li><a href={socialInsta} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Instagram</a></li>}
+            {socialTwitter && socialTwitter !== "#" && <li><a href={socialTwitter} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Twitter</a></li>}
+            {socialFacebook && socialFacebook !== "#" && <li><a href={socialFacebook} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Facebook</a></li>}
           </ul>
         </div>
       </div>

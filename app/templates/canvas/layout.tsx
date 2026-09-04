@@ -117,8 +117,8 @@ function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const customData = useCustomization();
-  const brandName = customData?.formData?.brandName || "Canvas.";
-  const logoUrl = customData?.formData?.logoUrl || "";
+  const brandName = customData?.formData?.brandName;
+  const logoUrl = customData?.formData?.logoUrl;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -251,16 +251,16 @@ function Navigation() {
 function Footer() {
   const customData = useCustomization();
   
-  const footerText = customData?.formData?.footerText || "A study in restraint.\nObjects of uncompromising quality.";
-  const socialInsta = customData?.formData?.socialInsta || "#";
-  const socialTwitter = customData?.formData?.socialTwitter || "#";
-  const socialFacebook = customData?.formData?.socialFacebook || "#";
-  const copyrightText = customData?.formData?.copyrightText || "© " + new Date().getFullYear() + " Canvas. All rights reserved.";
-  const footerCol1 = customData?.formData?.footerCol1 || "Index";
-  const footerCol2 = customData?.formData?.footerCol2 || "Information";
-  const footerCol3 = customData?.formData?.footerCol3 || "Social";
-  const tBrandName = customData?.formData?.brandName || "CANVAS.";
-  const tLogoUrl = customData?.formData?.logoUrl || "";
+  const footerText = customData?.formData?.footerText;
+  const socialInsta = customData?.formData?.socialInsta;
+  const socialTwitter = customData?.formData?.socialTwitter;
+  const socialFacebook = customData?.formData?.socialFacebook;
+  const copyrightText = customData?.formData?.copyrightText + new Date().getFullYear() + " Canvas. All rights reserved.";
+  const footerCol1 = customData?.formData?.footerCol1;
+  const footerCol2 = customData?.formData?.footerCol2;
+  const footerCol3 = customData?.formData?.footerCol3;
+  const tBrandName = customData?.formData?.brandName;
+  const tLogoUrl = customData?.formData?.logoUrl;
   return (
     <footer className="bg-black text-white pt-32 pb-12 border-t border-white/10">
       <div className="px-6 md:px-12 w-full">
@@ -272,7 +272,7 @@ function Footer() {
                 {tLogoUrl ? <img src={tLogoUrl} alt={tBrandName} className="h-8 w-auto object-contain" /> : tBrandName}
               </Link>
               <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 leading-loose max-w-xs">
-                {footerText.split('\\n').map((line: string, i: number) => (
+                {(footerText || "").split('\\n').map((line: string, i: number) => (
                   <span key={i}>{line}<br/></span>
                 ))}
               </p>
@@ -316,9 +316,9 @@ function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center pt-8 border-t border-white/10 text-[10px] uppercase tracking-[0.2em] text-white/30">
           <p>{copyrightText}</p>
           <div className="flex items-center gap-8 mt-6 md:mt-0">
-            {socialInsta !== "#" && <Link href={socialInsta} className="hover:text-white transition-colors">Instagram</Link>}
-            {socialTwitter !== "#" && <Link href={socialTwitter} className="hover:text-white transition-colors">Twitter</Link>}
-            {socialFacebook !== "#" && <Link href={socialFacebook} className="hover:text-white transition-colors">Facebook</Link>}
+            {socialInsta && socialInsta !== "#" && <a href={socialInsta} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Instagram</a>}
+            {socialTwitter && socialTwitter !== "#" && <a href={socialTwitter} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Twitter</a>}
+            {socialFacebook && socialFacebook !== "#" && <a href={socialFacebook} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Facebook</a>}
           </div>
         </div>
       </div>

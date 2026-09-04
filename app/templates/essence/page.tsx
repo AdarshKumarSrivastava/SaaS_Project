@@ -19,21 +19,21 @@ export default function EssenceHomePage() {
   const featuredProducts = ALL_PRODUCTS.slice(0, 4);
   const customData = useCustomization();
   
-  const preTitle = customData?.formData?.preTitle || "New Collection 2026";
-  const heroTitle = customData?.formData?.heroTitle || "Timeless Form";
-  const heroTitleItalic = customData?.formData?.heroTitleItalic || "Meets Function.";
-  const heroDescription = customData?.formData?.heroDescription || "Discover our latest collection of meticulously crafted homeware. Designed to elevate your everyday rituals with understated elegance.";
-  const heroCta = customData?.formData?.heroCta || "Explore Collection";
-  const heroImage = customData?.formData?.heroImage || "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?q=80&w=2940&auto=format&fit=crop";
-  const philosophyQuote = customData?.formData?.philosophyQuote || "\"We believe that the objects we surround ourselves with should inspire calm and bring quiet joy to daily life.\"";
-  const philosophyAuthor = customData?.formData?.philosophyAuthor || "— Elena Rostova, Founder";
-  const featuredTitle = customData?.formData?.featuredTitle || "Curated Objects";
-  const featuredDesc = customData?.formData?.featuredDesc || "Essentials for the modern home.";
-  const editorialTitle = customData?.formData?.editorialTitle || "The Art of Stillness";
-  const editorialDesc = customData?.formData?.editorialDesc || "Our designs are rooted in the belief that simplicity is the ultimate sophistication. We source natural materials and work with master artisans to create pieces that age beautifully over time.";
-  const editorialCta = customData?.formData?.editorialCta || "Read Our Story";
-  const editorialImage = customData?.formData?.editorialImage || "https://images.unsplash.com/photo-1490312278390-ab64016e0aa9?q=80&w=2940&auto=format&fit=crop";
-  const viewAllText = customData?.formData?.viewAllText || "View All";
+  const preTitle = customData?.formData?.preTitle;
+  const heroTitle = customData?.formData?.heroTitle;
+  const heroTitleItalic = customData?.formData?.heroTitleItalic;
+  const heroDescription = customData?.formData?.heroDescription;
+  const heroCta = customData?.formData?.heroCta;
+  const heroImage = customData?.formData?.heroImage;
+  const philosophyQuote = customData?.formData?.philosophyQuote;
+  const philosophyAuthor = customData?.formData?.philosophyAuthor;
+  const featuredTitle = customData?.formData?.featuredTitle;
+  const featuredDesc = customData?.formData?.featuredDesc;
+  const editorialTitle = customData?.formData?.editorialTitle;
+  const editorialDesc = customData?.formData?.editorialDesc;
+  const editorialCta = customData?.formData?.editorialCta;
+  const editorialImage = customData?.formData?.editorialImage;
+  const viewAllText = customData?.formData?.viewAllText;
 
   return (
     <div ref={containerRef} className="w-full">

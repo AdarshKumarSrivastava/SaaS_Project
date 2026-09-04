@@ -2,12 +2,14 @@
 
 import React, { createContext, useContext, ReactNode, useEffect } from 'react';
 import { getStorefrontProducts } from '@/lib/storefront';
+import { normalizeTemplateKey } from '@/lib/template-registry';
 
 interface CustomizationContextType {
   basePath?: string;
   siteData: any;
   products: any[];
   isBuilderContext?: boolean;
+  activePath?: string;
   onNavigate?: (path: string) => void;
   resolveRoute: (path: string) => string;
 }
@@ -20,6 +22,7 @@ export function CustomizationProvider({
   products: initialProducts,
   basePath,
   isBuilderContext,
+  activePath,
   onNavigate
 }: { 
   children: ReactNode; 
@@ -27,6 +30,7 @@ export function CustomizationProvider({
   products: any[];
   basePath?: string;
   isBuilderContext?: boolean;
+  activePath?: string;
   onNavigate?: (path: string) => void;
 }) {
   const [siteData, setSiteData] = React.useState(initialSiteData);
@@ -40,7 +44,8 @@ export function CustomizationProvider({
     setProducts(initialProducts);
   }, [initialProducts]);
 
-  const templateSlug = siteData?.global?.templateSlug || 'velocity';
+  const rawTemplateSlug = siteData?.global?.templateSlug;
+  const templateSlug = normalizeTemplateKey(rawTemplateSlug, siteData);
   const mergedProducts = getStorefrontProducts(templateSlug, products || []);
   const theme = siteData?.global?.theme;
 
@@ -112,7 +117,7 @@ export function CustomizationProvider({
   };
 
   return (
-    <CustomizationContext.Provider value={{ siteData, products: mergedProducts, basePath, isBuilderContext, onNavigate, resolveRoute }}>
+    <CustomizationContext.Provider value={{ siteData, products: mergedProducts, basePath, isBuilderContext, activePath, onNavigate, resolveRoute }}>
       {children}
     </CustomizationContext.Provider>
   );

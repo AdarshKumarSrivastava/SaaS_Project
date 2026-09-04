@@ -8,6 +8,7 @@ import { useVelocity } from "./VelocityContext";
 import { useState, useEffect, ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
+import { useCustomizationContext } from "@/context/CustomizationContext";
 import { useCustomization } from "@/hooks/useCustomization";
 
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: '--font-space' });
@@ -21,8 +22,11 @@ function VelocityNavigation() {
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
   const pathname = usePathname();
   const customData = useCustomization();
-  const brandName = customData?.formData?.brandName || "Velocity";
-  const logoUrl = customData?.formData?.logoUrl || "";
+  const __customContext = useCustomizationContext();
+  const basePath = __customContext?.basePath || "/templates/velocity";
+
+  const brandName = customData?.formData?.brandName;
+  const logoUrl = customData?.formData?.logoUrl;
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -56,7 +60,7 @@ function VelocityNavigation() {
       >
         <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
           
-          <Link href="/templates/velocity" className="flex items-center gap-2 group">
+          <Link href={`${basePath}`} className="flex items-center gap-2 group">
             <Zap className="w-8 h-8 text-[#00f0ff] group-hover:text-[#ff003c] transition-colors duration-500" />
             <span className={`text-2xl font-black uppercase tracking-tighter text-white ${orbitron.className}`}>
               {logoUrl ? <img src={logoUrl} alt={brandName} className="h-8 w-auto object-contain" /> : <div className="flex items-center gap-2"><Zap className="w-6 h-6" /><span>{brandName}</span></div>}
@@ -65,7 +69,7 @@ function VelocityNavigation() {
 
           <nav className="hidden md:flex items-center gap-10">
             {["Products", "About", "Contact"].map((item) => {
-              const href = `/templates/velocity/${item.toLowerCase()}`;
+              const href = `${basePath}/${item.toLowerCase()}`;
               const isActive = pathname === href || pathname?.startsWith(`${href}/`);
               return (
                 <Link 
@@ -81,11 +85,11 @@ function VelocityNavigation() {
           </nav>
 
           <div className="flex items-center gap-6">
-            <Link href="/templates/velocity/profile" className="relative group hidden md:block">
+            <Link href={`${basePath}/profile`} className="relative group hidden md:block">
               <User className="w-5 h-5 text-white/70 group-hover:text-[#00f0ff] transition-colors" />
             </Link>
 
-            <Link href="/templates/velocity/wishlist" className="relative group hidden md:block">
+            <Link href={`${basePath}/wishlist`} className="relative group hidden md:block">
               <Heart className="w-5 h-5 text-white/70 group-hover:text-[#ff003c] transition-colors" />
               {wishlist.length > 0 && (
                 <span className="absolute -top-2 -right-2 w-4 h-4 bg-[#ff003c] text-white text-[9px] font-bold flex items-center justify-center rounded-full shadow-[0_0_10px_rgba(255,0,60,0.5)]">
@@ -198,16 +202,19 @@ function VelocityNavigation() {
 
 function VelocityFooter() {
   const customData = useCustomization();
-  const brandName = customData?.formData?.brandName || "Velocity";
-  const logoUrl = customData?.formData?.logoUrl || "";
-  const footerText = customData?.formData?.footerText || "Engineered armor for the digital age. Pushing the boundaries of human performance with cutting-edge cybernetics.";
-  const copyrightText = customData?.formData?.copyrightText || "© 2026 VELOCITY. SYSTEM SECURED.";
-  const socialInsta = customData?.formData?.socialInsta || "#";
-  const socialTwitter = customData?.formData?.socialTwitter || "#";
-  const socialFacebook = customData?.formData?.socialFacebook || "#";
-  const footerCol1 = customData?.formData?.footerCol1 || "Grid Access";
-  const footerCol2 = customData?.formData?.footerCol2 || "System";
-  const footerCol3 = customData?.formData?.footerCol3 || "Network";
+  const brandName = customData?.formData?.brandName;
+  const logoUrl = customData?.formData?.logoUrl;
+  const footerText = customData?.formData?.footerText;
+  const copyrightText = customData?.formData?.copyrightText;
+  const socialInsta = customData?.formData?.socialInsta;
+  const socialTwitter = customData?.formData?.socialTwitter;
+  const socialFacebook = customData?.formData?.socialFacebook;
+  const footerCol1 = customData?.formData?.footerCol1;
+  const footerCol2 = customData?.formData?.footerCol2;
+  const footerCol3 = customData?.formData?.footerCol3;
+
+  const __customContext = useCustomizationContext();
+  const basePath = __customContext?.basePath || "/templates/velocity";
 
   return (
     <footer className="bg-[#050505] border-t border-[#00f0ff]/20 pt-24 pb-12 relative overflow-hidden">
@@ -215,7 +222,7 @@ function VelocityFooter() {
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="md:col-span-2">
-            <Link href="/templates/velocity" className="flex items-center gap-2 mb-6">
+            <Link href={`${basePath}`} className="flex items-center gap-2 mb-6">
               <Zap className="w-6 h-6 text-[#00f0ff]" />
               <span className={`text-xl font-black uppercase tracking-tighter text-white ${orbitron.className}`}>{logoUrl ? <img src={logoUrl} alt={brandName} className="h-8 w-auto object-contain" /> : <div className="flex items-center gap-2"><Zap className="w-6 h-6" /><span>{brandName}</span></div>}</span>
             </Link>
@@ -223,18 +230,18 @@ function VelocityFooter() {
               {footerText}
             </p>
             <div className="flex gap-4">
-              {socialInsta !== "#" && (
-                <a href={socialInsta} className="w-10 h-10 rounded-full border border-[#00f0ff]/30 flex items-center justify-center hover:bg-[#00f0ff] hover:text-black hover:border-transparent transition-all">
+              {socialInsta && socialInsta !== "#" && (
+                <a href={socialInsta} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-[#00f0ff]/30 flex items-center justify-center hover:bg-[#00f0ff] hover:text-black hover:border-transparent transition-all">
                   Insta
                 </a>
               )}
-              {socialTwitter !== "#" && (
-                <a href={socialTwitter} className="w-10 h-10 rounded-full border border-[#00f0ff]/30 flex items-center justify-center hover:bg-[#00f0ff] hover:text-black hover:border-transparent transition-all">
+              {socialTwitter && socialTwitter !== "#" && (
+                <a href={socialTwitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-[#00f0ff]/30 flex items-center justify-center hover:bg-[#00f0ff] hover:text-black hover:border-transparent transition-all">
                   X
                 </a>
               )}
-              {socialFacebook !== "#" && (
-                <a href={socialFacebook} className="w-10 h-10 rounded-full border border-[#00f0ff]/30 flex items-center justify-center hover:bg-[#00f0ff] hover:text-black hover:border-transparent transition-all">
+              {socialFacebook && socialFacebook !== "#" && (
+                <a href={socialFacebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-[#00f0ff]/30 flex items-center justify-center hover:bg-[#00f0ff] hover:text-black hover:border-transparent transition-all">
                   FB
                 </a>
               )}
@@ -243,7 +250,7 @@ function VelocityFooter() {
           <div className="col-span-1 md:col-span-2">
             <h4 className="text-[#00f0ff] text-[10px] font-black tracking-widest uppercase mb-6 font-space">{footerCol1}</h4>
             <ul className="space-y-4 font-space">
-              <li><Link href="/templates/velocity/products" className="text-xs font-bold uppercase tracking-widest hover:text-[#00f0ff] transition-colors text-white/50 hover:shadow-[0_0_10px_rgba(0,240,255,0.5)]">Hardware</Link></li>
+              <li><Link href={`${basePath}/products`} className="text-xs font-bold uppercase tracking-widest hover:text-[#00f0ff] transition-colors text-white/50 hover:shadow-[0_0_10px_rgba(0,240,255,0.5)]">Hardware</Link></li>
               <li><Link href="/templates/velocity/products" className="text-xs font-bold uppercase tracking-widest hover:text-[#00f0ff] transition-colors text-white/50">Enhancements</Link></li>
               <li><Link href="#" className="text-xs font-bold uppercase tracking-widest hover:text-[#00f0ff] transition-colors text-white/50">Techwear</Link></li>
               <li><Link href="#" className="text-xs font-bold uppercase tracking-widest hover:text-[#ff003c] transition-colors text-[#ff003c]/70">Classified</Link></li>

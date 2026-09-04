@@ -8,12 +8,12 @@ export default function OriginContactPage() {
 
   const customData = useCustomization();
   
-  const tPreTitle = customData?.formData?.contactPreTitle || "Contact Us";
-  const tTitle = customData?.formData?.contactTitle || "We'd love to hear from you.";
-  const tAddress = customData?.formData?.contactAddress || "254 Timber Lane\nPortland, OR 97204\nUnited States";
-  const tEmail = customData?.formData?.contactEmail || "hello@originsupply.co\nsupport@originsupply.co";
-  const tPhone = customData?.formData?.contactPhone || "+1 (503) 555-0199";
-  const tHours = customData?.formData?.contactHours || "Mon-Fri, 9am - 5pm PT";
+  const tPreTitle = customData?.formData?.contactPreTitle;
+  const tTitle = customData?.formData?.contactTitle;
+  const tAddress = customData?.formData?.contactAddress;
+  const tEmail = customData?.formData?.contactEmail;
+  const tPhone = customData?.formData?.contactPhone;
+  const tHours = customData?.formData?.contactHours;
   return (
     <div className="w-full bg-[#fdfbf7] min-h-screen pt-16 pb-32">
       <div className="max-w-[1200px] mx-auto px-6">
@@ -43,7 +43,7 @@ export default function OriginContactPage() {
                 <div>
                   <h3 className="font-bold text-[#402c21] text-sm uppercase tracking-widest mb-2">Workshop</h3>
                   <p className="text-[#402c21]/80 font-medium">
-                    {tAddress.split('\\n').map((line: string, i: number) => (
+                    {(tAddress || "").split('\\n').map((line: string, i: number) => (
                       <span key={i}>{line}<br/></span>
                     ))}
                   </p>
@@ -57,7 +57,7 @@ export default function OriginContactPage() {
                 <div>
                   <h3 className="font-bold text-[#402c21] text-sm uppercase tracking-widest mb-2">Email</h3>
                   <p className="text-[#402c21]/80 font-medium">
-                    {tEmail.split('\\n').map((line: string, i: number) => (
+                    {(tEmail || "").split('\\n').map((line: string, i: number) => (
                       <span key={i}>{line}<br/></span>
                     ))}
                   </p>
@@ -72,7 +72,7 @@ export default function OriginContactPage() {
                   <h3 className="font-bold text-[#402c21] text-sm uppercase tracking-widest mb-2">Phone</h3>
                   <p className="text-[#402c21]/80 font-medium">
                     {tPhone}<br/>
-                    {tHours.split('\\n').map((line: string, i: number) => (
+                    {(tHours || "").split('\\n').map((line: string, i: number) => (
                       <span key={i}>{line}<br/></span>
                     ))}
                   </p>

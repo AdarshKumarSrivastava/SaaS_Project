@@ -14,7 +14,7 @@ export default function QuantumProductsPage() {
   const [isSortOpen, setIsSortOpen] = useState(false);
 
   const customData = useCustomization();
-  const shopTitle = customData?.formData?.shopTitle || "The Collection";
+  const shopTitle = customData?.formData?.shopTitle;
   const rawCategories = customData?.formData?.shopCategories;
   
   const categories = rawCategories
@@ -57,7 +57,7 @@ export default function QuantumProductsPage() {
               animate={{ opacity: 1, y: 0 }}
               className="font-playfair text-5xl md:text-7xl font-bold text-[#121212] mb-4 whitespace-pre-line"
             >
-              {shopTitle.replace(" ", "\n")}
+              {shopTitle?.replace(" ", "\n")}
             </motion.h1>
             <motion.p 
               initial={{ opacity: 0, y: 20 }}

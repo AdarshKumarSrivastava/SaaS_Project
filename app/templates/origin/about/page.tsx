@@ -14,13 +14,13 @@ export default function OriginAboutPage() {
 
   const customData = useCustomization();
   
-  const tTitle = customData?.formData?.aboutTitle || "Rooted in tradition, built for today.";
-  const tImage = customData?.formData?.aboutHeroImage || "https://images.unsplash.com/photo-1610701596007-11502861dcfa?q=80&w=2000&auto=format&fit=crop";
-  const tFeature1Title = customData?.formData?.feature1Title || "The Journey";
-  const tFeature1Desc = customData?.formData?.aboutText1 || "Origin began in a small workshop in 2026. What started as a personal quest to find enduring, well-made everyday goods evolved into a collective dedication to craftsmanship.";
-  const tFeature2Title = customData?.formData?.feature2Title || "Our Promise";
-  const tFeature2Desc = customData?.formData?.aboutText2 || "We believe that we are defined by the objects we choose to surround ourselves with. Our mission is to offer an alternative to the disposable culture by providing goods that are designed to last a lifetime, developing character and history with each use.";
-  const tContent3 = customData?.formData?.aboutText3 || "Every piece in our catalog is thoughtfully sourced. We partner directly with artisans and small factories who share our commitment to ethical production, sustainable materials, and fair labor practices.";
+  const tTitle = customData?.formData?.aboutTitle;
+  const tImage = customData?.formData?.aboutHeroImage;
+  const tFeature1Title = customData?.formData?.feature1Title;
+  const tFeature1Desc = customData?.formData?.aboutText1;
+  const tFeature2Title = customData?.formData?.feature2Title;
+  const tFeature2Desc = customData?.formData?.aboutText2;
+  const tContent3 = customData?.formData?.aboutText3;
   
   return (
     <div className="w-full bg-[#fdfbf7] min-h-screen pt-16 pb-32">

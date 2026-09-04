@@ -9,15 +9,15 @@ import { useCustomization } from "@/hooks/useCustomization";
 export default function NexusProAboutPage() {
   const customData = useCustomization();
   
-  const tTitle = customData?.formData?.aboutTitle || "Designing the Future of Essentials.";
-  const tImage = customData?.formData?.aboutHeroImage || "https://images.unsplash.com/photo-1511556820780-d912e42b4980?q=80&w=2000&auto=format&fit=crop";
-  const tFeature1Title = customData?.formData?.feature1Title || "The Protocol";
-  const tFeature1Desc = customData?.formData?.aboutText2 || "Nexus Pro was established to bridge the gap between technical performance and metropolitan aesthetics. We engineer garments that adapt to the wearer's environment, providing uncompromising utility without sacrificing design.";
-  const tFeature2Title = customData?.formData?.feature2Title || "The Syndicate";
-  const tFeature2Desc = customData?.formData?.aboutText3 || "We operate as a global collective of designers, material scientists, and urban athletes. Our development process is iterative and relentless, resulting in gear that performs flawlessly in concrete jungles.";
-  const tContent1 = customData?.formData?.aboutText1 || "First text block.";
-  const tContent2 = customData?.formData?.aboutText2 || "Second text block.";
-  const tContent3 = customData?.formData?.aboutText3 || "This isn't just clothing or accessories; it's industrial design applied to the body. It is hardware for the human form.";
+  const tTitle = customData?.formData?.aboutTitle;
+  const tImage = customData?.formData?.aboutHeroImage;
+  const tFeature1Title = customData?.formData?.feature1Title;
+  const tFeature1Desc = customData?.formData?.aboutText2;
+  const tFeature2Title = customData?.formData?.feature2Title;
+  const tFeature2Desc = customData?.formData?.aboutText3;
+  const tContent1 = customData?.formData?.aboutText1;
+  const tContent2 = customData?.formData?.aboutText2;
+  const tContent3 = customData?.formData?.aboutText3;
   return (
     <div className="flex flex-col w-full bg-[#0a0a0a] text-[#ededed] pt-32 pb-32">
       

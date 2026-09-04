@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { CustomizationProvider } from '@/context/CustomizationContext';
 import { resolveSiteData } from '@/lib/schema';
-import { TEMPLATE_COMPONENTS, TEMPLATE_LAYOUTS } from '@/lib/template-components';
+import { resolveTemplateRenderer } from '@/lib/template-components';
 
 export default async function PreviewSitePage({ params }: { params: Promise<{ siteId: string, path?: string[] }> | { siteId: string, path?: string[] } }) {
   // Await params if it's a promise (Next.js 15+ behavior)
@@ -44,7 +44,7 @@ export default async function PreviewSitePage({ params }: { params: Promise<{ si
 
   // 3. Resolve canonical schema
   const schema = resolveSiteData(workingSchema, site.name);
-  const templateSlug = schema.global?.templateSlug || 'velocity';
+  const { templateSlug, templateRoutes, TemplateLayout } = resolveTemplateRenderer(schema);
 
   // 4. Resolve path
   let relativePath = '/';
@@ -52,24 +52,17 @@ export default async function PreviewSitePage({ params }: { params: Promise<{ si
     relativePath = '/' + path.join('/');
   }
 
-  // 5. Find component map for template
-  const templateRoutes = TEMPLATE_COMPONENTS[templateSlug];
-  const TemplateLayout = TEMPLATE_LAYOUTS[templateSlug] || React.Fragment;
-  
-  if (!templateRoutes) {
-    return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center text-center p-6">
-        <h1>Template "{templateSlug}" is not connected to the renderer yet.</h1>
-      </div>
-    );
-  }
+  let TemplateComponent = templateRoutes ? templateRoutes[relativePath] : null;
 
-  let TemplateComponent = templateRoutes[relativePath];
-
-  if (!TemplateComponent) {
+  if (!TemplateComponent && templateRoutes) {
     if (path && path.length === 2 && path[0] === 'products') {
        TemplateComponent = templateRoutes['/products/[id]'];
     }
+  }
+
+  // Graceful fallback to root
+  if (!TemplateComponent && templateRoutes) {
+    TemplateComponent = templateRoutes['/'];
   }
 
   if (!TemplateComponent) {

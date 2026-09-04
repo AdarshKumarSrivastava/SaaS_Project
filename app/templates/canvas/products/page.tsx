@@ -12,7 +12,7 @@ export default function CanvasShopPage({ initialCustomData, initialProducts }: {
   const [activeCategory, setActiveCategory] = useState("All");
   
   const customData = useCustomization();
-  const shopTitle = customData?.formData?.shopTitle || "Collection.";
+  const shopTitle = customData?.formData?.shopTitle;
   const rawCategories = customData?.formData?.shopCategories;
   
   const mappedProducts = (initialProducts || []).map(p => ({
@@ -41,7 +41,7 @@ export default function CanvasShopPage({ initialCustomData, initialProducts }: {
             [ Archive ]
           </div>
           <h1 className="font-serif text-5xl md:text-8xl tracking-tighter uppercase leading-[0.8] whitespace-pre-line">
-            {shopTitle.replace(" ", "\n")}
+            {shopTitle?.replace(" ", "\n")}
           </h1>
         </div>
         <div className="text-[10px] uppercase tracking-[0.2em] text-white/50">

@@ -55,15 +55,15 @@ function KineticHero() {
   const yText = useTransform(scrollYProgress, [0, 1], ["0%", "-50%"]);
 
   const customData = useCustomization();
-  const brandName = customData?.formData?.brandName || "HORIZON";
-  const heroTitle = customData?.formData?.heroTitle || "Pure Vision.";
-  const heroSubtitle = customData?.formData?.heroSubtitle || "";
-  const ctaText = customData?.formData?.ctaText || "Enter Vault";
-  const marqueeText1 = customData?.formData?.marqueeText1 || "AESTHETIC";
-  const marqueeText2 = customData?.formData?.marqueeText2 || "INTELLIGENCE";
+  const brandName = customData?.formData?.brandName;
+  const heroTitle = customData?.formData?.heroTitle;
+  const heroSubtitle = customData?.formData?.heroSubtitle;
+  const ctaText = customData?.formData?.ctaText;
+  const marqueeText1 = customData?.formData?.marqueeText1;
+  const marqueeText2 = customData?.formData?.marqueeText2;
 
   // Simple heuristic to style the last word of hero title
-  const titleWords = heroTitle.split(" ");
+  const titleWords = (heroTitle || "Horizon Studio").split(" ");
   const lastWord = titleWords.pop() || "";
   const initialTitle = titleWords.join(" ");
 
@@ -197,12 +197,12 @@ export default function HorizonHome({ initialCustomData, initialProducts }: { in
   const containerRef = useRef<HTMLDivElement>(null);
   
   const customData = useCustomization();
-  const shopTitle = customData?.formData?.shopTitle || "Curated Selection";
-  const ethosTitle = customData?.formData?.ethosTitle || "Our Ethos";
-  const ethosText = customData?.formData?.ethosText || "Design is not just what it looks like and feels like. \nDesign is how it works.";
-  const ethosCta = customData?.formData?.ethosCta || "Read Our Manifesto";
+  const shopTitle = customData?.formData?.shopTitle;
+  const ethosTitle = customData?.formData?.ethosTitle;
+  const ethosText = customData?.formData?.ethosText;
+  const ethosCta = customData?.formData?.ethosCta;
   
-  const titleWords = shopTitle.split(" ");
+  const titleWords = (shopTitle || "Selected Works").split(" ");
   const lastWord = titleWords.pop() || "";
   const initialTitle = titleWords.join(" ");
 
@@ -259,7 +259,7 @@ export default function HorizonHome({ initialCustomData, initialProducts }: { in
         >
           <span className="font-outfit text-[10px] uppercase tracking-[0.4em] text-black/40 font-medium mb-12 block">{ethosTitle}</span>
           <h2 className="font-cormorant text-4xl md:text-6xl font-light leading-snug mb-16 text-[#111]">
-            {ethosText.split('\\n').map((line: string, i: number) => (
+            {(ethosText || "").split('\\n').map((line: string, i: number) => (
               <span key={i} className={i === 1 ? "italic font-medium" : ""}>"{line}"{i === 0 && <br/>}</span>
             ))}
           </h2>

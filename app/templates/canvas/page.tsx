@@ -19,16 +19,16 @@ export default function CanvasHomePage({ initialCustomData, initialProducts }: {
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
   const customData = useCustomization();
-  const heroHeadline = customData?.formData?.heroHeadline || "Canvas.";
-  const heroSubtext = customData?.formData?.heroSubtext || "A study in restraint. High-fidelity objects stripped of all ornamentation.";
-  const primaryCta = customData?.formData?.primaryCta || "Enter Archive";
-  const shopTitle = customData?.formData?.shopTitle || "Selected Works.";
-  const philosophyQuote = customData?.formData?.philosophyQuote || "\"We surround ourselves with objects that demand nothing but our attention.\"";
-  const philosophyCta = customData?.formData?.philosophyCta || "Discover the Maison";
-  const editorialImage1 = customData?.formData?.editorialImage1 || "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2000&auto=format&fit=crop";
-  const editorialTitle = customData?.formData?.editorialTitle || "The Gallery Edit";
-  const editorialText = customData?.formData?.editorialText || "Our newest curation explores the intersection of brutalist architecture and soft modernism.";
-  const editorialImage2 = customData?.formData?.editorialImage2 || "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2000&auto=format&fit=crop";
+  const heroHeadline = customData?.formData?.heroHeadline;
+  const heroSubtext = customData?.formData?.heroSubtext;
+  const primaryCta = customData?.formData?.primaryCta;
+  const shopTitle = customData?.formData?.shopTitle;
+  const philosophyQuote = customData?.formData?.philosophyQuote;
+  const philosophyCta = customData?.formData?.philosophyCta;
+  const editorialImage1 = customData?.formData?.editorialImage1;
+  const editorialTitle = customData?.formData?.editorialTitle;
+  const editorialText = customData?.formData?.editorialText;
+  const editorialImage2 = customData?.formData?.editorialImage2;
 
   return (
     <div className="flex flex-col w-full bg-black text-white" ref={containerRef}>
@@ -108,7 +108,7 @@ export default function CanvasHomePage({ initialCustomData, initialProducts }: {
         <div className="w-full">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-24 border-b border-white/10 pb-6 gap-8">
             <h2 className="font-serif text-5xl md:text-7xl uppercase tracking-tighter whitespace-pre-line">
-              {shopTitle.replace(" ", "\n")}
+              {shopTitle?.replace(" ", "\n")}
             </h2>
             <Link href="/templates/canvas/services" className="text-[10px] uppercase tracking-[0.2em] hover:text-white/50 transition-colors">
               [ View All ]

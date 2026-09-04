@@ -14,10 +14,13 @@ export const useCustomization = () => {
       flattenedFormData = { ...flattenedFormData, ...context.siteData.global };
     }
     
+    // Resolve the active path: prioritize context.activePath for builder preview mode
+    const resolvedPath = context?.activePath || pathname;
+
     if (context?.siteData?.pages) {
       const activePage = context.siteData.pages.find((p: any) => {
-         if (p.path === '/') return pathname === '/' || pathname.endsWith('/origin') || pathname.endsWith('/velocity');
-         return pathname.includes(p.path);
+         if (p.path === '/') return resolvedPath === '/' || resolvedPath.endsWith('/origin') || resolvedPath.endsWith('/velocity');
+         return resolvedPath.includes(p.path);
       }) || context.siteData.pages[0];
 
       activePage?.sections?.forEach((section: any) => {

@@ -33,8 +33,8 @@ function Header({ initialCustomData, basePath }: { initialCustomData?: any, base
     }
   }, []);
 
-  const tBrandName = customData?.formData?.brandName || "ESSENTIALS.";
-  const tLogoUrl = customData?.formData?.logoUrl || "";
+  const tBrandName = customData?.formData?.brandName;
+  const tLogoUrl = customData?.formData?.logoUrl;
   const tAnnouncementText = customData?.formData?.announcementText !== undefined 
     ? customData.formData.announcementText 
     : "Free shipping on orders over 100";
@@ -214,16 +214,16 @@ function Footer({ initialCustomData, basePath }: { initialCustomData?: any, base
     }
   }, []);
 
-  const tBrandName = customData?.formData?.brandName || "ESSENTIALS.";
-  const tLogoUrl = customData?.formData?.logoUrl || "";
-  const footerText = customData?.formData?.footerText || "Curated everyday essentials built to last. No logos, no fuss, just quality materials.";
-  const socialInsta = customData?.formData?.socialInsta || "#";
-  const socialTwitter = customData?.formData?.socialTwitter || "#";
-  const socialFacebook = customData?.formData?.socialFacebook || "#";
-  const copyrightText = customData?.formData?.copyrightText || "© 2026 Essentials.";
-  const footerCol1 = customData?.formData?.footerCol1 || "Shop";
-  const footerCol2 = customData?.formData?.footerCol2 || "Company";
-  const footerCol3 = customData?.formData?.footerCol3 || "Social";
+  const tBrandName = customData?.formData?.brandName;
+  const tLogoUrl = customData?.formData?.logoUrl;
+  const footerText = customData?.formData?.footerText;
+  const socialInsta = customData?.formData?.socialInsta;
+  const socialTwitter = customData?.formData?.socialTwitter;
+  const socialFacebook = customData?.formData?.socialFacebook;
+  const copyrightText = customData?.formData?.copyrightText;
+  const footerCol1 = customData?.formData?.footerCol1;
+  const footerCol2 = customData?.formData?.footerCol2;
+  const footerCol3 = customData?.formData?.footerCol3;
 
   return (
     <footer className="border-t border-black/10 py-16 px-6 bg-[#F8F7F5] mt-auto">
@@ -245,20 +245,20 @@ function Footer({ initialCustomData, basePath }: { initialCustomData?: any, base
           </div>
           <div className="flex flex-col gap-3">
             <span className="font-bold tracking-widest uppercase text-xs mb-1">{footerCol3}</span>
-            {socialInsta && (
-              <Link href={socialInsta} className="flex items-center gap-2 hover:text-black/50 transition-colors">
+            {socialInsta && socialInsta !== "#" && (
+              <a href={socialInsta} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-black/50 transition-colors">
                 <InstagramIcon className="w-4 h-4" /> Instagram
-              </Link>
+              </a>
             )}
-            {socialTwitter && (
-              <Link href={socialTwitter} className="flex items-center gap-2 hover:text-black/50 transition-colors">
+            {socialTwitter && socialTwitter !== "#" && (
+              <a href={socialTwitter} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-black/50 transition-colors">
                 <TwitterIcon className="w-4 h-4" /> Twitter
-              </Link>
+              </a>
             )}
-            {socialFacebook && (
-              <Link href={socialFacebook} className="flex items-center gap-2 hover:text-black/50 transition-colors">
+            {socialFacebook && socialFacebook !== "#" && (
+              <a href={socialFacebook} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-black/50 transition-colors">
                 <FacebookIcon className="w-4 h-4" /> Facebook
-              </Link>
+              </a>
             )}
           </div>
         </div>

@@ -128,8 +128,8 @@ function Navbar() {
   const { cartCount, setIsCartOpen } = useShop();
   const pathname = usePathname();
   const customData = useCustomization();
-  const brandName = customData?.formData?.brandName || "NEXUS";
-  const logoUrl = customData?.formData?.logoUrl || "";
+  const brandName = customData?.formData?.brandName;
+  const logoUrl = customData?.formData?.logoUrl;
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -250,16 +250,16 @@ function Navbar() {
 function Footer() {
   const customData = useCustomization();
   
-  const footerText = customData?.formData?.footerText || "Defining the future of premium aesthetics. Engineered for the modern individual who refuses to compromise on quality and design.";
-  const socialInsta = customData?.formData?.socialInsta || "#";
-  const socialTwitter = customData?.formData?.socialTwitter || "#";
-  const socialFacebook = customData?.formData?.socialFacebook || "#";
-  const copyrightText = customData?.formData?.copyrightText || "© 2026 NEXUS PRO. ALL RIGHTS RESERVED.";
-  const footerCol1 = customData?.formData?.footerCol1 || "Arsenal";
-  const footerCol2 = customData?.formData?.footerCol2 || "Protocol";
-  const footerCol3 = customData?.formData?.footerCol3 || "Comms";
-  const tBrandName = customData?.formData?.brandName || "NEXUS";
-  const tLogoUrl = customData?.formData?.logoUrl || "";
+  const footerText = customData?.formData?.footerText;
+  const socialInsta = customData?.formData?.socialInsta;
+  const socialTwitter = customData?.formData?.socialTwitter;
+  const socialFacebook = customData?.formData?.socialFacebook;
+  const copyrightText = customData?.formData?.copyrightText;
+  const footerCol1 = customData?.formData?.footerCol1;
+  const footerCol2 = customData?.formData?.footerCol2;
+  const footerCol3 = customData?.formData?.footerCol3;
+  const tBrandName = customData?.formData?.brandName;
+  const tLogoUrl = customData?.formData?.logoUrl;
   return (
     <footer className="bg-[#050505] text-white pt-24 pb-12 border-t border-white/10">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
@@ -272,18 +272,18 @@ function Footer() {
               {footerText}
             </p>
             <div className="flex gap-4">
-              {socialInsta !== "#" && (
-                <a href={socialInsta} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#d4af37] hover:text-black transition-colors">
+              {socialInsta && socialInsta !== "#" && (
+                <a href={socialInsta} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#d4af37] hover:text-black transition-colors">
                   <Globe className="w-4 h-4" />
                 </a>
               )}
-              {socialTwitter !== "#" && (
-                <a href={socialTwitter} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#d4af37] hover:text-black transition-colors">
+              {socialTwitter && socialTwitter !== "#" && (
+                <a href={socialTwitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#d4af37] hover:text-black transition-colors">
                   <MessageCircle className="w-4 h-4" />
                 </a>
               )}
-              {socialFacebook !== "#" && (
-                <a href={socialFacebook} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#d4af37] hover:text-black transition-colors">
+              {socialFacebook && socialFacebook !== "#" && (
+                <a href={socialFacebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#d4af37] hover:text-black transition-colors">
                   <Mail className="w-4 h-4" />
                 </a>
               )}

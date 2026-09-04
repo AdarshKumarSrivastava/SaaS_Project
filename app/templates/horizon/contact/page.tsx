@@ -9,11 +9,11 @@ import { useCustomization } from "@/hooks/useCustomization";
 export default function HorizonContact() {
   const customData = useCustomization();
   
-  const tPreTitle = customData?.formData?.contactPreTitle || "Connect";
-  const tTitle = customData?.formData?.contactTitle || "Start a \nDialogue.";
-  const tAddress = customData?.formData?.contactAddress || "142 Aesthetics Blvd.\nDesign District\nNew York, NY 10012";
-  const tEmail = customData?.formData?.contactEmail || "studio@horizon.design";
-  const tPhone = customData?.formData?.contactPhone || "+81 3 1234 5678";
+  const tPreTitle = customData?.formData?.contactPreTitle;
+  const tTitle = customData?.formData?.contactTitle;
+  const tAddress = customData?.formData?.contactAddress;
+  const tEmail = customData?.formData?.contactEmail;
+  const tPhone = customData?.formData?.contactPhone;
   const { setToastMessage } = useHorizon();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -42,7 +42,7 @@ export default function HorizonContact() {
             {tPreTitle}
           </span>
           <h1 className="font-cormorant text-6xl md:text-[8rem] font-light tracking-tight leading-none text-[#111]">
-            {tTitle.split('\\n').map((line: string, i: number) => (
+            {(tTitle || "Get in Touch").split('\\n').map((line: string, i: number) => (
                 <span key={i} className={i === 1 ? "italic font-medium" : ""}>{line}{i === 0 && <br/>}</span>
             ))}
           </h1>
@@ -76,7 +76,7 @@ export default function HorizonContact() {
                     <MapPin className="w-3 h-3" strokeWidth={1.5} /> Global Headquarters
                   </h4>
                   <p className="font-cormorant text-3xl font-light text-black/80 leading-relaxed whitespace-pre-wrap">
-                    {tAddress.split('\\n').map((line: string, i: number) => (
+                    {(tAddress || "").split('\\n').map((line: string, i: number) => (
                       <span key={i}>{line}<br/></span>
                     ))}
                   </p>

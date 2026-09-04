@@ -103,15 +103,15 @@ export default function VelocityHomePage() {
   const yOffset = useTransform(smoothProgress, [0, 1], ["0%", "20%"]);
 
   const customData = useCustomization();
-  const brandName = customData?.formData?.brandName || "Velocity";
-  const heroSubtitle = customData?.formData?.heroSubtitle || "System // Override // Active";
-  const primaryCta = customData?.formData?.primaryCta || "Initialize Sequence";
-  const shopTitle = customData?.formData?.shopTitle || "The Arsenal";
-  const marqueeText1 = customData?.formData?.marqueeText1 || "Cybernetic Enhance";
-  const marqueeText2 = customData?.formData?.marqueeText2 || "Neo-Tokyo Aesthetics";
-  const heroImage = customData?.formData?.heroImage || "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2000&auto=format&fit=crop";
-  const featuredSubtitle = customData?.formData?.featuredSubtitle || "Latest Deployments";
-  const viewAllText = customData?.formData?.viewAllText || "Access Full Grid";
+  const brandName = customData?.formData?.brandName;
+  const heroSubtitle = customData?.formData?.heroSubtitle;
+  const primaryCta = customData?.formData?.primaryCta;
+  const shopTitle = customData?.formData?.shopTitle;
+  const marqueeText1 = customData?.formData?.marqueeText1;
+  const marqueeText2 = customData?.formData?.marqueeText2;
+  const heroImage = customData?.formData?.heroImage;
+  const featuredSubtitle = customData?.formData?.featuredSubtitle;
+  const viewAllText = customData?.formData?.viewAllText;
 
   return (
     <div className="flex flex-col w-full bg-[#050505] overflow-x-hidden" ref={containerRef}>

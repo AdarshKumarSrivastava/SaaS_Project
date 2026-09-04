@@ -130,7 +130,7 @@ function ProductsContent() {
   }, [searchParams]);
 
   const customData = useCustomization();
-  const shopTitle = customData?.formData?.shopTitle || "Catalog";
+  const shopTitle = customData?.formData?.shopTitle;
   const rawCategories = customData?.formData?.shopCategories;
   
   const displayProducts = customData?.products?.length > 0 ? customData.products : VELOCITY_PRODUCTS;

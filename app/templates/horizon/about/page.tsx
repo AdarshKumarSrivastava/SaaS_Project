@@ -9,10 +9,10 @@ import { useCustomization } from "@/hooks/useCustomization";
 export default function HorizonAbout() {
   const customData = useCustomization();
   
-  const tTitle = customData?.formData?.aboutTitle || "We believe that aesthetic excellence is not a luxury, but a fundamental requirement for the modern digital experience.";
-  const tContent1 = customData?.formData?.aboutText1 || "Uncompromising Quality.";
-  const tContent2 = customData?.formData?.aboutText2 || "Horizon was founded on a singular principle: digital assets should be crafted with the same meticulous attention to detail as physical luxury goods. We reject the generic, the templated, and the uninspired.";
-  const tContent3 = customData?.formData?.aboutText3 || "Every UI kit, typography pairing, and motion asset in our archive is designed to elevate your brand from merely functional to profoundly memorable. We exist for the creators who push boundaries.";
+  const tTitle = customData?.formData?.aboutTitle;
+  const tContent1 = customData?.formData?.aboutText1;
+  const tContent2 = customData?.formData?.aboutText2;
+  const tContent3 = customData?.formData?.aboutText3;
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ 
     target: containerRef,

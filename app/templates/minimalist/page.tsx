@@ -24,11 +24,11 @@ export default function StarterTemplateHome({ initialCustomData, initialProducts
     }
   }, []);
 
-  const tHeroTitle = customData?.formData?.heroTitle || "Simplicity is the ultimate sophistication.";
-  const tTagline = customData?.formData?.tagline || "Curated everyday essentials built to last. No logos, no fuss, just quality materials and timeless design.";
-  const tCta = customData?.formData?.primaryCta || "Shop Collection";
-  const tAboutTitle = customData?.formData?.aboutTitle || "Built for everyday life.";
-  const tAboutDescription = customData?.formData?.aboutDescription || "We believe in buying less but better. Our products are designed in-house and manufactured using sustainable practices to ensure they stand the test of time. No fast fashion, just enduring style.";
+  const tHeroTitle = customData?.formData?.heroTitle;
+  const tTagline = customData?.formData?.tagline;
+  const tCta = customData?.formData?.primaryCta;
+  const tAboutTitle = customData?.formData?.aboutTitle;
+  const tAboutDescription = customData?.formData?.aboutDescription;
 
   return (
     <>
@@ -73,7 +73,7 @@ export default function StarterTemplateHome({ initialCustomData, initialProducts
       <section className="px-6 py-24 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-end mb-16 border-b border-black/5 pb-6">
-            <h2 className="font-heading text-4xl tracking-tighter text-[#111111]">{customData?.formData?.featuredTitle || "New Arrivals"}</h2>
+            <h2 className="font-heading text-4xl tracking-tighter text-[#111111]">{customData?.formData?.featuredTitle}</h2>
             <Link href={`${basePath}/products`} className="text-xs font-bold uppercase tracking-widest text-[#111111] hover:text-[#FF4D00] transition-colors">
               View all
             </Link>

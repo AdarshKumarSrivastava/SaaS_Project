@@ -1,413 +1,27 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import React from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ArrowLeft, Loader2, Save, Undo, Redo, LayoutTemplate,
-  Monitor, Smartphone, Tablet, Search, X, ChevronRight, Settings, Image as ImageIcon, Type, Link as LinkIcon
+  ArrowLeft, Loader2, Save, Undo, Redo, 
+  Monitor, Smartphone, Tablet, Search
 } from 'lucide-react';
-import { apiClient } from '@/lib/api-client';
-import { resolveSiteData } from '@/lib/schema';
 import { RightSidebar } from '@/components/builder/RightSidebar';
-import { TemplateRenderer } from '@/components/TemplateRenderer';
-
-interface PageData {
-  id: string;
-  name: string;
-  path: string;
-  sections: any[];
-  title?: string;
-  description?: string;
-  seoTitle?: string;
-  seoDescription?: string;
-}
-
-interface SiteData {
-  pages: PageData[];
-  global: { brandName: string; templateSlug?: string };
-}
-
-interface SelectedElement {
-  fieldKey: string | null;
-  sectionId: string | null;
-  pageId: string | null;
-  componentId: string | null;
-  tag: string;
-  text?: string;
-  src?: string;
-  rect: { top: number; left: number; width: number; height: number };
-}
+import { useBuilder } from '@/context/BuilderContext';
 
 export default function BuilderPage() {
   const router = useRouter();
   const params = useParams();
-  const searchParams = useSearchParams();
   const siteId = params?.siteId as string;
 
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [isDirty, setIsDirty] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  const editorScrollRef = useRef<HTMLDivElement>(null);
-  const [siteData, setSiteData] = useState<SiteData | null>(null);
-  const [products, setProducts] = useState<any[]>([]);
-  
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [device, setDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
-  
-  const [history, setHistory] = useState<SiteData[]>([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
-  const historyIndexRef = useRef(-1);
-  const skipHistoryRecord = useRef(false);
-
-  useEffect(() => {
-    historyIndexRef.current = historyIndex;
-  }, [historyIndex]);
-
-  const [selectedElement, setSelectedElement] = useState<SelectedElement | null>(null);
-  const [cmdKOpen, setCmdKOpen] = useState(false);
-
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-
-  useEffect(() => {
-    const fetchSite = async () => {
-      try {
-        const [siteRes, productsRes] = await Promise.all([
-          apiClient.get(`/api/sites/${siteId}`),
-          apiClient.get(`/api/sites/${siteId}/products`).catch(() => [])
-        ]);
-        
-        if (Array.isArray(productsRes)) setProducts(productsRes);
-
-        let loadedData: SiteData;
-        if (siteRes.schema && typeof siteRes.schema === 'object' && !Array.isArray(siteRes.schema)) {
-          loadedData = resolveSiteData(siteRes.schema, siteRes.name) as SiteData;
-        } else {
-          throw new Error("Site lacks an initialized schema.");
-        }
-        
-        setSiteData(loadedData);
-        
-        const pageQuery = searchParams?.get('page');
-        if (pageQuery) {
-          const idx = loadedData.pages.findIndex(p => p.path === pageQuery || p.id === pageQuery);
-          if (idx !== -1) setCurrentStepIndex(idx);
-        }
-      } catch (err) {
-        console.error(err);
-        router.push('/dashboard');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchSite();
-  }, [siteId, router]);
-
-  const templateSlug = (siteData?.global as any)?.templateSlug || 'velocity';
-
-  useEffect(() => {
-    if (iframeRef.current && iframeRef.current.contentWindow && siteData) {
-      const activePage = siteData.pages[currentStepIndex];
-      iframeRef.current.contentWindow.postMessage(
-        { type: 'UPDATE_SCHEMA', payload: { siteData, products, activePath: activePage?.path === '/' ? '/' : activePage?.path } },
-        '*'
-      );
-    }
-  }, [siteData, products, currentStepIndex]);
-
-  useEffect(() => {
-    // Route-level body lock to guarantee no document scrolling while in Builder
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-    
-    return () => {
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
-    };
-  }, []);
-
-  const focusPreviewElement = (fieldKey: string | null, sectionId: string | null) => {
-    window.postMessage({
-      type: 'FOCUS_ELEMENT',
-      fieldKey,
-      sectionId
-    }, '*');
-  };
-
-  useEffect(() => {
-    const handleMessage = (e: MessageEvent) => {
-      if (!siteData) return;
-      
-      if (e.data?.type === 'ELEMENT_SELECTED') {
-        setSelectedElement(e.data);
-      } else if (e.data?.type === 'TEMPLATE_READY') {
-        if (iframeRef.current && iframeRef.current.contentWindow && siteData) {
-          const activePage = siteData.pages[currentStepIndex];
-          iframeRef.current.contentWindow.postMessage(
-            { type: 'UPDATE_SCHEMA', payload: { siteData, products, activePath: activePage?.path === '/' ? '/' : activePage?.path } },
-            '*'
-          );
-        }
-      } else if (e.data?.type === 'NAVIGATE') {
-        const path = e.data.path;
-        const activePathStr = path.replace(`/sites/${siteId}/builder`, '') || '/';
-        const page = siteData.pages.find((p: any) => p.path === activePathStr || activePathStr.startsWith(p.path + '/') || (p.path === '/' && activePathStr === ''));
-        if (page) {
-          const idx = siteData.pages.findIndex((p: any) => p.id === page.id);
-          if (idx !== -1 && idx !== currentStepIndex) {
-            setCurrentStepIndex(idx);
-            router.replace(`?page=${siteData.pages[idx].id}`, { scroll: false });
-          }
-        }
-      }
-    };
-    
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [siteData, currentStepIndex]);
-
-
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isDirty) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [isDirty]);
-
-  useEffect(() => {
-    if (!siteData) return;
-    if (skipHistoryRecord.current) {
-       skipHistoryRecord.current = false;
-       return;
-    }
-    
-    setHistory(prev => {
-       const newHistory = prev.slice(0, historyIndexRef.current + 1);
-       newHistory.push(JSON.parse(JSON.stringify(siteData)));
-       
-       if (newHistory.length > 50) {
-           newHistory.shift(); 
-       }
-       
-       setHistoryIndex(newHistory.length - 1);
-       setIsDirty(true);
-       
-       return newHistory;
-    });
-  }, [siteData]);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setCmdKOpen(o => !o);
-      }
-      if (e.key === 'Escape') {
-        setSelectedElement(null);
-        setCmdKOpen(false);
-        if (iframeRef.current?.contentWindow) {
-           iframeRef.current.contentWindow.postMessage({ type: 'CLEAR_SELECTION' }, '*');
-        }
-      }
-      if (e.key === 'z' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
-        e.preventDefault();
-        undo();
-      }
-      if (e.key === 'z' && (e.metaKey || e.ctrlKey) && e.shiftKey) {
-        e.preventDefault();
-        redo();
-      }
-      if (e.key === 's' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        handleSave();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [historyIndex, history]);
-
-  const undo = () => {
-    if (historyIndex > 0) {
-      skipHistoryRecord.current = true;
-      setHistoryIndex(prev => prev - 1);
-      setSiteData(JSON.parse(JSON.stringify(history[historyIndex - 1])));
-    }
-  };
-
-  const redo = () => {
-    if (historyIndex < history.length - 1) {
-      skipHistoryRecord.current = true;
-      setHistoryIndex(prev => prev + 1);
-      setSiteData(JSON.parse(JSON.stringify(history[historyIndex + 1])));
-    }
-  };
-
-  const handleSave = async () => {
-    if (!siteData || saving) return;
-    setSaving(true);
-    try {
-      // Must use /schema endpoint to persist full builder schema state
-      await apiClient.patch(`/api/sites/${siteId}/schema`, { schema: siteData });
-      setIsDirty(false);
-      setSaveSuccess(true);
-      setTimeout(() => {
-        router.push(`/sites/${siteId}/admin`);
-      }, 1000);
-    } catch (error) {
-      console.error('Failed to save:', error);
-      alert('Unable to save changes. Your edits are still here. Please try again.');
-      setSaving(false);
-    }
-  };
-
-  
-  const moveSection = (pageId: string, sectionId: string, direction: 'up' | 'down') => {
-    if (!siteData) return;
-    setSiteData(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        pages: prev.pages.map(page => {
-          if (page.id !== pageId) return page;
-          const idx = page.sections.findIndex(s => s.id === sectionId || s.type.toLowerCase() === sectionId.toLowerCase());
-          if (idx === -1) return page;
-          if (direction === 'up' && idx === 0) return page;
-          if (direction === 'down' && idx === page.sections.length - 1) return page;
-          
-          const newSections = [...page.sections];
-          const temp = newSections[idx];
-          newSections[idx] = newSections[direction === 'up' ? idx - 1 : idx + 1];
-          newSections[direction === 'up' ? idx - 1 : idx + 1] = temp;
-          
-          return { ...page, sections: newSections };
-        })
-      };
-    });
-  };
-
-  
-  const addSection = (pageId: string, sectionType: string) => {
-    if (!siteData) return;
-    setSiteData(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        pages: prev.pages.map(page => {
-          if (page.id !== pageId) return page;
-          const newSection = {
-            id: sectionType.toLowerCase() + '-' + Date.now(),
-            type: sectionType,
-            props: {}
-          };
-          return {
-            ...page,
-            sections: [...page.sections, newSection]
-          };
-        })
-      };
-    });
-    setCmdKOpen(false);
-  };
-const deleteSection = (pageId: string, sectionId: string) => {
-    if (!siteData) return;
-    setSiteData(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        pages: prev.pages.map(page => {
-          if (page.id !== pageId) return page;
-          return {
-            ...page,
-            sections: page.sections.filter(s => s.id !== sectionId && s.type.toLowerCase() !== sectionId.toLowerCase())
-          };
-        })
-      };
-    });
-    setSelectedElement(null);
-  };
-
-  const updateTheme = (newTheme: any) => {
-    if (!siteData) return;
-    setSiteData(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        global: {
-          ...prev.global,
-          theme: newTheme
-        }
-      };
-    });
-  };
-
-  const updateProduct = async (updatedProduct: any) => {
-    // Optimistic UI update
-    setProducts(prev => {
-      const idx = prev.findIndex(p => p.id === updatedProduct.id);
-      if (idx !== -1) {
-        const next = [...prev];
-        next[idx] = updatedProduct;
-        return next;
-      }
-      return [...prev, updatedProduct];
-    });
-
-    try {
-      // If it's a demo product (o1, v1) or a completely new one, POST it.
-      if (updatedProduct.id.startsWith('o') || updatedProduct.id.startsWith('v') || updatedProduct.id.startsWith('new-')) {
-        const res = await apiClient.post(`/api/sites/${siteId}/products`, {
-           ...updatedProduct,
-           id: undefined, // Let DB generate ID
-           slug: undefined
-        });
-        // Replace temp ID with real ID
-        setProducts(prev => prev.map(p => p.id === updatedProduct.id ? res : p));
-      } else {
-        // Real DB product
-        await apiClient.patch(`/api/sites/${siteId}/products/${updatedProduct.id}`, updatedProduct);
-      }
-    } catch (err) {
-      console.error('Failed to save product', err);
-    }
-  };
-
-const updatePropByFieldKey = (fieldKey: string, value: any) => {
-    if (!siteData) return;
-    
-    // fieldKey format: home.hero.title
-    const parts = fieldKey.split('.');
-    const pageId = parts[0];
-    const sectionId = parts[1];
-    const propKey = parts[2];
-
-    setSiteData(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        pages: prev.pages.map(page => {
-          if (page.id !== pageId) return page;
-          return {
-            ...page,
-            sections: page.sections.map(section => {
-              if (section.id !== sectionId && section.type.toLowerCase() !== sectionId) return section;
-              return {
-                ...section,
-                props: {
-                  ...section.props,
-                  [propKey]: value
-                }
-              };
-            })
-          };
-        })
-      };
-    });
-  };
+  const { 
+    siteData, products, device, setDevice, currentStepIndex, setCurrentStepIndex, 
+    loading, saving, isDirty, saveSuccess, selectedElement, 
+    cmdKOpen, setCmdKOpen, handleSave, undo, redo, canUndo, canRedo, 
+    updatePropByFieldKey, moveSection, addSection, deleteSection, 
+    updateTheme, updateProduct, focusPreviewElement, iframeRef, editorScrollRef 
+  } = useBuilder();
 
   if (loading || !siteData) {
     return (
@@ -447,10 +61,10 @@ const updatePropByFieldKey = (fieldKey: string, value: any) => {
         </div>
 
         <div className="flex items-center gap-3">
-          <button onClick={undo} disabled={historyIndex <= 0} className="p-2 text-white/40 hover:text-white disabled:opacity-30 transition-colors">
+          <button onClick={undo} disabled={!canUndo} className="p-2 text-white/40 hover:text-white disabled:opacity-30 transition-colors">
             <Undo className="w-4 h-4" />
           </button>
-          <button onClick={redo} disabled={historyIndex >= history.length - 1} className="p-2 text-white/40 hover:text-white disabled:opacity-30 transition-colors">
+          <button onClick={redo} disabled={!canRedo} className="p-2 text-white/40 hover:text-white disabled:opacity-30 transition-colors">
             <Redo className="w-4 h-4" />
           </button>
           <button onClick={handleSave} disabled={saving || (!isDirty && !saveSuccess)} className={`px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 transition-colors ${saveSuccess ? 'bg-green-500 text-white' : 'bg-white text-black hover:bg-white/90 disabled:opacity-50'}`}>
@@ -542,7 +156,7 @@ const updatePropByFieldKey = (fieldKey: string, value: any) => {
                       <span className="text-xs text-white/30 group-hover:text-blue-400/50 font-mono">{p.path}</span>
                     </button>
                   ))}
-                  <div className="text-xs font-bold text-white/30 px-3 pt-4 pb-1 uppercase tracking-wider">Add Section to {activePage.name}</div>
+                  <div className="text-xs font-bold text-white/30 px-3 pt-4 pb-1 uppercase tracking-wider">Add Section to {activePage?.name || 'Page'}</div>
                   {['Hero', 'FeaturedProducts', 'Manifesto', 'Testimonials', 'Gallery', 'FAQ'].map(sec => (
                     <button 
                       key={sec}

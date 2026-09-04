@@ -1,4 +1,4 @@
-import { TEMPLATE_REGISTRY } from './template-registry';
+import { TEMPLATE_REGISTRY, normalizeTemplateKey, getTemplateConfig } from './template-registry';
 
 /**
  * Deep merges site overrides into the canonical default schema.
@@ -100,8 +100,9 @@ export function extractOverrides(defaultSchema: any, modifiedSchema: any) {
  * Convenience function to resolve a site's full schema directly from its DB schema object
  */
 export function resolveSiteData(siteSchema: any, siteName: string = 'My Site') {
-  const templateSlug = siteSchema?.global?.templateSlug || 'velocity';
-  const templateConfig = TEMPLATE_REGISTRY[templateSlug] || TEMPLATE_REGISTRY['default'];
+  const rawSlug = siteSchema?.global?.templateSlug;
+  const templateSlug = normalizeTemplateKey(rawSlug, siteSchema || siteName);
+  const templateConfig = getTemplateConfig(templateSlug, siteSchema || siteName);
   const defaultSchema = templateConfig.defaultSchema(siteName);
   
   return mergeSchema(defaultSchema, siteSchema);

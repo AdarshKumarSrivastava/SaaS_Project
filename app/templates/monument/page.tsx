@@ -25,11 +25,11 @@ export default function MonumentTemplateHome({ initialCustomData, initialProduct
     }
   }, []);
 
-  const tHeroTitle = customData?.formData?.heroTitle || "MONUMENT\nFOR THE NEXT ERA";
-  const tTagline = customData?.formData?.tagline || "We design monolithic structures that redefine the urban landscape through brutalist elegance and sustainable precision.";
-  const tCta = customData?.formData?.primaryCta || "Explore Archive";
-  const tAboutTitle = customData?.formData?.aboutTitle || "STRUCTURAL INTEGRITY.";
-  const tAboutDescription = customData?.formData?.aboutDescription || "Architecture is not merely about space; it is about the enduring legacy of form. We construct environments that outlast trends.";
+  const tHeroTitle = customData?.formData?.heroTitle;
+  const tTagline = customData?.formData?.tagline;
+  const tCta = customData?.formData?.primaryCta;
+  const tAboutTitle = customData?.formData?.aboutTitle;
+  const tAboutDescription = customData?.formData?.aboutDescription;
 
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress: heroScroll } = useScroll({

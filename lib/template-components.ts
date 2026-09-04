@@ -345,6 +345,10 @@ export const TEMPLATE_COMPONENTS: Record<string, Record<string, React.ComponentT
   },
 };
 
+// Aliases and fallback support
+TEMPLATE_COMPONENTS['nexus_pro'] = TEMPLATE_COMPONENTS['nexus-pro'];
+TEMPLATE_COMPONENTS['default'] = TEMPLATE_COMPONENTS['velocity'];
+
 export const TEMPLATE_LAYOUTS: Record<string, React.ComponentType<any>> = {
   'atelier': atelier_layout,
   'aurelia': aurelia_layout,
@@ -354,10 +358,41 @@ export const TEMPLATE_LAYOUTS: Record<string, React.ComponentType<any>> = {
   'minimalist': minimalist_layout,
   'monument': monument_layout,
   'nexus-pro': nexus_pro_layout,
+  'nexus_pro': nexus_pro_layout,
   'noire': noire_layout,
   'origin': origin_layout,
   'quantum': quantum_layout,
   'vanta': vanta_layout,
   'velocity': velocity_layout,
+  'default': velocity_layout,
 };
+
+import { normalizeTemplateKey } from './template-registry';
+
+/**
+ * Centralized template resolver: Single Source of Truth
+ * Resolves the canonical template slug, route component map, and layout.
+ */
+export function resolveTemplateRenderer(templateSlugOrSiteData: any) {
+  let rawSlug: string | undefined;
+  let hintData: any;
+
+  if (typeof templateSlugOrSiteData === 'string') {
+    rawSlug = templateSlugOrSiteData;
+  } else if (templateSlugOrSiteData && typeof templateSlugOrSiteData === 'object') {
+    rawSlug = templateSlugOrSiteData.global?.templateSlug || templateSlugOrSiteData.templateSlug || templateSlugOrSiteData.category;
+    hintData = templateSlugOrSiteData;
+  }
+
+  const slug = normalizeTemplateKey(rawSlug, hintData);
+  const templateRoutes = TEMPLATE_COMPONENTS[slug] || TEMPLATE_COMPONENTS['velocity'];
+  const TemplateLayout = TEMPLATE_LAYOUTS[slug] || TEMPLATE_LAYOUTS['velocity'] || React.Fragment;
+
+  return {
+    templateSlug: slug,
+    templateRoutes,
+    TemplateLayout,
+  };
+}
+
 

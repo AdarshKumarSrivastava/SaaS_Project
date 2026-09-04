@@ -113,6 +113,25 @@ export function BuilderOverlay() {
     };
 
     const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      
+      // 1. Intercept Links to prevent iframe breakout
+      const anchor = target.closest('a');
+      if (anchor) {
+         e.preventDefault();
+         e.stopPropagation();
+         
+         const isEditable = target.closest('[data-field-key]') || target.closest('[data-section-id]');
+         if (!isEditable) {
+             const href = anchor.getAttribute('href');
+             if (href) {
+                window.parent.postMessage({ type: 'NAVIGATE', path: href }, '*');
+             }
+             return;
+         }
+      }
+
+      // 2. Select Editable Elements
       if (!hoveredElementRef.current) return;
       
       e.preventDefault();
@@ -182,6 +201,7 @@ export function BuilderOverlay() {
     if (scrollContainer) {
       scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
     }
+    window.addEventListener('scroll', handleScroll, { passive: true });
     
     // Also observe the entire body to catch any layout shifts that ResizeObserver on single elements might miss
     const bodyObserver = new ResizeObserver(() => {
@@ -200,6 +220,7 @@ export function BuilderOverlay() {
       if (scrollContainer) {
         scrollContainer.removeEventListener('scroll', handleScroll);
       }
+      window.removeEventListener('scroll', handleScroll);
       bodyObserver.disconnect();
       resizeObserver.disconnect();
       document.removeEventListener('mousemove', handleMouseMove, true);

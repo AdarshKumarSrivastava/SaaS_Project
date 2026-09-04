@@ -9,15 +9,15 @@ import { useCustomization } from "@/hooks/useCustomization";
 export default function CanvasAboutPage() {
   const customData = useCustomization();
   
-  const tTitle = customData?.formData?.aboutTitle || "The Shape \nOf Things.";
-  const tContent1 = customData?.formData?.aboutText1 || "Canvas is an independent design house focused on creating objects of uncompromising quality. We believe that true luxury lies in restraint and negative space.";
-  const tContent2 = customData?.formData?.aboutText2 || "Second text block.";
-  const tContent3 = customData?.formData?.aboutText3 || "Third text block.";
-  const tImage = customData?.formData?.aboutHeroImage || "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2000&auto=format&fit=crop";
-  const tFeature1Title = customData?.formData?.feature1Title || "The Gallery";
-  const tFeature1Desc = customData?.formData?.aboutText2 || "Our flagship space was conceived as a brutalist sanctuary in the heart of the city. A place where objects can breathe and be appreciated for their intrinsic forms.";
-  const tFeature2Title = customData?.formData?.feature2Title || "The Collection";
-  const tFeature2Desc = customData?.formData?.aboutText3 || "We curate pieces from independent designers globally. Each object must meet our strict criteria: uncompromising quality, bold geometry, and absolute permanence.";
+  const tTitle = customData?.formData?.aboutTitle;
+  const tContent1 = customData?.formData?.aboutText1;
+  const tContent2 = customData?.formData?.aboutText2;
+  const tContent3 = customData?.formData?.aboutText3;
+  const tImage = customData?.formData?.aboutHeroImage;
+  const tFeature1Title = customData?.formData?.feature1Title;
+  const tFeature1Desc = customData?.formData?.aboutText2;
+  const tFeature2Title = customData?.formData?.feature2Title;
+  const tFeature2Desc = customData?.formData?.aboutText3;
   
   return (
     <div className="flex flex-col w-full bg-black text-white min-h-screen">
@@ -34,7 +34,7 @@ export default function CanvasAboutPage() {
             [ Maison ]
           </div>
           <h1 className="font-serif text-5xl md:text-8xl lg:text-[100px] tracking-tighter uppercase leading-[0.8] mb-12">
-            {tTitle.split('\\n').map((line: string, i: number) => (
+            {(tTitle || "").split('\\n').map((line: string, i: number) => (
               <span key={i}>{line}<br/></span>
             ))}
           </h1>
