@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import { useRef } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import Link from "next/link";
@@ -7,6 +9,8 @@ import { MoveRight } from "lucide-react";
 import { useCustomization } from "@/hooks/useCustomization";
 
 export default function HorizonAbout() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const customData = useCustomization();
   
   const tTitle = customData?.formData?.aboutTitle;
@@ -69,7 +73,7 @@ export default function HorizonAbout() {
                 {tContent3}
               </p>
               
-              <Link href="/templates/horizon/products" className="group inline-flex items-center gap-4 pointer-events-auto" style={{ cursor: "none" }}>
+              <Link href={`${basePath}/products`} className="group inline-flex items-center gap-4 pointer-events-auto" style={{ cursor: "none" }}>
                 <span className="font-outfit text-xs uppercase tracking-[0.2em] text-black group-hover:text-black/60 font-medium transition-colors duration-500 pb-1 border-b border-black group-hover:border-black/20">
                   Explore The Collection
                 </span>

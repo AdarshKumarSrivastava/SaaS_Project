@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ALL_PRODUCTS, useCart } from "../CartContext";
@@ -8,6 +10,8 @@ import { Heart } from "lucide-react";
 import { useCustomization } from "@/hooks/useCustomization";
 
 export default function EssenceProductsPage() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { currencySymbol } = useCart();
   const { addToCart, searchQuery, toggleWishlist, isInWishlist } = useCart();
   const [activeCategory, setActiveCategory] = useState<string>("All");
@@ -86,7 +90,7 @@ export default function EssenceProductsPage() {
                 transition={{ duration: 0.8, delay: idx * 0.05 }}
                 className="group cursor-pointer"
               >
-                <Link href={`/templates/essence/products/${product.id}`}>
+                <Link href={`${basePath}/products/${product.id}`}>
                   <div className="relative aspect-[3/4] mb-6 overflow-hidden bg-[#E3D8C8]">
                     <img 
                       src={product.image} 

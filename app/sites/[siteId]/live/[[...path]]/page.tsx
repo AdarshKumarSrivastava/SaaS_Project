@@ -1,12 +1,10 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
-import { CustomizationProvider } from '@/context/CustomizationContext';
+import { TemplateRenderer } from '@/components/TemplateRenderer';
 import { resolveSiteData } from '@/lib/schema';
-import { resolveTemplateRenderer } from '@/lib/template-components';
 
 export default async function LiveSitePage({ params }: { params: Promise<{ siteId: string, path?: string[] }> | { siteId: string, path?: string[] } }) {
-  // Await params if it's a promise (Next.js 15+ behavior)
   const resolvedParams = await params;
   const { siteId, path } = resolvedParams;
 
@@ -45,7 +43,6 @@ export default async function LiveSitePage({ params }: { params: Promise<{ siteI
 
   // 3. Resolve canonical schema
   const schema = resolveSiteData(deploymentSchema, site.name);
-  const { templateSlug, templateRoutes, TemplateLayout } = resolveTemplateRenderer(schema);
 
   // 4. Resolve path
   let relativePath = '/';
@@ -53,28 +50,14 @@ export default async function LiveSitePage({ params }: { params: Promise<{ siteI
     relativePath = '/' + path.join('/');
   }
 
-  let TemplateComponent = templateRoutes ? templateRoutes[relativePath] : null;
-
-  if (!TemplateComponent && templateRoutes) {
-    if (path && path.length === 2 && path[0] === 'products') {
-       TemplateComponent = templateRoutes['/products/[id]'];
-    }
-  }
-
-  // Graceful fallback to root
-  if (!TemplateComponent && templateRoutes) {
-    TemplateComponent = templateRoutes['/'];
-  }
-
-  if (!TemplateComponent) {
-     return notFound();
-  }
-
   return (
-    <CustomizationProvider siteData={schema} products={site.products} basePath={`/sites/${siteId}/live`}>
-      <TemplateLayout>
-        <TemplateComponent params={resolvedParams} />
-      </TemplateLayout>
-    </CustomizationProvider>
+    <TemplateRenderer
+      siteData={schema}
+      products={site.products}
+      basePath={`/sites/${siteId}/live`}
+      activePath={relativePath}
+      isBuilderContext={false}
+      siteId={site.id}
+    />
   );
 }

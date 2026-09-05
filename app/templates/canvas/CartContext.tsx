@@ -1,8 +1,12 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
+import { useRouter, usePathname } from "next/navigation";
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
-const basePath = '/templates/canvas';
+const basePath = "";
 
 export type Product = {
   id: string;
@@ -71,6 +75,12 @@ type CartContextType = {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children , initialCustomData }: { children: ReactNode, initialCustomData?: any  }) {
+  const { customer, isAuthenticated, siteId, openAuthModal, registerCartHandler } = useCustomerAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const storageKey = `cart_${siteId || 'default'}_${customer?.id || 'guest'}`;
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const [items, setItems] = useState<CartItem[]>([]);
 
   const symbolMap: Record<string, string> = {
@@ -99,32 +109,37 @@ export function CartProvider({ children , initialCustomData }: { children: React
   const [reviews, setReviews] = useState<Review[]>([]);
 
   useEffect(() => {
-    const savedCart = localStorage.getItem("canvas_cart");
-    const savedWishlist = localStorage.getItem("canvas_wishlist");
-    const savedReviews = localStorage.getItem("canvas_reviews");
+    if (typeof window === 'undefined') return;
+    const savedCart = localStorage.getItem(storageKey);
     if (savedCart) {
       try {
         setItems(JSON.parse(savedCart));
-      } catch (e) {
-        console.error("Failed to parse cart");
+      } catch (e) {}
+    } else {
+      setItems([]);
+    }
+
+    if (isAuthenticated) {
+      const pendingItem = sessionStorage.getItem('pending_cart_add');
+      if (pendingItem) {
+        sessionStorage.removeItem('pending_cart_add');
+        try {
+          const parsed = JSON.parse(pendingItem);
+          const p = parsed.product || parsed;
+          if (p && p.id) {
+            setItems((prev) => {
+              const exists = prev.find((i) => i.product.id === p.id);
+              if (exists) {
+                return prev.map((i) => i.product.id === p.id ? { ...i, quantity: i.quantity + (parsed.quantity || 1) } : i);
+              }
+              return [...prev, { product: p, quantity: parsed.quantity || 1 }];
+            });
+            // item restored
+          }
+        } catch (e) {}
       }
     }
-    if (savedWishlist) {
-      try {
-        setWishlist(JSON.parse(savedWishlist));
-      } catch (e) {
-        console.error("Failed to parse wishlist");
-      }
-    }
-    if (savedReviews) {
-      try {
-        setReviews(JSON.parse(savedReviews));
-      } catch (e) {
-        console.error("Failed to parse reviews");
-      }
-    }
-    setMounted(true);
-  }, []);
+  }, [customer?.id, siteId, isAuthenticated, storageKey]);
 
   useEffect(() => {
     if (mounted) {
@@ -254,6 +269,14 @@ export function CartProvider({ children , initialCustomData }: { children: React
     }
   };;
 
+  useEffect(() => {
+    if (registerCartHandler) {
+      return registerCartHandler((p: any, q?: number) => {
+        addToCart(p, q || 1);
+      });
+    }
+  }, [registerCartHandler]);
+
   return (
     <CartContext.Provider
       value={{
@@ -286,6 +309,8 @@ export function CartProvider({ children , initialCustomData }: { children: React
 }
 
 export function useCart() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const context = useContext(CartContext);
   if (context === undefined) {
     throw new Error("useCart must be used within a CartProvider");

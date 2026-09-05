@@ -61,6 +61,8 @@ model SiteRole {
   role   String // owner | editor | viewer
   site   Site   @relation(fields: [siteId], references: [id])
   user   User   @relation(fields: [userId], references: [id])
+
+  @@index([siteId, userId])
 }
 
 model SiteCredential {
@@ -156,6 +158,8 @@ model Category {
   products    Product[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@index([siteId])
 }
 
 model Brand {
@@ -169,6 +173,8 @@ model Brand {
   products    Product[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@index([siteId])
 }
 
 model Product {
@@ -201,6 +207,9 @@ model Product {
   reviews           Review[]
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
+
+  @@index([siteId, createdAt(sort: Desc)])
+  @@index([siteId, status])
 }
 
 model ProductVariant {

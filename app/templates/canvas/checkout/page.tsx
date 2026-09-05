@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import { motion } from "framer-motion";
 import { useCart } from "../CartContext";
 import Link from "next/link";
@@ -50,6 +52,8 @@ export default function CanvasCheckoutPage() {
 
   
   async function handlePlaceOrder(e: React.FormEvent) {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
     e.preventDefault();
     setIsPlacingOrder(true);
     try {
@@ -106,7 +110,7 @@ export default function CanvasCheckoutPage() {
             Acquisition complete. We have cataloged your order details in your inbox.
           </p>
           <Link 
-            href={`\${basePath}/products`}
+            href={`${basePath}/products`}
             className="border border-white/30 px-8 py-5 text-[10px] uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-colors inline-block w-full sm:w-auto"
           >
             Return to Index
@@ -134,7 +138,7 @@ export default function CanvasCheckoutPage() {
             Your archive is currently empty. Checkout aborted.
           </p>
           <Link 
-            href={`\${basePath}/products`}
+            href={`${basePath}/products`}
             className="border border-white/30 px-8 py-4 text-[10px] uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-colors inline-block"
           >
             Return to Index
@@ -148,7 +152,7 @@ export default function CanvasCheckoutPage() {
     return (
       <div className="w-full bg-black min-h-screen pt-32 pb-32 px-6 md:px-12 text-white">
         <div className="max-w-[800px] mx-auto">
-          <Link href={`\${basePath}/cart`} className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/50 hover:text-white transition-colors mb-12 w-fit">
+          <Link href={`${basePath}/cart`} className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/50 hover:text-white transition-colors mb-12 w-fit">
             <ArrowLeft className="w-4 h-4" /> [ Abort Checkout ]
           </Link>
 

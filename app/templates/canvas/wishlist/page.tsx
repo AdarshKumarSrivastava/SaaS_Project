@@ -1,11 +1,15 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import Link from "next/link";
 import { useCart, ALL_PRODUCTS } from "../CartContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart } from "lucide-react";
 
 export default function CanvasWishlistPage() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { currencySymbol } = useCart();
   const { wishlist, toggleWishlist } = useCart();
   
@@ -42,7 +46,7 @@ export default function CanvasWishlistPage() {
                 className="group border-r border-b border-white/10"
               >
                 <Link 
-                  href={`/templates/canvas/products/${product.id}`}
+                  href={`${basePath}/products/${product.id}`}
                   className="block relative overflow-hidden"
                 >
                   <div className="aspect-[3/4] overflow-hidden relative">
@@ -86,7 +90,7 @@ export default function CanvasWishlistPage() {
               You haven't saved any objects yet.
             </p>
             <Link 
-              href="/templates/canvas/products"
+              href={`${basePath}/products`}
               className="border border-white/30 px-8 py-4 text-[10px] uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-colors"
             >
               Browse Archive

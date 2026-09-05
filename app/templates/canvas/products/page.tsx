@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import Link from "next/link";
 import { useState } from "react";
 import { Heart } from "lucide-react";
@@ -8,6 +10,8 @@ import { useCustomization } from "@/hooks/useCustomization";
 import { useCart } from "../CartContext";
 
 export default function CanvasShopPage({ initialCustomData, initialProducts }: { initialCustomData?: any, initialProducts?: any[] }) {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { currencySymbol, toggleWishlist, isInWishlist } = useCart();
   const [activeCategory, setActiveCategory] = useState("All");
   
@@ -84,7 +88,7 @@ export default function CanvasShopPage({ initialCustomData, initialProducts }: {
                 className="group border-r border-b border-white/10"
               >
                 <Link 
-                  href={`/templates/canvas/services/${product.id}`}
+                  href={`${basePath}/services/${product.id}`}
                   className="block relative overflow-hidden"
                 >
                   <div className="aspect-[3/4] overflow-hidden relative">

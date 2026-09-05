@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import Link from "next/link";
 import { ArrowRight, Plus, Droplet, PackageOpen } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";

@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo, useEffect, Suspense } from "react";
 import Link from "next/link";
@@ -10,6 +12,8 @@ import { useCustomization } from "@/hooks/useCustomization";
 
 // Reusing the 3D card from home page
 function ProductCard3D({ product }: { product: any }) {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { toggleWishlist, wishlist , currencySymbol } = useVelocity();
   const isWishlisted = wishlist.some((item: any) => item.id === product.id);
   const [rotateX, setRotateX] = useState(0);
@@ -46,7 +50,7 @@ function ProductCard3D({ product }: { product: any }) {
         style={{ transformStyle: "preserve-3d" }}
         className="relative aspect-[3/4] rounded-sm border border-[#00f0ff]/20 bg-[#050505] overflow-visible group"
       >
-        <Link href={`/templates/velocity/products/${product.id}`} className="absolute inset-0 z-10" />
+        <Link href={`${basePath}/products/${product.id}`} className="absolute inset-0 z-10" />
         <div 
           className="absolute inset-0 bg-[#00f0ff] opacity-0 group-hover:opacity-10 transition-opacity duration-300 blur-xl"
           style={{ transform: "translateZ(-20px)" }}
@@ -111,6 +115,8 @@ function ProductCard3D({ product }: { product: any }) {
 }
 
 function ProductsContent() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
@@ -399,6 +405,8 @@ function ProductsContent() {
 }
 
 export default function ProductsPage() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   return (
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading products...</div>}>
       <ProductsContent />

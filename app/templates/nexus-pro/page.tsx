@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, Star } from "lucide-react";
@@ -8,6 +10,8 @@ import { useShop } from "./ShopContext";
 import { useCustomization } from "@/hooks/useCustomization";
 
 export default function NexusProHomePage() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const containerRef = useRef(null);
   const { addToCart, setIsCartOpen , currencySymbol, products } = useShop();
   const { scrollYProgress } = useScroll({
@@ -91,7 +95,7 @@ export default function NexusProHomePage() {
               {heroDesc}
             </p>
             <Link 
-              href="/templates/nexus-pro/products"
+              href={`${basePath}/products`}
               className="group relative px-8 py-4 bg-white text-black font-bold uppercase tracking-widest text-xs overflow-hidden rounded-full"
             >
               <span className="relative z-10 flex items-center gap-2 group-hover:text-white transition-colors duration-500">
@@ -126,7 +130,7 @@ export default function NexusProHomePage() {
             <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">{featuredTitle}</h2>
             <p className="text-[#d4af37] text-xs font-bold uppercase tracking-widest mt-4">{featuredSubtitle}</p>
           </div>
-          <Link href="/templates/nexus-pro/products" className="hidden md:flex items-center gap-2 text-xs font-bold uppercase tracking-widest hover:text-[#d4af37] transition-colors">
+          <Link href={`${basePath}/products`} className="hidden md:flex items-center gap-2 text-xs font-bold uppercase tracking-widest hover:text-[#d4af37] transition-colors">
             {viewAllText} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -141,7 +145,7 @@ export default function NexusProHomePage() {
               transition={{ duration: 0.8, delay: index * 0.2 }}
               className="group cursor-pointer flex flex-col"
             >
-              <Link href={`/templates/nexus-pro/products/${product.id}`} className="block relative">
+              <Link href={`${basePath}/products/${product.id}`} className="block relative">
                 <div className="relative aspect-[3/4] overflow-hidden rounded-lg mb-6 bg-white/5">
                   <img 
                     src={product.image} 
@@ -230,7 +234,7 @@ export default function NexusProHomePage() {
               ))}
             </ul>
 
-            <Link href="/templates/nexus-pro/about" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest hover:text-[#d4af37] transition-colors pb-1 border-b border-transparent hover:border-[#d4af37]">
+            <Link href={`${basePath}/about`} className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest hover:text-[#d4af37] transition-colors pb-1 border-b border-transparent hover:border-[#d4af37]">
               {featureCta} <ArrowRight className="w-4 h-4" />
             </Link>
           </motion.div>

@@ -1,12 +1,11 @@
 "use client";
-import { useCustomizationContext } from "@/context/CustomizationContext";
+
+import React from "react";
 import PremiumProfile from "@/components/storefront/PremiumProfile";
+import { useCustomizationContext } from "@/context/CustomizationContext";
 
-export default function ProfilePage() {
-  const __customContext = useCustomizationContext();
-  const basePath = __customContext?.basePath || "/templates/origin";
-
-
-
-  return <PremiumProfile basePath="/templates/origin" theme="light" />;
+export default function OrdersPage() {
+  const customContext = useCustomizationContext();
+  const basePath = typeof customContext?.basePath === "string" ? customContext.basePath : "";
+  return <PremiumProfile basePath={basePath} theme="light" defaultTab="orders" />;
 }

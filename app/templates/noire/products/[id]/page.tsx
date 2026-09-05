@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import React from "react";
 import { motion } from "framer-motion";
 import { Plus, Star, ArrowLeft, Heart } from "lucide-react";

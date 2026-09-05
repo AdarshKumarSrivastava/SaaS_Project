@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight } from "lucide-react";
@@ -8,6 +10,8 @@ import { useRef } from "react";
 import { useCustomization } from "@/hooks/useCustomization";
 
 export default function EssenceHomePage() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { currencySymbol } = useCart();
   const { addToCart } = useCart();
   const containerRef = useRef(null);
@@ -95,7 +99,7 @@ export default function EssenceHomePage() {
               transition={{ duration: 1, delay: 1.4 }}
             >
               <Link 
-                href="/templates/essence/products" 
+                href={`${basePath}/products`} 
                 className="group flex items-center gap-4 text-[#4A3F35] hover:text-[#A69684] transition-colors"
               >
                 <span className="text-xs uppercase tracking-[0.2em] font-bold border-b border-[#4A3F35] group-hover:border-[#A69684] pb-1">{heroCta}</span>
@@ -139,7 +143,7 @@ export default function EssenceHomePage() {
               <p className="text-[#4A3F35]/60 text-sm">{featuredDesc}</p>
             </div>
             <Link 
-              href="/templates/essence/products" 
+              href={`${basePath}/products`} 
               className="text-xs uppercase tracking-[0.2em] text-[#4A3F35] border-b border-[#4A3F35]/20 pb-1 hover:border-[#4A3F35] transition-colors"
             >
               {viewAllText}
@@ -156,7 +160,7 @@ export default function EssenceHomePage() {
                 transition={{ duration: 0.8, delay: idx * 0.1 }}
                 className="group cursor-pointer"
               >
-                <Link href={`/templates/essence/products/${product.id}`}>
+                <Link href={`${basePath}/products/${product.id}`}>
                   <div className="relative aspect-[3/4] mb-6 overflow-hidden bg-[#E3D8C8]">
                     <img 
                       src={product.image} 
@@ -206,7 +210,7 @@ export default function EssenceHomePage() {
               {editorialDesc}
             </p>
             <Link 
-              href="/templates/essence/about" 
+              href={`${basePath}/about`} 
               className="text-xs uppercase tracking-[0.2em] text-[#4A3F35] border-b border-[#4A3F35] pb-1 hover:text-[#A69684] hover:border-[#A69684] transition-colors"
             >
               {editorialCta}

@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import Link from "next/link";
 import { ArrowUpRight, Play, Eye } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";

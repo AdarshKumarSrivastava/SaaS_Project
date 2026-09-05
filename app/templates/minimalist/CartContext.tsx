@@ -1,8 +1,10 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { useCustomizationContext } from "@/context/CustomizationContext";
 
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
+import { useRouter, usePathname } from "next/navigation";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 export type Product = {
   id: string;
   name: string;
@@ -61,14 +63,18 @@ type CartContextType = {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children, initialBasePath, initialCustomData }: { children: ReactNode, initialBasePath?: string, initialCustomData?: any }) {
+  const { customer, isAuthenticated, siteId, openAuthModal, registerCartHandler } = useCustomerAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const storageKey = `cart_${siteId || 'default'}_${customer?.id || 'guest'}`;
   const [items, setItems] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<Product[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const pathname = usePathname();
+  
   const isCustomStore = pathname ? pathname?.startsWith('/store/') : false;
   const storeSlug = isCustomStore ? pathname?.split('/')[2] : '';
-  const calculatedBasePath = isCustomStore ? `/store/${storeSlug}` : '/templates/minimalist';
+  const calculatedBasePath = isCustomStore ? `/store/${storeSlug}` : "";
   const basePath = initialBasePath !== undefined ? initialBasePath : calculatedBasePath;
 
   const symbolMap: Record<string, string> = {
@@ -98,50 +104,68 @@ export function CartProvider({ children, initialBasePath, initialCustomData }: {
 
   // Load from local storage on mount
   useEffect(() => {
-    const savedCart = localStorage.getItem("starter-preview-cart");
-    const savedWishlist = localStorage.getItem("starter-preview-wishlist");
-    const savedReviews = localStorage.getItem("minimalist-reviews");
+    if (typeof window === 'undefined') return;
+    const savedCart = localStorage.getItem(storageKey);
     if (savedCart) {
       try {
         setItems(JSON.parse(savedCart));
-      } catch (e) {
-        console.error("Failed to parse cart data", e);
+      } catch (e) {}
+    } else {
+      setItems([]);
+    }
+
+    if (isAuthenticated) {
+      const pendingItem = sessionStorage.getItem('pending_cart_add');
+      if (pendingItem) {
+        sessionStorage.removeItem('pending_cart_add');
+        try {
+          const parsed = JSON.parse(pendingItem);
+          const p = parsed.product || parsed;
+          if (p && p.id) {
+            setItems((prev) => {
+              const exists = prev.find((i) => i.product.id === p.id);
+              if (exists) {
+                return prev.map((i) => i.product.id === p.id ? { ...i, quantity: i.quantity + (parsed.quantity || 1) } : i);
+              }
+              return [...prev, { product: p, quantity: parsed.quantity || 1 }];
+            });
+            setToastMessage(`Added ${p.name} to cart.`);
+            setTimeout(() => setToastMessage(null), 3000);
+          }
+        } catch (e) {}
       }
     }
-    if (savedWishlist) {
-      try {
-        setWishlist(JSON.parse(savedWishlist));
-      } catch (e) {
-        console.error("Failed to parse wishlist data", e);
-      }
-    }
-    if (savedReviews) {
-      try {
-        setReviews(JSON.parse(savedReviews));
-      } catch (e) {
-        console.error("Failed to parse reviews data", e);
-      }
-    }
-  }, []);
+  }, [customer?.id, siteId, isAuthenticated, storageKey]);
 
   // Save to local storage on change
   useEffect(() => {
-    localStorage.setItem("starter-preview-cart", JSON.stringify(items));
+    localStorage.setItem(storageKey, JSON.stringify(items));
     localStorage.setItem("starter-preview-wishlist", JSON.stringify(wishlist));
     localStorage.setItem("minimalist-reviews", JSON.stringify(reviews));
   }, [items, wishlist, reviews]);
 
-  const addToCart = (product: Product) => {
+  const addToCart = (product: Product, quantity: number = 1) => {
+    if (!isAuthenticated) {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('pending_cart_add', JSON.stringify({ product, quantity }));
+      }
+      setToastMessage("Please sign in to add items to your cart.");
+      setTimeout(() => setToastMessage(null), 3000);
+      const currentPath = pathname || '/';
+      router.push(`${basePath}/auth/login?return=${encodeURIComponent(currentPath)}&action=add-to-cart&productId=${encodeURIComponent(product.id)}`);
+      return;
+    }
+
     setItems((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {
         return prev.map((item) =>
           item.product.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       }
-      return [...prev, { product, quantity: 1 }];
+      return [...prev, { product, quantity }];
     });
     setToastMessage(`Added ${product.name} to cart.`);
     setTimeout(() => setToastMessage(null), 3000);
@@ -256,6 +280,14 @@ export function CartProvider({ children, initialBasePath, initialCustomData }: {
     }
   };
 
+  useEffect(() => {
+    if (registerCartHandler) {
+      return registerCartHandler((p: any, q?: number) => {
+        addToCart(p, q || 1);
+      });
+    }
+  }, [registerCartHandler]);
+
   return (
     <CartContext.Provider
       value={{
@@ -290,6 +322,8 @@ export function CartProvider({ children, initialBasePath, initialCustomData }: {
 }
 
 export function useCart() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const context = useContext(CartContext);
   if (context === undefined) {
     throw new Error("useCart must be used within a CartProvider");

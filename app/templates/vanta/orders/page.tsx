@@ -1,6 +1,11 @@
 "use client";
-import PremiumProfile from "@/components/storefront/PremiumProfile";
 
-export default function ProfilePage() {
-  return <PremiumProfile basePath="/templates/vanta" theme="light" />;
+import React from "react";
+import PremiumProfile from "@/components/storefront/PremiumProfile";
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
+export default function OrdersPage() {
+  const customContext = useCustomizationContext();
+  const basePath = typeof customContext?.basePath === "string" ? customContext.basePath : "";
+  return <PremiumProfile basePath={basePath} theme="light" defaultTab="orders" />;
 }

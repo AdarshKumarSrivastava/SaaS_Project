@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import { motion } from "framer-motion";
 import { useCart } from "../CartContext";
 import Link from "next/link";
@@ -47,6 +49,8 @@ export default function EssenceCheckoutPage() {
 
   
   async function handlePlaceOrder(e: React.FormEvent) {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
     e.preventDefault();
     setIsPlacingOrder(true);
     try {
@@ -96,7 +100,7 @@ export default function EssenceCheckoutPage() {
             Your pure rituals are on their way. A confirmation has been delicately placed in your inbox.
           </p>
           <Link 
-            href={`\${basePath}/products`}
+            href={`${basePath}/products`}
             className="inline-block bg-[#4A3F35] text-[#F3EDE2] px-10 py-5 text-xs font-bold tracking-[0.2em] uppercase hover:bg-[#332B25] transition-colors w-full sm:w-auto"
           >
             Continue Ritual
@@ -117,7 +121,7 @@ export default function EssenceCheckoutPage() {
           <h1 className="font-serif text-4xl mb-6">Your cart is empty</h1>
           <p className="text-sm text-[#4A3F35]/70 mb-10">Discover your essence first.</p>
           <Link 
-            href={`\${basePath}/products`}
+            href={`${basePath}/products`}
             className="inline-block bg-[#4A3F35] text-[#F3EDE2] px-10 py-5 text-xs font-bold tracking-[0.2em] uppercase hover:bg-[#332B25] transition-colors"
           >
             Shop Collection
@@ -131,7 +135,7 @@ export default function EssenceCheckoutPage() {
     return (
       <div className="w-full bg-[#F3EDE2] min-h-screen pt-12 pb-32 px-6 md:px-12 text-[#4A3F35]">
         <div className="max-w-[600px] mx-auto">
-          <Link href={`\${basePath}/cart`} className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-[#4A3F35]/50 hover:text-[#4A3F35] transition-colors mb-12 w-fit">
+          <Link href={`${basePath}/cart`} className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-[#4A3F35]/50 hover:text-[#4A3F35] transition-colors mb-12 w-fit">
             <ArrowLeft className="w-3 h-3" /> Back to Cart
           </Link>
 

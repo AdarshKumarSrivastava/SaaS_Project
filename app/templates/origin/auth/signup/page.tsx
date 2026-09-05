@@ -1,22 +1,17 @@
 "use client";
+
+import React, { Suspense } from "react";
+import { CustomerAuthForm } from "@/components/storefront/CustomerAuthForm";
 import { useCustomizationContext } from "@/context/CustomizationContext";
 
-import { FirebasePhoneSignup } from "@/components/auth/FirebasePhoneSignup";
-
 export default function originSignupPage() {
-  const __customContext = useCustomizationContext();
-  const basePath = __customContext?.basePath || "/templates/origin";
-
-
+  const customContext = useCustomizationContext();
+  const basePath = typeof customContext?.basePath === "string" ? customContext.basePath : "";
+  const brandName = customContext?.siteData?.global?.brandName || customContext?.siteData?.name || "ORIGIN";
 
   return (
-    <FirebasePhoneSignup
-      title="Sign Up"
-      subtitle="Create an account to track orders and save your details."
-      backLink="/templates/origin"
-      loginLink="/templates/origin/auth/login"
-      slug="origin"
-      visualUrl="https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=2564&auto=format&fit=crop"
-    />
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <CustomerAuthForm mode="signup" basePath={basePath} brandName={brandName} />
+    </Suspense>
   );
 }

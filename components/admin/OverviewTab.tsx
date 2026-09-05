@@ -142,51 +142,79 @@ export default function OverviewTab({ siteId, site }: { siteId: string, site: an
 
       </div>
 
-      {/* Promotional / Action Area */}
+      {/* Promotional / Action Area - Refined Compact SaaS Module */}
       <motion.div 
-        whileHover={{ scale: 1.01 }}
+        whileHover={{ scale: 1.004 }}
         transition={{ type: "spring", stiffness: 400, damping: 30 }}
-        className="relative rounded-[2rem] border border-white/10 overflow-hidden group min-h-[400px] flex items-center"
+        className="relative rounded-2xl md:rounded-3xl border border-white/[0.08] bg-[#07050e] overflow-hidden group p-6 sm:p-8 lg:px-10 lg:py-7 flex flex-col md:flex-row md:items-center justify-between gap-6 md:gap-8 transition-all duration-500 hover:border-violet-500/30"
       >
-        <div className="absolute inset-0 bg-[#050505] z-0" />
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-600/20 via-[#050505] to-fuchsia-600/20 z-10 mix-blend-screen" />
+        {/* Subtle Background Mesh & Gradients */}
+        <div className="absolute inset-0 bg-gradient-to-r from-violet-950/40 via-[#07050e] to-fuchsia-950/30 z-0 pointer-events-none" />
         
-        {/* Animated Mesh / Gradient Orb */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-violet-600/30 to-fuchsia-600/30 rounded-full blur-[100px] opacity-50 group-hover:opacity-80 transition-opacity duration-1000 z-10 mix-blend-screen pointer-events-none" />
+        {/* Atmospheric Radial Purple Glow */}
+        <div className="absolute -right-16 -bottom-16 w-[420px] h-[280px] bg-gradient-to-br from-violet-600/20 to-fuchsia-600/10 rounded-full blur-[90px] opacity-60 group-hover:opacity-90 transition-opacity duration-700 pointer-events-none z-0" />
+        <div className="absolute -left-16 -top-16 w-[300px] h-[200px] bg-violet-600/10 rounded-full blur-[80px] pointer-events-none z-0" />
 
-        <div className="absolute inset-0 bg-[url('/images/noise.png')] opacity-[0.03] mix-blend-overlay z-20 pointer-events-none" />
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop')] bg-cover bg-center opacity-20 group-hover:scale-105 group-hover:opacity-30 transition-all duration-1000 z-0 grayscale mix-blend-luminosity" />
+        {/* Scaled-down Abstract Flowing Waves Overlay */}
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop')] bg-cover bg-center opacity-[0.14] group-hover:opacity-20 transition-all duration-700 z-0 grayscale mix-blend-luminosity pointer-events-none" />
+        <div className="absolute inset-0 bg-[url('/images/noise.png')] opacity-[0.025] mix-blend-overlay z-10 pointer-events-none" />
         
-        <div className="relative z-30 p-12 md:p-20 w-full flex flex-col md:flex-row items-start md:items-center justify-between gap-12">
-          <div className="max-w-2xl">
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-xl rounded-full border border-white/10 mb-8 shadow-2xl"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-[#00f0ff]" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.3em] bg-clip-text text-transparent bg-gradient-to-r from-white to-white/50">BuildSpace Studio 2.0</span>
-            </motion.div>
-            
-            <h2 className="text-5xl md:text-7xl font-bold tracking-tighter mb-6 leading-[1.1] bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40">
-              Sculpt your <br/>vision.
-            </h2>
-            <p className="text-xl text-white/50 font-light max-w-lg leading-relaxed mb-10">
-              Enter the canvas environment to craft every molecular detail of your digital interactive experience.
-            </p>
+        {/* Decorative Wave SVG for Atmospheric Depth */}
+        <svg 
+          className="absolute right-0 bottom-0 top-0 h-full w-2/3 opacity-25 group-hover:opacity-40 transition-opacity duration-700 pointer-events-none z-0 overflow-hidden" 
+          viewBox="0 0 600 200" 
+          fill="none" 
+          xmlns="http://www.w3.org/2000/svg"
+          preserveAspectRatio="none"
+        >
+          <path 
+            d="M0 120 C 150 40, 300 190, 600 60 L 600 200 L 0 200 Z" 
+            fill="url(#purpleWaveGrad)" 
+            opacity="0.3"
+          />
+          <path 
+            d="M0 150 C 180 90, 350 180, 600 110 L 600 200 L 0 200 Z" 
+            fill="url(#purpleWaveGrad)" 
+            opacity="0.5"
+          />
+          <defs>
+            <linearGradient id="purpleWaveGrad" x1="0" y1="0" x2="600" y2="200" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#8b5cf6" stopOpacity="0.4" />
+              <stop offset="1" stopColor="#d946ef" stopOpacity="0.1" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        {/* Content Section: Left (Badge, Heading, Subtitle) */}
+        <div className="relative z-20 max-w-2xl">
+          {/* Refined Compact Eyebrow Badge */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/[0.04] backdrop-blur-md rounded-full border border-white/[0.08] mb-3.5 shadow-sm">
+            <Sparkles className="w-3 h-3 text-[#00f0ff]" />
+            <span className="text-[9px] font-bold uppercase tracking-[0.25em] text-white/80">
+              BuildSpace Studio 2.0
+            </span>
           </div>
           
+          {/* Compact, High-Impact Heading */}
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.65rem] font-bold tracking-tight mb-2 leading-[1.1] text-white">
+            Sculpt your vision.
+          </h2>
+          
+          {/* Restrained Supporting Text */}
+          <p className="text-xs sm:text-sm text-white/50 font-normal max-w-lg leading-relaxed">
+            Enter the canvas environment to craft every molecular detail of your digital interactive experience.
+          </p>
+        </div>
+        
+        {/* Action Button: Right (CTA) */}
+        <div className="relative z-20 shrink-0">
           <button 
             onClick={() => router.push(`/sites/${siteId}/builder`)}
-            className="group/btn relative overflow-hidden bg-white text-black px-10 py-5 rounded-full text-xs font-black uppercase tracking-[0.2em] flex items-center gap-4 shrink-0 shadow-[0_0_60px_rgba(255,255,255,0.15)] hover:shadow-[0_0_80px_rgba(255,255,255,0.3)] transition-all duration-500"
+            className="group/btn relative overflow-hidden bg-white text-black px-7 sm:px-8 py-3.5 sm:py-4 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-[0.16em] flex items-center gap-3 shrink-0 shadow-[0_4px_24px_rgba(139,92,246,0.18)] hover:shadow-[0_4px_32px_rgba(255,255,255,0.25)] hover:bg-white/95 active:scale-[0.98] transition-all duration-300"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-white via-[#f0f0f0] to-white opacity-0 group-hover/btn:opacity-100 transition-opacity duration-500" />
-            <span className="relative z-10 flex items-center gap-4">
-              Enter Builder 
-              <span className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center group-hover/btn:translate-x-1 transition-transform duration-300">
-                <ArrowUpRight className="w-4 h-4" />
-              </span>
+            <span>Enter Builder</span>
+            <span className="w-6 h-6 rounded-full bg-black/5 flex items-center justify-center group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform duration-300">
+              <ArrowUpRight className="w-3.5 h-3.5" />
             </span>
           </button>
         </div>

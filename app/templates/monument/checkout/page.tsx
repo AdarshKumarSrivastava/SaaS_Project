@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import { motion } from "framer-motion";
 import { useCart } from "../CartContext";
 import Link from "next/link";
@@ -47,6 +49,8 @@ export default function StarterCheckoutPage() {
 
   
   async function handlePlaceOrder(e: React.FormEvent) {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
     e.preventDefault();
     setIsPlacingOrder(true);
     try {
@@ -98,7 +102,7 @@ export default function StarterCheckoutPage() {
             Thank you for your purchase. We've sent a confirmation email with your order details.
           </p>
           <Link 
-            href={`\${basePath}/products`}
+            href={`${basePath}/products`}
             className="inline-block bg-[#111111] text-white px-8 py-4 text-xs font-bold tracking-widest uppercase hover:bg-[#FF4D00] transition-colors"
           >
             Continue Shopping
@@ -119,7 +123,7 @@ export default function StarterCheckoutPage() {
           <h1 className="font-heading text-4xl mb-4 text-[#111111]">Your cart is empty</h1>
           <p className="text-black/50 mb-8">You need items in your cart to checkout.</p>
           <Link 
-            href={`\${basePath}/products`}
+            href={`${basePath}/products`}
             className="inline-block bg-[#111111] text-white px-8 py-4 text-xs font-bold tracking-widest uppercase hover:bg-[#FF4D00] transition-colors"
           >
             Shop Collection
@@ -138,7 +142,7 @@ export default function StarterCheckoutPage() {
           className="w-full max-w-md"
         >
           <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-black/40 mb-8">
-            <Link href={`\${basePath}/cart`} className="hover:text-[#111111] transition-colors">Cart</Link>
+            <Link href={`${basePath}/cart`} className="hover:text-[#111111] transition-colors">Cart</Link>
             <ChevronRight className="w-3 h-3" />
             <span className="text-[#111111]">Shipping</span>
           </div>
@@ -207,7 +211,7 @@ export default function StarterCheckoutPage() {
 
             <div className="flex gap-4 mt-6">
               <Link 
-                href={`\${basePath}/cart`}
+                href={`${basePath}/cart`}
                 className="flex-1 bg-transparent border border-[#111111] text-[#111111] py-4 text-xs font-bold tracking-widest uppercase hover:bg-black/5 transition-colors text-center"
               >
                 Back to Cart
@@ -234,7 +238,7 @@ export default function StarterCheckoutPage() {
           className="w-full max-w-md"
         >
           <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-black/40 mb-8">
-            <Link href={`\${basePath}/cart`} className="hover:text-[#111111] transition-colors">Cart</Link>
+            <Link href={`${basePath}/cart`} className="hover:text-[#111111] transition-colors">Cart</Link>
             <ChevronRight className="w-3 h-3" />
             <button onClick={() => setCheckoutStep('shipping')} className="hover:text-[#111111] transition-colors">Shipping</button>
             <ChevronRight className="w-3 h-3" />

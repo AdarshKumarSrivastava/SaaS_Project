@@ -1,4 +1,5 @@
 "use client";
+
 import { useCustomizationContext } from "@/context/CustomizationContext";
 
 import { useParams, useRouter } from "next/navigation";
@@ -9,7 +10,7 @@ import { useState } from "react";
 
 export default function OriginProductDetailPage() {
   const __customContext = useCustomizationContext();
-  const basePath = __customContext?.basePath || "/templates/origin";
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
 
   const { id } = useParams() as { id: string };
   const router = useRouter();
@@ -25,7 +26,7 @@ export default function OriginProductDetailPage() {
     return (
       <div className="w-full bg-[#fdfbf7] min-h-[70vh] flex flex-col items-center justify-center">
         <h1 className="font-serif text-3xl text-[#402c21] font-bold mb-4">Product Not Found</h1>
-        <Link href={`\${basePath}/products`} className="text-sm font-bold uppercase tracking-widest text-[#a38c7f] border-b border-[#a38c7f] pb-1">
+        <Link href={`${basePath}/products`} className="text-sm font-bold uppercase tracking-widest text-[#a38c7f] border-b border-[#a38c7f] pb-1">
           Back to Shop
         </Link>
       </div>
@@ -58,7 +59,7 @@ export default function OriginProductDetailPage() {
             <ArrowLeft className="w-3 h-3" /> Back
           </button>
           <span>/</span>
-          <Link href={`\${basePath}/products`} className="hover:text-[#402c21] transition-colors">Shop</Link>
+          <Link href={`${basePath}/products`} className="hover:text-[#402c21] transition-colors">Shop</Link>
           <span>/</span>
           <span className="text-[#a38c7f]">{product.category}</span>
         </div>
@@ -202,7 +203,7 @@ export default function OriginProductDetailPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {relatedProducts.map(p => (
                 <div key={p.id} className="group flex flex-col gap-4">
-                  <Link href={`\${basePath}/products/${p.id}`} className="block relative aspect-square overflow-hidden bg-[#e5e0dc] rounded-sm">
+                  <Link href={`${basePath}/products/${p.id}`} className="block relative aspect-square overflow-hidden bg-[#e5e0dc] rounded-sm">
                     <img 
                       src={p.image} 
                       alt={p.name} 
@@ -210,7 +211,7 @@ export default function OriginProductDetailPage() {
                     />
                   </Link>
                   <div className="flex flex-col">
-                    <Link href={`\${basePath}/products/${p.id}`}>
+                    <Link href={`${basePath}/products/${p.id}`}>
                       <h3 className="font-serif text-lg font-bold text-[#402c21] group-hover:text-[#a38c7f] transition-colors">{p.name}</h3>
                     </Link>
                     <div className="text-sm font-bold text-[#402c21]/70">{currencySymbol}{p.price.toFixed(2)}</div>

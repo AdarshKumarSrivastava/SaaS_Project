@@ -7,8 +7,13 @@ import { useState, useEffect } from "react";
 import { CartProvider, useCart } from "./CartContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCustomization } from "@/hooks/useCustomization";
+import { useCustomizationContext } from "@/context/CustomizationContext";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 
 function CartFlyout() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
+  const { isAuthenticated, openAuthModal } = useCustomerAuth();
   const { isCartOpen, setIsCartOpen, items, removeFromCart, updateQuantity, totalPrice, currencySymbol } = useCart();
 
   return (
@@ -95,7 +100,7 @@ function CartFlyout() {
                   <span className="font-serif text-2xl">{currencySymbol}{totalPrice.toFixed(2)}</span>
                 </div>
                 <Link
-                  href="/templates/canvas/cart"
+                  href={`${basePath}/cart`}
                   onClick={() => setIsCartOpen(false)}
                   className="w-full py-4 border border-white text-white flex items-center justify-between px-6 text-[10px] uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-colors duration-500"
                 >
@@ -112,6 +117,9 @@ function CartFlyout() {
 }
 
 function Navigation() {
+  const { isAuthenticated, openAuthModal } = useCustomerAuth();
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const pathname = usePathname();
   const { cartCount, setIsCartOpen, wishlist } = useCart();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -129,11 +137,11 @@ function Navigation() {
   }, []);
 
   const links = [
-    { href: "/templates/canvas", label: "Home" },
-    { href: "/templates/canvas/products", label: "Collection" },
-    { href: "/templates/canvas/about", label: "Maison" },
-    { href: "/templates/canvas/contact", label: "Concierge" },
-    { href: "/templates/canvas/orders", label: "Orders" },
+    { href: `${basePath}`, label: "Home" },
+    { href: `${basePath}/products`, label: "Collection" },
+    { href: `${basePath}/about`, label: "Maison" },
+    { href: `${basePath}/contact`, label: "Concierge" },
+    { href: `${basePath}/orders`, label: "Orders" },
   ];
 
   return (
@@ -147,7 +155,7 @@ function Navigation() {
             
           {/* Logo */}
           <Link
-            href="/templates/canvas"
+            href={basePath || '/'}
             className="font-serif text-2xl md:text-3xl tracking-tight uppercase text-white"
           >
             {logoUrl ? <img src={logoUrl} alt={brandName} className="h-8 w-auto object-contain" /> : <div className="flex items-center gap-2"><Square className="w-6 h-6" /><span>{brandName}</span></div>}
@@ -170,15 +178,13 @@ function Navigation() {
 
           {/* Right Side */}
           <div className="flex items-center gap-6 md:gap-8">
-            <Link
-              href="/templates/canvas/profile"
-              className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/70 hover:text-white transition-colors"
+            <button type="button" onClick={() => openAuthModal(isAuthenticated ? 'account' : 'login')} aria-label="Customer Account" className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/70 hover:text-white transition-colors"
             >
               <User className="w-4 h-4" />
-            </Link>
+            </button>
 
             <Link
-              href="/templates/canvas/wishlist"
+              href={`${basePath}/wishlist`}
               className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-white/70 hover:text-white transition-colors"
             >
               <Heart className="w-4 h-4" />
@@ -249,6 +255,8 @@ function Navigation() {
 }
 
 function Footer() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const customData = useCustomization();
   
   const footerText = customData?.formData?.footerText;
@@ -268,7 +276,7 @@ function Footer() {
           
           <div className="lg:col-span-4 flex flex-col justify-between">
             <div>
-              <Link href="/templates/canvas" className="font-serif text-4xl tracking-tight uppercase text-white block mb-8">
+              <Link href={basePath || '/'} className="font-serif text-4xl tracking-tight uppercase text-white block mb-8">
                 {tLogoUrl ? <img src={tLogoUrl} alt={tBrandName} className="h-8 w-auto object-contain" /> : tBrandName}
               </Link>
               <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 leading-loose max-w-xs">
@@ -281,9 +289,9 @@ function Footer() {
           <div className="lg:col-span-2">
             <h3 className="text-[10px] uppercase tracking-[0.2em] text-white/30 mb-8">{footerCol1}</h3>
             <ul className="space-y-4">
-              <li><Link href="/templates/canvas" className="text-xs tracking-widest uppercase hover:text-white/50 transition-colors">Home</Link></li>
-              <li><Link href="/templates/canvas/products" className="text-xs tracking-widest uppercase hover:text-white/50 transition-colors">Collection</Link></li>
-              <li><Link href="/templates/canvas/about" className="text-xs tracking-widest uppercase hover:text-white/50 transition-colors">Maison</Link></li>
+              <li><Link href={basePath || '/'} className="text-xs tracking-widest uppercase hover:text-white/50 transition-colors">Home</Link></li>
+              <li><Link href={`${basePath}/products`} className="text-xs tracking-widest uppercase hover:text-white/50 transition-colors">Collection</Link></li>
+              <li><Link href={`${basePath}/about`} className="text-xs tracking-widest uppercase hover:text-white/50 transition-colors">Maison</Link></li>
             </ul>
           </div>
 
@@ -292,7 +300,7 @@ function Footer() {
             <ul className="space-y-4">
               <li><Link href="#" className="text-xs tracking-widest uppercase hover:text-white/50 transition-colors">Shipping</Link></li>
               <li><Link href="#" className="text-xs tracking-widest uppercase hover:text-white/50 transition-colors">Returns</Link></li>
-              <li><Link href="/templates/canvas/contact" className="text-xs tracking-widest uppercase hover:text-white/50 transition-colors">Contact</Link></li>
+              <li><Link href={`${basePath}/contact`} className="text-xs tracking-widest uppercase hover:text-white/50 transition-colors">Contact</Link></li>
             </ul>
           </div>
           <div className="lg:col-span-4">
@@ -327,6 +335,8 @@ function Footer() {
 }
 
 export default function CanvasLayout({ children }: { children: React.ReactNode }) {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const pathname = usePathname();
   const isAuthPage = pathname?.includes('/auth/');
 

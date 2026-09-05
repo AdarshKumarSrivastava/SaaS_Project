@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useCart } from "./CartContext";
@@ -8,6 +10,8 @@ import { useRef } from "react";
 import { useCustomization } from "@/hooks/useCustomization";
 
 export default function CanvasHomePage({ initialCustomData, initialProducts }: { initialCustomData?: any, initialProducts?: any[] }) {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { currencySymbol } = useCart();
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
@@ -75,7 +79,7 @@ export default function CanvasHomePage({ initialCustomData, initialProducts }: {
                 {heroSubtext}
               </p>
               <Link 
-                href="/templates/canvas/services"
+                href={`${basePath}/services`}
                 className="text-[10px] md:text-xs uppercase tracking-[0.2em] flex items-center gap-4 hover:text-white/50 transition-colors"
               >
                 <span>{primaryCta}</span>
@@ -110,7 +114,7 @@ export default function CanvasHomePage({ initialCustomData, initialProducts }: {
             <h2 className="font-serif text-5xl md:text-7xl uppercase tracking-tighter whitespace-pre-line">
               {shopTitle?.replace(" ", "\n")}
             </h2>
-            <Link href="/templates/canvas/services" className="text-[10px] uppercase tracking-[0.2em] hover:text-white/50 transition-colors">
+            <Link href={`${basePath}/services`} className="text-[10px] uppercase tracking-[0.2em] hover:text-white/50 transition-colors">
               [ View All ]
             </Link>
           </div>
@@ -128,7 +132,7 @@ export default function CanvasHomePage({ initialCustomData, initialProducts }: {
               return (
               <Link 
                 key={service.id} 
-                href={`/templates/canvas/services/${service.id}`}
+                href={`${basePath}/services/${service.id}`}
                 className="group block border-r border-b border-white/10 relative overflow-hidden"
               >
                 <div className="aspect-[3/4] overflow-hidden relative">
@@ -164,7 +168,7 @@ export default function CanvasHomePage({ initialCustomData, initialProducts }: {
           </h2>
           <div className="w-[1px] h-24 bg-white/30 mb-12"></div>
           <Link 
-            href="/templates/canvas/about"
+            href={`${basePath}/about`}
             className="text-[10px] uppercase tracking-[0.2em] border border-white px-8 py-4 hover:bg-white hover:text-black transition-colors duration-500"
           >
             {philosophyCta}

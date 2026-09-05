@@ -1,4 +1,5 @@
 "use client";
+
 import { motion } from "framer-motion";
 import { useCart } from "../CartContext";
 import Link from "next/link";
@@ -12,7 +13,7 @@ type CheckoutStep = 'shipping' | 'payment' | 'placed';
 
 export default function OriginCheckoutPage() {
   const __customContext = useCustomizationContext();
-  const basePath = __customContext?.basePath || "/templates/origin";
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
 
   const { items, totalPrice, clearCart, appliedCoupon, applyCoupon, removeCoupon, discountAmount, couponError } = useCart();
   const router = useRouter();
@@ -49,6 +50,8 @@ export default function OriginCheckoutPage() {
 
   
   async function handlePlaceOrder(e: React.FormEvent) {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
     e.preventDefault();
     setIsPlacingOrder(true);
     try {
@@ -98,7 +101,7 @@ export default function OriginCheckoutPage() {
             Your piece of earth has been claimed. We have sent an email with the details of your order.
           </p>
           <Link 
-            href={`\${basePath}/products`}
+            href={`${basePath}/products`}
             className="inline-flex bg-[#402c21] text-[#fdfbf7] px-10 py-5 text-xs font-bold tracking-widest uppercase hover:bg-[#a38c7f] transition-colors w-full sm:w-auto items-center justify-center gap-3 group rounded-sm"
           >
             Continue Exploring <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -119,7 +122,7 @@ export default function OriginCheckoutPage() {
           <h1 className="font-serif text-4xl mb-6">Your cart is empty</h1>
           <p className="text-sm text-[#402c21]/70 mb-10">You have no pieces selected yet.</p>
           <Link 
-            href={`\${basePath}/products`}
+            href={`${basePath}/products`}
             className="inline-flex bg-[#402c21] text-[#fdfbf7] px-10 py-5 text-xs font-bold tracking-widest uppercase hover:bg-[#a38c7f] transition-colors items-center justify-center gap-3 group rounded-sm"
           >
             Explore Ceramics <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -133,7 +136,7 @@ export default function OriginCheckoutPage() {
     return (
       <div className="w-full bg-[#fdfbf7] min-h-screen pt-12 pb-32 px-6 md:px-12 text-[#402c21]">
         <div className="max-w-[600px] mx-auto">
-          <Link href={`\${basePath}/cart`} className="flex items-center gap-2 text-xs uppercase tracking-widest text-[#402c21]/50 hover:text-[#402c21] transition-colors mb-12 w-fit">
+          <Link href={`${basePath}/cart`} className="flex items-center gap-2 text-xs uppercase tracking-widest text-[#402c21]/50 hover:text-[#402c21] transition-colors mb-12 w-fit">
             <ArrowLeft className="w-4 h-4" /> Back to Cart
           </Link>
 

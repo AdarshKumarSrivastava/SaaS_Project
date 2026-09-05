@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo, useEffect, Suspense } from "react";
 import Link from "next/link";
@@ -53,6 +55,8 @@ function SortDropdown({ value, onChange }: { value: string, onChange: (val: stri
 }
 
 function ProductsContent() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const searchParams = useSearchParams();
   const { addToCart, setIsCartOpen , currencySymbol } = useShop();
   const [searchQuery, setSearchQuery] = useState("");
@@ -310,7 +314,7 @@ function ProductsContent() {
                     key={product.id}
                     className="group cursor-pointer flex flex-col"
                   >
-                    <Link href={`/templates/nexus-pro/products/${product.id}`} className="block relative">
+                    <Link href={`${basePath}/products/${product.id}`} className="block relative">
                       <div className="relative aspect-[3/4] overflow-hidden rounded-lg mb-6 bg-white/5">
                         <img 
                           src={product.image} 
@@ -376,6 +380,8 @@ function ProductsContent() {
 }
 
 export default function ProductsPage() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   return (
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading products...</div>}>
       <ProductsContent />

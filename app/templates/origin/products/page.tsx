@@ -1,4 +1,5 @@
 "use client";
+
 import { useCustomizationContext } from "@/context/CustomizationContext";
 
 import Link from "next/link";
@@ -9,7 +10,7 @@ import { useCustomization } from "@/hooks/useCustomization";
 
 export default function OriginProductsPage() {
   const __customContext = useCustomizationContext();
-  const basePath = __customContext?.basePath || "/templates/origin";
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
 
 
 
@@ -78,7 +79,7 @@ export default function OriginProductsPage() {
                     data-component-id={`product-${product.id}`}
                     className="group flex flex-col gap-4 animate-in fade-in duration-700"
                   >
-                    <Link href={`\${basePath}/products/${product.id}`} className="block relative aspect-[4/5] overflow-hidden bg-[#e5e0dc] rounded-sm">
+                    <Link href={`${basePath}/products/${product.id}`} className="block relative aspect-[4/5] overflow-hidden bg-[#e5e0dc] rounded-sm">
                       <img 
                         src={product.image || (product.images && product.images[0]) || "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=2000&auto=format&fit=crop"} 
                         alt={product.name} 
@@ -88,7 +89,7 @@ export default function OriginProductsPage() {
                     </Link>
                     <div className="flex flex-col">
                       <div className="text-[10px] uppercase tracking-widest text-[#a38c7f] font-bold mb-1">{product.category || 'Product'}</div>
-                      <Link href={`\${basePath}/products/${product.id}`}>
+                      <Link href={`${basePath}/products/${product.id}`}>
                         <h3 className="font-serif text-xl font-bold text-[#402c21] group-hover:text-[#a38c7f] transition-colors mb-2">{product.name}</h3>
                       </Link>
                       <div className="text-base font-bold text-[#402c21]/80 mb-4">{currencySymbol}{typeof product.price === 'number' ? product.price.toFixed(2) : parseFloat(product.price || 0).toFixed(2)}</div>

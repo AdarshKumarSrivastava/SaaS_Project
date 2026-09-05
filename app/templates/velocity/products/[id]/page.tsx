@@ -7,10 +7,12 @@ import { ArrowLeft, Zap, Target, Activity, Check, Heart } from "lucide-react";
 import Link from "next/link";
 import { VELOCITY_PRODUCTS, useVelocity } from "../../VelocityContext";
 import { useCustomization } from "@/hooks/useCustomization";
+import { useCustomizationContext } from "@/context/CustomizationContext";
 
 export default function VelocityProductDetails() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { id } = useParams() as { id: string };
-  const basePath = '/templates/velocity';
   const router = useRouter();
   const { addToCart, setIsCartOpen, toggleWishlist, wishlist , currencySymbol } = useVelocity();
   
@@ -24,7 +26,7 @@ export default function VelocityProductDetails() {
 
   useEffect(() => {
     if (!product) {
-      router.push('/templates/velocity/products');
+      router.push(`${basePath}/products`);
     }
   }, [product, router]);
 
@@ -53,7 +55,7 @@ export default function VelocityProductDetails() {
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         
         <Link 
-          href="/templates/velocity/products"
+          href={`${basePath}/products`}
           className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#00f0ff] hover:text-white transition-colors mb-12 font-space"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Products
@@ -251,7 +253,7 @@ export default function VelocityProductDetails() {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {displayProducts.filter((p: any) => p.id !== product.id).slice(0, 3).map((related: any) => (
-              <Link key={related.id} href={`/templates/velocity/products/${related.id}`} className="group bg-[#0a0a0a] border border-white/10 overflow-hidden relative block hover:border-[#00f0ff]/50 transition-colors">
+              <Link key={related.id} href={`${basePath}/products/${related.id}`} className="group bg-[#0a0a0a] border border-white/10 overflow-hidden relative block hover:border-[#00f0ff]/50 transition-colors">
                 <div className="aspect-[4/3] overflow-hidden relative">
                   <img src={related.image || (related.images && related.images[0]) || "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2000&auto=format&fit=crop"} alt={related.name} className="w-full h-full object-cover grayscale mix-blend-lighten group-hover:grayscale-0 transition-all duration-500" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] to-transparent opacity-90 pointer-events-none" />

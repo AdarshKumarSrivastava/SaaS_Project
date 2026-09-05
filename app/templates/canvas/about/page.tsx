@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -7,6 +9,8 @@ import { ArrowRight } from "lucide-react";
 import { useCustomization } from "@/hooks/useCustomization";
 
 export default function CanvasAboutPage() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const customData = useCustomization();
   
   const tTitle = customData?.formData?.aboutTitle;
@@ -85,7 +89,7 @@ export default function CanvasAboutPage() {
       {/* Call to Action */}
       <section className="py-32 px-6 flex justify-center text-center">
         <Link 
-          href="/templates/canvas/products"
+          href={`${basePath}/products`}
           className="group inline-flex flex-col items-center gap-8"
         >
           <span className="font-serif text-4xl md:text-6xl uppercase tracking-tighter group-hover:italic transition-all duration-500">

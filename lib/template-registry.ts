@@ -79,8 +79,19 @@ export const TEMPLATE_REGISTRY: Record<string, TemplateConfig> = {
           path: '/about',
           sections: [
             { id: generateId(), type: 'About', props: { 
-              aboutTitle: 'Our Story',
-              aboutSubtitle: 'Crafted with intention.'
+              aboutEyebrow: 'OUR PHILOSOPHY',
+              aboutHeading: 'Designed with intention.\nMade to endure.',
+              aboutDescription: 'We believe the objects around us should feel considered, honest, and timeless. Every piece begins with thoughtful materials, purposeful form, and a respect for the details that make everyday life beautiful.',
+              aboutHeroImage: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2940&auto=format&fit=crop',
+              phil1Number: '01',
+              phil1Title: 'CONSIDERED MATERIALS',
+              phil1Desc: 'Natural materials chosen for their character, texture, and longevity.',
+              phil2Number: '02',
+              phil2Title: 'TIMELESS FORM',
+              phil2Desc: 'Quiet silhouettes designed to remain relevant beyond trends.',
+              phil3Number: '03',
+              phil3Title: 'MADE WITH INTENTION',
+              phil3Desc: 'Every detail is considered to create objects that feel meaningful in everyday life.'
             } }
           ]
         }

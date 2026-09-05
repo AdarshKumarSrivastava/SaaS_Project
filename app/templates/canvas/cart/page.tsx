@@ -1,11 +1,15 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import Link from "next/link";
 import { useCart } from "../CartContext";
 import { X, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function CanvasCartPage() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { currencySymbol } = useCart();
   const { items, updateQuantity, removeFromCart, totalPrice } = useCart();
 
@@ -37,7 +41,7 @@ export default function CanvasCartPage() {
                 Your archive is currently empty.
               </p>
               <Link 
-                href="/templates/canvas/products"
+                href={`${basePath}/products`}
                 className="border border-white/30 px-8 py-4 text-[10px] uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-colors inline-block"
               >
                 Return to Index
@@ -132,7 +136,7 @@ export default function CanvasCartPage() {
             </div>
             
             <Link 
-              href="/templates/canvas/checkout"
+              href={`${basePath}/checkout`}
               className={`w-full border border-white/30 text-[10px] uppercase tracking-[0.2em] flex items-center justify-between px-8 py-5 hover:bg-white hover:text-black transition-colors duration-500 ${items.length === 0 ? 'opacity-50 pointer-events-none' : ''}`}
             >
               <span>Initiate Payment</span>

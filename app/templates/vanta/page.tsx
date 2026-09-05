@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import Link from "next/link";
 import { ChevronRight, Cpu, Zap, Shield, PlayCircle, PackageOpen } from "lucide-react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";

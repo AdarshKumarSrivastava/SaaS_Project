@@ -6,11 +6,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Heart, Star, ShoppingBag, ArrowLeft, ArrowRight, Share2, Plus, Minus, Check } from "lucide-react";
 import { NEXUS_PRODUCTS, useShop } from "../../ShopContext";
+import { useCustomizationContext } from "@/context/CustomizationContext";
 
 export default function NexusProProductDetailPage() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { id } = useParams() as { id: string };
   const { addToCart, toggleWishlist, isInWishlist , currencySymbol } = useShop();
-  const basePath = '/templates/nexus-pro';
   
   const product = NEXUS_PRODUCTS.find(p => p.id === id);
   const [quantity, setQuantity] = useState(1);
@@ -75,7 +77,7 @@ export default function NexusProProductDetailPage() {
       <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] text-white">
         <div className="text-center">
           <h1 className="text-4xl font-black uppercase tracking-tighter mb-4">Product Not Found</h1>
-          <Link href="/templates/nexus-pro/products" className="text-[#d4af37] text-xs font-bold uppercase tracking-widest hover:text-white transition-colors">
+          <Link href={`${basePath}/products`} className="text-[#d4af37] text-xs font-bold uppercase tracking-widest hover:text-white transition-colors">
             Return to Archive
           </Link>
         </div>
@@ -93,7 +95,7 @@ export default function NexusProProductDetailPage() {
     <div className="flex flex-col w-full bg-[#0a0a0a] text-[#ededed] pt-32 pb-32">
       
       <div className="px-6 md:px-12 max-w-7xl mx-auto w-full mb-8">
-        <Link href="/templates/nexus-pro/products" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white transition-colors">
+        <Link href={`${basePath}/products`} className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to Collection
         </Link>
       </div>
@@ -319,7 +321,7 @@ export default function NexusProProductDetailPage() {
                 transition={{ duration: 0.8, delay: index * 0.2 }}
                 className="group cursor-pointer flex flex-col"
               >
-                <Link href={`/templates/nexus-pro/products/${product.id}`}>
+                <Link href={`${basePath}/products/${product.id}`}>
                   <div className="relative aspect-[3/4] overflow-hidden rounded-lg mb-6 bg-white/5">
                     <img 
                       src={product.image} 

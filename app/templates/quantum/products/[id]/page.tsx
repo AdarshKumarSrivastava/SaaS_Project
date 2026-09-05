@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import { use, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, Heart, ArrowLeft, ShieldCheck, Truck, RotateCcw } from "lucide-react";
@@ -8,6 +10,8 @@ import { notFound } from "next/navigation";
 import { QUANTUM_PRODUCTS, useQuantum } from "../../QuantumContext";
 
 export default function QuantumProductDetails({ params }: { params: Promise<{ id: string }> }) {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const resolvedParams = use(params);
   const { addToCart, wishlist, toggleWishlist } = useQuantum();
   const [activeTab, setActiveTab] = useState("description");
@@ -25,7 +29,7 @@ export default function QuantumProductDetails({ params }: { params: Promise<{ id
       <div className="flex flex-col lg:flex-row h-full">
         {/* Left: Sticky Image Gallery */}
         <div className="w-full lg:w-1/2 lg:sticky lg:top-0 lg:h-screen bg-gray-100 relative overflow-hidden group">
-          <Link href="/templates/quantum/products" className="absolute top-32 left-8 z-20 flex items-center gap-2 px-4 py-2 bg-white/70 backdrop-blur-md rounded-full text-sm font-bold uppercase tracking-wider hover:bg-white hover:text-[#111111] transition-all font-inter shadow-sm">
+          <Link href={`${basePath}/products`} className="absolute top-32 left-8 z-20 flex items-center gap-2 px-4 py-2 bg-white/70 backdrop-blur-md rounded-full text-sm font-bold uppercase tracking-wider hover:bg-white hover:text-[#111111] transition-all font-inter shadow-sm">
             <ArrowLeft className="w-4 h-4" /> Back
           </Link>
           

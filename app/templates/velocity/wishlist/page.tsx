@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import Link from "next/link";
@@ -8,6 +10,8 @@ import { useVelocity } from "../VelocityContext";
 
 // Reusing the 3D card from home page, modified for Wishlist
 function WishlistCard3D({ product }: { product: any }) {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { toggleWishlist, addToCart, setIsCartOpen , currencySymbol } = useVelocity();
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
@@ -43,7 +47,7 @@ function WishlistCard3D({ product }: { product: any }) {
         style={{ transformStyle: "preserve-3d" }}
         className="relative aspect-[3/4] rounded-sm border border-[#00f0ff]/20 bg-[#050505] overflow-visible group"
       >
-        <Link href={`/templates/velocity/products/${product.id}`} className="absolute inset-0 z-10" />
+        <Link href={`${basePath}/products/${product.id}`} className="absolute inset-0 z-10" />
         
         <div 
           className="absolute inset-0 bg-[#00f0ff] opacity-0 group-hover:opacity-10 transition-opacity duration-300 blur-xl"
@@ -108,6 +112,8 @@ function WishlistCard3D({ product }: { product: any }) {
 }
 
 export default function VelocityWishlistPage() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { wishlist } = useVelocity();
 
   return (
@@ -143,7 +149,7 @@ export default function VelocityWishlistPage() {
             <h3 className="text-xl font-black uppercase tracking-widest mb-4 font-orbitron text-white/50">Wishlist Empty</h3>
             <p className="text-white/40 text-xs font-space tracking-widest uppercase mb-8">You haven't saved any items yet.</p>
             <Link 
-              href="/templates/velocity/products"
+              href={`${basePath}/products`}
               className="text-[10px] font-black uppercase tracking-[0.2em] text-[#00f0ff] border border-[#00f0ff] px-6 py-3 hover:bg-[#00f0ff] hover:text-black transition-colors"
             >
               Shop Now

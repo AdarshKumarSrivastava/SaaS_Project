@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, ReactNode, useEffect, useMemo, useCallback, useRef } from 'react';
 import { getStorefrontProducts } from '@/lib/storefront';
 import { normalizeTemplateKey } from '@/lib/template-registry';
 
@@ -11,6 +11,7 @@ interface CustomizationContextType {
   isBuilderContext?: boolean;
   activePath?: string;
   onNavigate?: (path: string) => void;
+  navigate: (path: string) => void;
   resolveRoute: (path: string) => string;
 }
 
@@ -20,9 +21,9 @@ export function CustomizationProvider({
   children, 
   siteData: initialSiteData,
   products: initialProducts,
-  basePath,
-  isBuilderContext,
-  activePath,
+  basePath = "",
+  isBuilderContext = false,
+  activePath = "/",
   onNavigate
 }: { 
   children: ReactNode; 
@@ -36,17 +37,40 @@ export function CustomizationProvider({
   const [siteData, setSiteData] = React.useState(initialSiteData);
   const [products, setProducts] = React.useState(initialProducts);
 
+  const prevSiteDataStr = useRef<string>('');
+  const prevProductsStr = useRef<string>('');
+
   useEffect(() => {
-    setSiteData(initialSiteData);
+    try {
+      const serialized = JSON.stringify(initialSiteData);
+      if (serialized !== prevSiteDataStr.current) {
+        prevSiteDataStr.current = serialized;
+        setSiteData(initialSiteData);
+      }
+    } catch {
+      setSiteData(initialSiteData);
+    }
   }, [initialSiteData]);
 
   useEffect(() => {
-    setProducts(initialProducts);
+    try {
+      const serialized = JSON.stringify(initialProducts);
+      if (serialized !== prevProductsStr.current) {
+        prevProductsStr.current = serialized;
+        setProducts(initialProducts);
+      }
+    } catch {
+      setProducts(initialProducts);
+    }
   }, [initialProducts]);
 
   const rawTemplateSlug = siteData?.global?.templateSlug;
-  const templateSlug = normalizeTemplateKey(rawTemplateSlug, siteData);
-  const mergedProducts = getStorefrontProducts(templateSlug, products || []);
+  const templateSlug = useMemo(() => normalizeTemplateKey(rawTemplateSlug, siteData), [rawTemplateSlug, siteData]);
+  
+  const mergedProducts = useMemo(() => {
+    return getStorefrontProducts(templateSlug, products || []);
+  }, [templateSlug, products]);
+
   const theme = siteData?.global?.theme;
 
   useEffect(() => {
@@ -61,7 +85,6 @@ export function CustomizationProvider({
                      || (sectionId ? document.querySelector(`[data-section-id="${sectionId}"]`) : null)) as HTMLElement;
 
          if (!target) {
-            console.warn(`Preview target not found: ${fieldKey || sectionId}`);
             return;
          }
 
@@ -90,8 +113,12 @@ export function CustomizationProvider({
     };
   }, []);
 
+  const prevThemeStr = useRef<string>('');
   useEffect(() => {
     if (!theme) return;
+    const themeStr = JSON.stringify(theme);
+    if (themeStr === prevThemeStr.current) return;
+    prevThemeStr.current = themeStr;
     
     const root = document.documentElement;
     if (theme.colors) {
@@ -110,14 +137,31 @@ export function CustomizationProvider({
     }
   }, [theme]);
 
-  const resolveRoute = (path: string) => {
+  const resolveRoute = useCallback((path: string) => {
     if (basePath && path.startsWith(basePath)) return path;
     const safePath = path.startsWith('/') ? path : `/${path}`;
     return `${basePath || ''}${safePath}`;
-  };
+  }, [basePath]);
+
+  const navigate = useCallback((path: string) => {
+    if (onNavigate) {
+      onNavigate(path);
+    }
+  }, [onNavigate]);
+
+  const contextValue = useMemo(() => ({
+    siteData,
+    products: mergedProducts,
+    basePath,
+    isBuilderContext,
+    activePath,
+    onNavigate,
+    navigate,
+    resolveRoute
+  }), [siteData, mergedProducts, basePath, isBuilderContext, activePath, onNavigate, navigate, resolveRoute]);
 
   return (
-    <CustomizationContext.Provider value={{ siteData, products: mergedProducts, basePath, isBuilderContext, activePath, onNavigate, resolveRoute }}>
+    <CustomizationContext.Provider value={contextValue}>
       {children}
     </CustomizationContext.Provider>
   );

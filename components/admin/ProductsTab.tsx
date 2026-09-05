@@ -1,51 +1,115 @@
 "use client";
 
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Box, Plus, Search, MoreHorizontal, Edit, Trash2, Image as ImageIcon, CheckCircle, Tag } from 'lucide-react';
+import { Box, Plus, Search, Edit, Trash2, Image as ImageIcon, RotateCcw } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
 
+// In-memory product cache for instant tab transitions (0ms perceived latency)
+const productMemoryCache = new Map<string, { products: any[]; timestamp: number }>();
+
+function setCachedProducts(siteId: string, products: any[]) {
+  productMemoryCache.set(siteId, { products, timestamp: Date.now() });
+}
+
+function getCachedProducts(siteId: string): any[] | null {
+  const entry = productMemoryCache.get(siteId);
+  return entry ? entry.products : null;
+}
+
 export default function ProductsTab({ siteId }: { siteId: string }) {
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<any[]>(() => getCachedProducts(siteId) || []);
+  const [loading, setLoading] = useState(() => !getCachedProducts(siteId));
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async (isBackground = false) => {
+    if (!isBackground && !getCachedProducts(siteId)) {
+      setLoading(true);
+    }
+    setError(null);
     try {
       const data = await apiClient.get(`/api/sites/${siteId}/products`);
-      setProducts(data);
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to load products');
+      const list = Array.isArray(data?.products) ? data.products : Array.isArray(data) ? data : [];
+      setProducts(list);
+      setCachedProducts(siteId, list);
+    } catch (err: any) {
+      console.error('[ProductsTab] Error fetching products:', err);
+      if (!getCachedProducts(siteId)) {
+        setError('Unable to load products. Please check your connection.');
+        setProducts([]);
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [siteId]);
 
   useEffect(() => {
-    fetchProducts();
-  }, [siteId]);
+    const cachedData = getCachedProducts(siteId);
+    if (cachedData) {
+      // Revalidate in background silently
+      fetchProducts(true);
+    } else {
+      fetchProducts(false);
+    }
+  }, [siteId, fetchProducts]);
 
   const handleDelete = async (productId: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
+    
+    // Optimistic delete
+    const previousProducts = [...products];
+    const next = products.filter(p => p.id !== productId);
+    setProducts(next);
+    setCachedProducts(siteId, next);
+
     try {
       await apiClient.delete(`/api/sites/${siteId}/products/${productId}`);
       toast.success('Product deleted');
-      fetchProducts();
     } catch (err) {
+      console.error(err);
       toast.error('Failed to delete product');
+      setProducts(previousProducts);
+      setCachedProducts(siteId, previousProducts);
     }
   };
 
-  const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const handleSaved = (savedProduct?: any) => {
+    setIsFormOpen(false);
+    if (!savedProduct) {
+      fetchProducts(true);
+      return;
+    }
+    // Optimistic insert/update
+    const exists = products.some(p => p.id === savedProduct.id);
+    const next = exists
+      ? products.map(p => (p.id === savedProduct.id ? { ...p, ...savedProduct } : p))
+      : [savedProduct, ...products];
+    setProducts(next);
+    setCachedProducts(siteId, next);
+  };
+
+  const safeProducts = Array.isArray(products) ? products : [];
+  const filteredProducts = useMemo(() => {
+    if (!searchQuery.trim()) return safeProducts;
+    const q = searchQuery.toLowerCase().trim();
+    return safeProducts.filter(p => 
+      (p?.name || '').toLowerCase().includes(q) || 
+      (p?.sku || '').toLowerCase().includes(q) ||
+      (p?.status || '').toLowerCase().includes(q)
+    );
+  }, [safeProducts, searchQuery]);
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}
+      initial={{ opacity: 0, y: 15 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      exit={{ opacity: 0, y: -15 }} 
+      transition={{ duration: 0.25 }}
       className="space-y-8"
     >
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
@@ -61,7 +125,7 @@ export default function ProductsTab({ siteId }: { siteId: string }) {
               placeholder="Search catalog..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#0a0a0a] border border-white/10 rounded-full px-6 py-3 pl-12 text-sm font-light focus:border-white/30 outline-none transition-all"
+              className="w-full bg-[#0a0a0a] border border-white/10 rounded-full px-6 py-3 pl-12 text-sm font-light focus:border-white/30 outline-none transition-all placeholder:text-white/30"
             />
           </div>
           <button 
@@ -86,13 +150,54 @@ export default function ProductsTab({ siteId }: { siteId: string }) {
               </tr>
             </thead>
             <tbody>
+              {/* Skeletons when initial loading */}
+              {loading && products.length === 0 && (
+                <>
+                  {[1, 2, 3, 4].map(idx => (
+                    <tr key={`skeleton-${idx}`} className="border-b border-white/5 animate-pulse">
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-xl bg-white/[0.04]" />
+                          <div className="space-y-2">
+                            <div className="w-32 h-3.5 bg-white/[0.06] rounded-md" />
+                            <div className="w-20 h-2.5 bg-white/[0.03] rounded-md" />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="w-16 h-5 bg-white/[0.04] rounded-full" />
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="w-20 h-4 bg-white/[0.04] rounded-md" />
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="w-14 h-4 bg-white/[0.04] rounded-md" />
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <div className="w-8 h-8 rounded-full bg-white/[0.04]" />
+                          <div className="w-8 h-8 rounded-full bg-white/[0.04]" />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </>
+              )}
+
+              {/* Real Product Rows */}
               {filteredProducts.map(product => (
                 <tr key={product.id} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors group">
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
                         {product.images?.[0] ? (
-                          <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                          <img 
+                            src={product.images[0]} 
+                            alt={product.name} 
+                            loading="lazy" 
+                            decoding="async" 
+                            className="w-full h-full object-cover" 
+                          />
                         ) : (
                           <ImageIcon className="w-4 h-4 text-white/20" />
                         )}
@@ -113,19 +218,21 @@ export default function ProductsTab({ siteId }: { siteId: string }) {
                     <span className="text-sm font-mono text-white/70">{product.stock || 0} in stock</span>
                   </td>
                   <td className="py-4 px-6">
-                    <span className="text-sm font-mono">${product.price.toFixed(2)}</span>
+                    <span className="text-sm font-mono">${(Number(product.price) || 0).toFixed(2)}</span>
                   </td>
                   <td className="py-4 px-6 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
                         onClick={() => { setSelectedProduct(product); setIsFormOpen(true); }}
                         className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/20 hover:border-white/30 transition-all text-white/70 hover:text-white"
+                        title="Edit product"
                       >
                         <Edit className="w-3.5 h-3.5" />
                       </button>
                       <button 
                         onClick={() => handleDelete(product.id)}
                         className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-red-500/20 hover:border-red-500/30 transition-all text-white/70 hover:text-red-400"
+                        title="Delete product"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -133,11 +240,38 @@ export default function ProductsTab({ siteId }: { siteId: string }) {
                   </td>
                 </tr>
               ))}
-              {filteredProducts.length === 0 && (
+
+              {/* Empty State: Only shown when NOT loading and product array is empty */}
+              {!loading && !error && filteredProducts.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-white/30">
+                  <td colSpan={5} className="py-16 text-center text-white/30">
                     <Box className="w-8 h-8 mx-auto mb-4 opacity-50" />
-                    <p className="text-[10px] uppercase tracking-widest font-bold">No products found</p>
+                    <p className="text-[10px] uppercase tracking-widest font-bold">
+                      {searchQuery ? 'No products match your search' : 'No products found'}
+                    </p>
+                    {searchQuery && (
+                      <button 
+                        onClick={() => setSearchQuery('')} 
+                        className="mt-3 text-xs text-white/50 hover:text-white underline transition-colors"
+                      >
+                        Clear search
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              )}
+
+              {/* Error State */}
+              {error && products.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="py-16 text-center text-red-400/80">
+                    <p className="text-xs uppercase tracking-widest font-bold mb-3">{error}</p>
+                    <button 
+                      onClick={() => fetchProducts(false)} 
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-all"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" /> Retry
+                    </button>
                   </td>
                 </tr>
               )}
@@ -153,7 +287,7 @@ export default function ProductsTab({ siteId }: { siteId: string }) {
             siteId={siteId} 
             product={selectedProduct} 
             onClose={() => setIsFormOpen(false)} 
-            onSaved={() => { setIsFormOpen(false); fetchProducts(); }} 
+            onSaved={handleSaved} 
           />
         )}
       </AnimatePresence>
@@ -162,7 +296,7 @@ export default function ProductsTab({ siteId }: { siteId: string }) {
 }
 
 // Inline component for the editor to keep files compact
-function ProductEditor({ siteId, product, onClose, onSaved }: { siteId: string, product: any, onClose: () => void, onSaved: () => void }) {
+function ProductEditor({ siteId, product, onClose, onSaved }: { siteId: string, product: any, onClose: () => void, onSaved: (saved?: any) => void }) {
   const [formData, setFormData] = useState(product || {
     name: '',
     description: '',
@@ -235,14 +369,15 @@ function ProductEditor({ siteId, product, onClose, onSaved }: { siteId: string, 
         stock: Number(formData.stock) || 0
       };
 
+      let resultProduct: any;
       if (product) {
-        await apiClient.patch(`/api/sites/${siteId}/products/${product.id}`, payload);
+        resultProduct = await apiClient.patch(`/api/sites/${siteId}/products/${product.id}`, payload);
         toast.success('Product updated');
       } else {
-        await apiClient.post(`/api/sites/${siteId}/products`, payload);
+        resultProduct = await apiClient.post(`/api/sites/${siteId}/products`, payload);
         toast.success('Product created');
       }
-      onSaved();
+      onSaved(resultProduct);
     } catch (err: any) {
       console.error(err);
       toast.error(err.response?.data?.error || 'Failed to save product');

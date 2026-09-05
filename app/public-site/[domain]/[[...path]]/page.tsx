@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import { prisma } from '@/server/lib/prisma';
 import { TemplateRenderer } from '@/components/TemplateRenderer';
-import { CustomizationProvider } from '@/context/CustomizationContext';
 import type { Metadata } from 'next';
 
 export async function generateMetadata({ 
@@ -84,24 +83,17 @@ export default async function PublicSitePage({
   });
 
   // 4. Determine active path
-  const activePath = path ? `/${path.join('/')}` : '/';
+  const activePath = path && path.length > 0 ? `/${path.join('/')}` : '/';
 
-  // 5. Render
+  // 5. Render directly through centralized TemplateRenderer
   return (
-    <CustomizationProvider 
-      siteData={deployment.schema as any} 
+    <TemplateRenderer
+      siteData={deployment.schema as any}
       products={products as any}
+      activePath={activePath}
       basePath=""
-      isBuilderContext={false} // Crucial: disables all editor UI
-    >
-      <TemplateRenderer
-        siteData={deployment.schema as any}
-        products={products as any}
-        activePath={activePath}
-        basePath=""
-        isBuilderContext={false}
-        siteId={site.id}
-      />
-    </CustomizationProvider>
+      isBuilderContext={false}
+      siteId={site.id}
+    />
   );
 }

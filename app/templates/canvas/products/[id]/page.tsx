@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import { useParams } from "next/navigation";
 import { useCart } from "../../CartContext";
 import Link from "next/link";
@@ -8,6 +10,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Heart } from "lucide-react";
 
 export default function CanvasProductDetailPage({ initialProducts }: { initialProducts?: any[] }) {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const params = useParams();
   const id = params?.id as string;
   const rawProduct = (initialProducts || []).find((p: any) => p.id === id || p.product_id === id);
@@ -34,7 +38,7 @@ export default function CanvasProductDetailPage({ initialProducts }: { initialPr
         <h1 className="font-serif text-6xl italic tracking-tighter mb-8">Not Found.</h1>
         <p className="text-[10px] uppercase tracking-[0.2em] text-white/50 mb-12">The object you seek is unavailable.</p>
         <Link
-          href="/templates/canvas/services"
+          href={`${basePath}/services`}
           className="border border-white/20 px-8 py-4 text-[10px] uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-colors"
         >
           Return to Archive
@@ -63,7 +67,7 @@ export default function CanvasProductDetailPage({ initialProducts }: { initialPr
       {/* Left: Cinematic Image Viewer */}
       <div className="w-full lg:w-1/2 lg:h-screen lg:sticky top-0 border-b lg:border-b-0 lg:border-r border-white/10 relative overflow-hidden group">
         <Link 
-          href="/templates/canvas/services"
+          href={`${basePath}/services`}
           className="absolute top-8 left-8 z-20 text-[10px] uppercase tracking-[0.2em] text-white/70 hover:text-white transition-colors mix-blend-difference"
         >
           [ Back ]

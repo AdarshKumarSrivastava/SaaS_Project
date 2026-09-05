@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { PremiumPaymentSelector, PaymentMethod } from "@/components/storefront/PremiumPaymentSelector";
@@ -9,6 +11,8 @@ import { CheckCircle2, ChevronRight, Tag, X } from "lucide-react";
 import { useShop, Order } from "../ShopContext";
 
 export default function NexusProCheckoutPage() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { cartItems, totalPrice, placeOrder, appliedCoupon, discountAmount, couponError, applyCoupon, removeCoupon , currencySymbol } = useShop();
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -63,6 +67,8 @@ export default function NexusProCheckoutPage() {
 
   
   async function handlePlaceOrder(e: React.FormEvent) {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
     e.preventDefault();
     setIsPlacingOrder(true);
     try {
@@ -113,13 +119,13 @@ export default function NexusProCheckoutPage() {
           </p>
           <div className="flex flex-col gap-4">
             <Link 
-              href="/templates/nexus-pro/profile"
+              href={`${basePath}/profile`}
               className="w-full py-4 bg-white text-black font-bold uppercase tracking-widest text-xs rounded-full hover:bg-[#d4af37] hover:text-white transition-colors"
             >
               View Order Status
             </Link>
             <Link 
-              href="/templates/nexus-pro/products"
+              href={`${basePath}/products`}
               className="w-full py-4 bg-transparent border border-white/20 text-white font-bold uppercase tracking-widest text-xs rounded-full hover:bg-white/10 transition-colors"
             >
               Continue Shopping
@@ -134,7 +140,7 @@ export default function NexusProCheckoutPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-white">
         <p>Your cart is empty.</p>
-        <Link href="/templates/nexus-pro/products" className="mt-4 text-[#d4af37] underline">Return to shop</Link>
+        <Link href={`${basePath}/products`} className="mt-4 text-[#d4af37] underline">Return to shop</Link>
       </div>
     );
   }
@@ -143,7 +149,7 @@ export default function NexusProCheckoutPage() {
     <div className="flex flex-col w-full bg-[#0a0a0a] text-[#ededed] pt-32 pb-32 min-h-screen">
       <section className="px-6 md:px-12 max-w-7xl mx-auto w-full mb-16">
         <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-white/30 mb-8">
-          <Link href="/templates/nexus-pro/cart" className="hover:text-white transition-colors">Cart</Link>
+          <Link href={`${basePath}/cart`} className="hover:text-white transition-colors">Cart</Link>
           <ChevronRight className="w-3 h-3" />
           <span className="text-white">Checkout</span>
         </div>

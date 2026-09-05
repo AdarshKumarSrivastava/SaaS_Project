@@ -1,5 +1,8 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
+
 import Link from "next/link";
 import { ShoppingBag, Search, Menu, ArrowLeft, Plus, X, Heart, User, Hexagon } from "lucide-react";
 import { CartProvider, useCart } from "./CartContext";
@@ -11,6 +14,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 function Header({ initialCustomData, basePath }: { initialCustomData?: any, basePath: string }) {
+  const { isAuthenticated, openAuthModal } = useCustomerAuth();
   const { totalItems, searchQuery, setSearchQuery, currencySymbol, wishlist } = useCart();
   const pathname = usePathname();
   const router = useRouter();
@@ -106,9 +110,9 @@ function Header({ initialCustomData, basePath }: { initialCustomData?: any, base
             >
               <Search className="w-5 h-5" />
             </button>
-            <Link href={`${basePath}/profile`} className="hover:text-black/50 transition-colors block text-[#111111]">
+            <button type="button" onClick={() => openAuthModal(isAuthenticated ? 'account' : 'login')} aria-label="Customer Account" className="hover:text-black/50 transition-colors block text-[#111111]">
               <User className="w-5 h-5" />
-            </Link>
+            </button>
             <Link href={`${basePath}/wishlist`} className="hover:text-black/50 transition-colors relative text-[#111111]">
               <Heart className="w-5 h-5" />
               <AnimatePresence>
@@ -277,11 +281,11 @@ export default function StarterPreviewLayout({ children, initialCustomData, base
   return (
     <CartProvider initialBasePath={basePath} initialCustomData={initialCustomData}>
       <div className="min-h-screen flex flex-col bg-[#F8F7F5] font-body text-[#111111] selection:bg-[#FF4D00] selection:text-white relative">
-        {!isAuthPage && <Header initialCustomData={initialCustomData} basePath={basePath !== undefined ? basePath : '/templates/minimalist'} />}
+        {!isAuthPage && <Header initialCustomData={initialCustomData} basePath={basePath !== undefined ? basePath : `${basePath}`} />}
         <main className="flex-grow flex flex-col">
           {children}
         </main>
-        {!isAuthPage && <Footer initialCustomData={initialCustomData} basePath={basePath !== undefined ? basePath : '/templates/minimalist'} />}
+        {!isAuthPage && <Footer initialCustomData={initialCustomData} basePath={basePath !== undefined ? basePath : `${basePath}`} />}
         <ToastContainer />
       </div>
     </CartProvider>
@@ -289,6 +293,9 @@ export default function StarterPreviewLayout({ children, initialCustomData, base
 }
 
 function ToastContainer() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
+  const { isAuthenticated, openAuthModal } = useCustomerAuth();
   const { toastMessage, clearToast } = useCart();
   
   return (

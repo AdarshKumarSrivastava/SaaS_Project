@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { HORIZON_PRODUCTS, useHorizon } from "../HorizonContext";
@@ -8,6 +10,8 @@ import { useState, useMemo } from "react";
 import { useCustomization } from "@/hooks/useCustomization";
 
 export default function HorizonProducts({ initialCustomData, initialProducts }: { initialCustomData?: any, initialProducts?: any[] }) {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { addToCart , currencySymbol } = useHorizon();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -221,7 +225,7 @@ export default function HorizonProducts({ initialCustomData, initialProducts }: 
                   transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                   className="group flex flex-col pointer-events-auto"
                 >
-                  <Link href={`/templates/horizon/products/${product.id}`} className="block relative overflow-hidden mb-8" style={{ cursor: "none" }}>
+                  <Link href={`${basePath}/products/${product.id}`} className="block relative overflow-hidden mb-8" style={{ cursor: "none" }}>
                     <div className="relative aspect-[4/5] bg-[#F5F5F5] overflow-hidden">
                       <img 
                         src={product.image} 
@@ -247,7 +251,7 @@ export default function HorizonProducts({ initialCustomData, initialProducts }: 
                     </div>
                     <div className="flex justify-between items-center pt-6 border-t border-black/5">
                       <Link 
-                        href={`/templates/horizon/products/${product.id}`}
+                        href={`${basePath}/products/${product.id}`}
                         style={{ cursor: "none" }}
                         className="text-[10px] font-medium uppercase tracking-[0.2em] font-outfit text-black/50 hover:text-black transition-colors pointer-events-auto"
                       >

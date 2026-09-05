@@ -1,11 +1,15 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import { motion } from "framer-motion";
 import { useHorizon } from "../HorizonContext";
 import { Heart, Trash2, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 
 export default function HorizonWishlist() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { wishlist, toggleWishlist, addToCart , currencySymbol } = useHorizon();
 
   return (
@@ -30,7 +34,7 @@ export default function HorizonWishlist() {
           <div className="py-32 flex flex-col items-center justify-center border border-black/5 bg-white shadow-[0_20px_40px_rgba(0,0,0,0.02)]">
              <Heart className="w-8 h-8 text-black/20 mb-8" strokeWidth={1} />
              <h2 className="font-cormorant text-3xl font-light text-black/60 mb-6 italic">No assets saved.</h2>
-             <Link href="/templates/horizon/products" className="inline-flex items-center gap-4 group pointer-events-auto cursor-none">
+             <Link href={`${basePath}/products`} className="inline-flex items-center gap-4 group pointer-events-auto cursor-none">
                <span className="font-outfit text-[10px] uppercase tracking-[0.3em] text-[#111] group-hover:text-black/60 transition-colors duration-500 font-medium pb-1 border-b border-black group-hover:border-black/20">
                  Explore Archive
                </span>
@@ -46,7 +50,7 @@ export default function HorizonWishlist() {
                 transition={{ delay: idx * 0.1, duration: 1, ease: [0.16, 1, 0.3, 1] }}
                 className="group flex flex-col pointer-events-auto"
               >
-                <Link href={`/templates/horizon/products/${product.id}`} className="block relative overflow-hidden mb-8" style={{ cursor: "none" }}>
+                <Link href={`${basePath}/products/${product.id}`} className="block relative overflow-hidden mb-8" style={{ cursor: "none" }}>
                   <div className="relative aspect-[4/5] bg-[#F5F5F5] overflow-hidden">
                     <img 
                       src={product.image} 

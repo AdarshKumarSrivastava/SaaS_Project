@@ -1,11 +1,15 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, Trash2, ShoppingBag } from "lucide-react";
 import { useShop } from "../ShopContext";
 
 export default function NexusProWishlistPage() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { wishlist, toggleWishlist, addToCart , currencySymbol } = useShop();
 
   return (
@@ -31,7 +35,7 @@ export default function NexusProWishlistPage() {
             <h3 className="text-2xl font-black uppercase tracking-tighter mb-4">Nothing Saved Yet</h3>
             <p className="text-white/50 text-sm mb-8">Keep track of items you love by adding them to your wishlist.</p>
             <Link 
-              href="/templates/nexus-pro/products"
+              href={`${basePath}/products`}
               className="inline-block px-8 py-4 bg-white text-black font-bold uppercase tracking-widest text-xs hover:bg-[#d4af37] hover:text-white transition-colors rounded-full"
             >
               Explore Collection
@@ -66,7 +70,7 @@ export default function NexusProWishlistPage() {
                   
                   <div className="flex justify-between items-start mb-6">
                     <div>
-                      <Link href={`/templates/nexus-pro/products/${product.id}`}>
+                      <Link href={`${basePath}/products/${product.id}`}>
                         <h3 className="text-xl font-bold mb-1 hover:text-[#d4af37] transition-colors">{product.name}</h3>
                       </Link>
                       <p className="text-sm text-white/50">{product.category}</p>

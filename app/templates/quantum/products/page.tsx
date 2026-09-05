@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -8,6 +10,8 @@ import { QUANTUM_PRODUCTS, useQuantum } from "../QuantumContext";
 import { useCustomization } from "@/hooks/useCustomization";
 
 export default function QuantumProductsPage() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { addToCart, wishlist, toggleWishlist } = useQuantum();
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [sortBy, setSortBy] = useState<string>("featured");
@@ -174,7 +178,7 @@ export default function QuantumProductsPage() {
                       className="group flex flex-col"
                     >
                       <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-gray-100 mb-6">
-                        <Link href={`/templates/quantum/products/${product.id}`} className="block w-full h-full">
+                        <Link href={`${basePath}/products/${product.id}`} className="block w-full h-full">
                           <img 
                             src={product.image} 
                             alt={product.name}
@@ -216,7 +220,7 @@ export default function QuantumProductsPage() {
                         <div className="text-xs uppercase tracking-widest text-[#111111] font-bold mb-2">
                           {product.category}
                         </div>
-                        <Link href={`/templates/quantum/products/${product.id}`}>
+                        <Link href={`${basePath}/products/${product.id}`}>
                           <h3 className="font-playfair text-xl font-bold text-[#121212] group-hover:text-[#111111] transition-colors mb-2">
                             {product.name}
                           </h3>

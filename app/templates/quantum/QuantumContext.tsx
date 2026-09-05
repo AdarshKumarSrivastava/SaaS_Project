@@ -1,4 +1,7 @@
 "use client";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
+import { useRouter, usePathname } from "next/navigation";
+import { useCustomizationContext } from "@/context/CustomizationContext";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
@@ -117,6 +120,12 @@ interface QuantumContextType {
 const QuantumContext = createContext<QuantumContextType | undefined>(undefined);
 
 export function QuantumProvider({ children , initialCustomData }: { children: ReactNode, initialCustomData?: any  }) {
+  const { customer, isAuthenticated, siteId, openAuthModal, registerCartHandler } = useCustomerAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
+  const storageKey = `cart_${siteId || 'default'}_${customer?.id || 'guest'}`;
 
   const symbolMap: Record<string, string> = {
     USD: "$", EUR: "€", GBP: "£", CAD: "C$", AUD: "A$", INR: "₹"
@@ -149,6 +158,16 @@ export function QuantumProvider({ children , initialCustomData }: { children: Re
   };
 
   const addToCart = (product: QuantumProduct) => {
+    if (!isAuthenticated) {
+      openAuthModal({
+        reason: 'add-to-cart',
+        pendingProduct: product,
+        pendingQuantity: 1,
+        message: 'Sign in to add this item to your cart.'
+      });
+      return;
+    }
+
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
@@ -163,6 +182,7 @@ export function QuantumProvider({ children , initialCustomData }: { children: Re
 
   const removeFromCart = (productId: string) => {
     setCart(prev => prev.filter(item => item.id !== productId));
+    showToast(`Removed from cart`);
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
@@ -175,7 +195,9 @@ export function QuantumProvider({ children , initialCustomData }: { children: Re
     ));
   };
 
-  const clearCart = () => setCart([]);
+  const clearCart = () => {
+    setCart([]);
+  };
 
   const totalPrice = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
 
@@ -185,33 +207,26 @@ export function QuantumProvider({ children , initialCustomData }: { children: Re
   } else if (appliedCoupon === 'SAVE50') {
     discountAmount = Math.min(50, totalPrice || 0);
   } else if (appliedCoupon) {
-    discountAmount = (totalPrice || 0) * 0.1; // Default 10% for API coupons for demo
+    discountAmount = (totalPrice || 0) * 0.1;
   }
 
   const applyCoupon = async (code: string) => {
-    setCouponError(null);
     try {
-      const res = await fetch('/api/v1/coupons/validate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          code, 
-          tenantId: '00000000-0000-0000-0000-000000000000' // Using dummy UUID, in real app from session
-        })
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code })
       });
       const data = await res.json();
       if (res.ok) {
         setAppliedCoupon(code.toUpperCase());
-        // For simplicity, we just use the discount percentage or flat amount.
-        // The API returns discount_amount and discount_type. 
-        // Real implementation would store this in context state.
       } else {
         setCouponError(data.error || "Invalid coupon code");
       }
     } catch (err) {
       setCouponError("Failed to validate coupon");
     }
-  };;
+  };
 
   const removeCoupon = () => {
     setAppliedCoupon(null);
@@ -231,9 +246,17 @@ export function QuantumProvider({ children , initialCustomData }: { children: Re
     });
   };
 
+  useEffect(() => {
+    if (registerCartHandler) {
+      return registerCartHandler((p: any) => {
+        addToCart(p);
+      });
+    }
+  }, [registerCartHandler]);
+
   return (
     <QuantumContext.Provider value={{
-        currencySymbol,
+      currencySymbol,
       cart,
       addToCart,
       removeFromCart,

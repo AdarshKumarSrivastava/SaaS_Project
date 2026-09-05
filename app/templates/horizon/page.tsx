@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import { useRef, useState } from "react";
 import { motion, useScroll, useTransform, useSpring, useVelocity, useAnimationFrame } from "framer-motion";
 import Link from "next/link";
@@ -8,6 +10,8 @@ import { useHorizon } from "./HorizonContext";
 import { useCustomization } from "@/hooks/useCustomization";
 
 function KineticMarquee({ text, direction = 1 }: { text: string, direction?: number }) {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { scrollY } = useScroll();
   const scrollVelocity = useVelocity(scrollY);
   const smoothVelocity = useSpring(scrollVelocity, { damping: 50, stiffness: 400 });
@@ -47,6 +51,8 @@ function KineticMarquee({ text, direction = 1 }: { text: string, direction?: num
 }
 
 function KineticHero() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end start"] });
   const yOrb = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
@@ -125,7 +131,7 @@ function KineticHero() {
         transition={{ duration: 1, delay: 1.2 }}
         className="absolute bottom-12 right-6 md:right-12 z-30 pointer-events-auto"
       >
-        <Link href="/templates/horizon/products" className="group flex items-center gap-4 cursor-none pointer-events-auto">
+        <Link href={`${basePath}/products`} className="group flex items-center gap-4 cursor-none pointer-events-auto">
           <span className="font-outfit text-[10px] uppercase tracking-[0.3em] text-[#111]/50 group-hover:text-[#111] transition-colors duration-500">
             {ctaText}
           </span>
@@ -148,6 +154,8 @@ function KineticHero() {
 }
 
 function ProjectCard({ project, index }: { project: any; index: number }) {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const ref = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();
   const scrollVelocity = useVelocity(scrollY);
@@ -171,7 +179,7 @@ function ProjectCard({ project, index }: { project: any; index: number }) {
       transition={{ duration: 1.2, delay: (index % 2) * 0.2, ease: [0.16, 1, 0.3, 1] }}
       className={`group relative pointer-events-auto ${index % 2 === 1 ? 'md:mt-48' : ''}`}
     >
-      <Link href={`/templates/horizon/products/${project.id}`} className="block cursor-none pointer-events-auto">
+      <Link href={`${basePath}/products/${project.id}`} className="block cursor-none pointer-events-auto">
         <div className="relative aspect-[3/4] overflow-hidden bg-[#F5F5F5] mb-8">
           <img 
             src={project.image} 
@@ -193,6 +201,8 @@ function ProjectCard({ project, index }: { project: any; index: number }) {
 }
 
 export default function HorizonHome({ initialCustomData, initialProducts }: { initialCustomData?: any, initialProducts?: any[] }) {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { currencySymbol } = useHorizon();
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -226,7 +236,7 @@ export default function HorizonHome({ initialCustomData, initialProducts }: { in
                 {initialTitle} <span className="italic font-medium">{lastWord}</span>
               </motion.h2>
             </div>
-            <Link href="/templates/horizon/products" className="group inline-flex items-center gap-4 cursor-none pointer-events-auto">
+            <Link href={`${basePath}/products`} className="group inline-flex items-center gap-4 cursor-none pointer-events-auto">
               <span className="font-outfit text-[10px] uppercase tracking-[0.2em] text-[#111]/60 group-hover:text-[#111] transition-colors duration-500 font-medium">
                 View Archive
               </span>
@@ -263,7 +273,7 @@ export default function HorizonHome({ initialCustomData, initialProducts }: { in
               <span key={i} className={i === 1 ? "italic font-medium" : ""}>"{line}"{i === 0 && <br/>}</span>
             ))}
           </h2>
-          <Link href="/templates/horizon/about" className="inline-flex items-center gap-4 group cursor-none pointer-events-auto">
+          <Link href={`${basePath}/about`} className="inline-flex items-center gap-4 group cursor-none pointer-events-auto">
             <span className="font-outfit text-xs uppercase tracking-[0.2em] text-black/60 group-hover:text-black font-medium transition-colors duration-500 pb-2 border-b border-black/10 group-hover:border-black">
               {ethosCta}
             </span>

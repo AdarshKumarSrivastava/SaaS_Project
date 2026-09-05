@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import { useParams, useRouter } from "next/navigation";
 import { ALL_PRODUCTS, useCart } from "../../CartContext";
 import { motion } from "framer-motion";
@@ -8,6 +10,8 @@ import { ArrowLeft, Plus, Minus, Heart } from "lucide-react";
 import { useState } from "react";
 
 export default function EssenceProductDetail() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const params = useParams();
   const router = useRouter();
   const id = params?.id as string;
@@ -23,7 +27,7 @@ export default function EssenceProductDetail() {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center bg-[#F3EDE2]">
         <h1 className="font-serif text-3xl mb-4 text-[#4A3F35]">Product not found</h1>
-        <Link href="/templates/essence/products" className="text-xs uppercase tracking-[0.2em] border-b border-[#4A3F35] pb-1 text-[#4A3F35] hover:text-[#A69684] hover:border-[#A69684] transition-colors">
+        <Link href={`${basePath}/products`} className="text-xs uppercase tracking-[0.2em] border-b border-[#4A3F35] pb-1 text-[#4A3F35] hover:text-[#A69684] hover:border-[#A69684] transition-colors">
           Return to Shop
         </Link>
       </div>
@@ -74,7 +78,7 @@ export default function EssenceProductDetail() {
 
         {/* Right Content - Scrollable Details */}
         <div className="w-full md:w-1/2 p-6 md:p-16 lg:p-24 flex flex-col justify-center min-h-[50vh] md:min-h-[calc(100vh-6rem)]">
-          <Link href="/templates/essence/products" className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-[#4A3F35]/50 hover:text-[#4A3F35] transition-colors mb-12 w-fit">
+          <Link href={`${basePath}/products`} className="flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-[#4A3F35]/50 hover:text-[#4A3F35] transition-colors mb-12 w-fit">
             <ArrowLeft className="w-3 h-3" /> Back to Collection
           </Link>
 

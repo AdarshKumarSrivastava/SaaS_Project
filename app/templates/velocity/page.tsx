@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, Zap, Target, Crosshair } from "lucide-react";
@@ -9,6 +11,8 @@ import { useCustomization } from "@/hooks/useCustomization";
 
 // Crazy 3D Card component
 function ProductCard3D({ product }: { product: any }) {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { currencySymbol } = useVelocity();
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
@@ -36,7 +40,7 @@ function ProductCard3D({ product }: { product: any }) {
 
   return (
     <div data-component-id={`product-${product.id}`} className="block perspective-1000">
-      <Link href={`/templates/velocity/products/${product.id}`}>
+      <Link href={`${basePath}/products/${product.id}`}>
         <motion.div
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
@@ -93,6 +97,8 @@ function ProductCard3D({ product }: { product: any }) {
 }
 
 export default function VelocityHomePage() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { currencySymbol } = useVelocity();
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: containerRef });
@@ -156,7 +162,7 @@ export default function VelocityHomePage() {
             {heroSubtitle}
           </motion.p>
 
-          <Link href="/templates/velocity/products">
+          <Link href={`${basePath}/products`}>
             <motion.button 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -203,7 +209,7 @@ export default function VelocityHomePage() {
               {featuredSubtitle}
             </p>
           </div>
-          <Link href="/templates/velocity/products" className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-white hover:text-[#00f0ff] transition-colors">
+          <Link href={`${basePath}/products`} className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-white hover:text-[#00f0ff] transition-colors">
             <span className="relative">
               {viewAllText}
               <span className="absolute -bottom-1 left-0 w-full h-[1px] bg-[#00f0ff] scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />

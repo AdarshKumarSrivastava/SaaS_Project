@@ -8,6 +8,8 @@ import { useState, useEffect, ReactNode } from "react";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useCustomization } from "@/hooks/useCustomization";
+import { useCustomizationContext } from "@/context/CustomizationContext";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 
 const cormorant = Cormorant_Garamond({ 
   subsets: ["latin"], 
@@ -21,6 +23,9 @@ const outfit = Outfit({
 });
 
 function HorizonNavigation() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
+  const { isAuthenticated, openAuthModal } = useCustomerAuth();
   const { cart, wishlist, isCartOpen, setIsCartOpen, clearCart, appliedCoupon, applyCoupon, removeCoupon, discountAmount, couponError, updateQuantity, removeFromCart , currencySymbol } = useHorizon();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
@@ -57,9 +62,9 @@ function HorizonNavigation() {
   const cartItemsCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   const navLinks = [
-    { name: "Collection", href: "/templates/horizon/products" },
-    { name: "Manifesto", href: "/templates/horizon/about" },
-    { name: "Contact", href: "/templates/horizon/contact" },
+    { name: "Collection", href: `${basePath}/products` },
+    { name: "Manifesto", href: `${basePath}/about` },
+    { name: "Contact", href: `${basePath}/contact` },
   ];
 
   const handleApplyCoupon = (e: React.FormEvent) => {
@@ -131,7 +136,7 @@ function HorizonNavigation() {
       >
         <div className="max-w-[1600px] mx-auto px-6 md:px-12 flex items-center justify-between">
           
-          <Link href="/templates/horizon" className="flex items-center gap-3 group z-50 relative pointer-events-auto" style={{ cursor: "none" }}>
+          <Link href={basePath || '/'} className="flex items-center gap-3 group z-50 relative pointer-events-auto" style={{ cursor: "none" }}>
             {logoUrl ? (<img src={logoUrl} alt={brandName || "Horizon"} className="h-8 w-auto object-contain" />) : (<div className="flex items-center gap-2"><Sun className="w-6 h-6" /><span className={`text-2xl font-medium tracking-widest text-black uppercase ${outfit.className}`}>{(brandName || "Horizon").charAt(0)}<span className="text-black/40">{(brandName || "Horizon").slice(1)}</span></span></div>)}
           </Link>
 
@@ -159,11 +164,11 @@ function HorizonNavigation() {
           </nav>
 
           <div className="flex items-center gap-6 z-50 relative text-black">
-            <Link href="/templates/horizon/profile" className="hidden md:flex relative group p-2 hover:opacity-50 transition-opacity duration-500 pointer-events-auto" style={{ cursor: "none" }}>
+            <button type="button" onClick={() => openAuthModal(isAuthenticated ? 'account' : 'login')} aria-label="Customer Account" className="hidden md:flex relative group p-2 hover:opacity-50 transition-opacity duration-500 pointer-events-auto" style={{ cursor: "none" }}>
               <User className="w-4 h-4 stroke-[1.5]" />
-            </Link>
+            </button>
 
-            <Link href="/templates/horizon/wishlist" className="hidden md:flex relative group p-2 hover:opacity-50 transition-opacity duration-500 pointer-events-auto" style={{ cursor: "none" }}>
+            <Link href={`${basePath}/wishlist`} className="hidden md:flex relative group p-2 hover:opacity-50 transition-opacity duration-500 pointer-events-auto" style={{ cursor: "none" }}>
               <Heart className="w-4 h-4 stroke-[1.5]" />
               {wishlist.length > 0 && (
                 <span className={`absolute top-0 right-0 w-3.5 h-3.5 bg-black text-white text-[9px] font-bold flex items-center justify-center rounded-full ${outfit.className}`}>
@@ -219,10 +224,10 @@ function HorizonNavigation() {
                 </motion.div>
               ))}
               <div className="flex gap-8 mt-12 border-t border-black/10 pt-8">
-                <Link href="/templates/horizon/profile" onClick={() => setIsMobileMenuOpen(false)}>
+                <button type="button" aria-label="Customer Account" onClick={() => { if (typeof setIsMobileMenuOpen === "function") setIsMobileMenuOpen(false); openAuthModal(isAuthenticated ? "account" : "login"); }}>
                   <User className="w-6 h-6 text-black/60 hover:text-black" />
-                </Link>
-                <Link href="/templates/horizon/wishlist" onClick={() => setIsMobileMenuOpen(false)} className="relative">
+                </button>
+                <Link href={`${basePath}/wishlist`} onClick={() => setIsMobileMenuOpen(false)} className="relative">
                   <Heart className="w-6 h-6 text-black/60 hover:text-black" />
                   {wishlist.length > 0 && (
                     <span className="absolute -top-2 -right-2 w-4 h-4 bg-black text-white text-xs flex items-center justify-center rounded-full">
@@ -550,6 +555,8 @@ function HorizonNavigation() {
 }
 
 function HorizonFooter() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const customData = useCustomization();
   const brandName = customData?.formData?.brandName;
   const logoUrl = customData?.formData?.logoUrl;
@@ -564,7 +571,7 @@ function HorizonFooter() {
       <div className="max-w-[1600px] mx-auto px-6 md:px-12 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-16 md:gap-24 mb-24">
           <div className="md:col-span-2">
-            <Link href="/templates/horizon" className="flex items-center gap-3 mb-8 pointer-events-auto" style={{ cursor: "none" }}>
+            <Link href={basePath || '/'} className="flex items-center gap-3 mb-8 pointer-events-auto" style={{ cursor: "none" }}>
               <span className={`text-3xl text-black tracking-widest uppercase ${outfit.className}`}>
                 {(brandName || "Horizon").charAt(0)}<span className="text-black/30">{(brandName || "Horizon").slice(1)}</span>
               </span>
@@ -576,9 +583,9 @@ function HorizonFooter() {
           <div>
             <h4 className={`text-[10px] text-black/40 tracking-[0.3em] font-medium uppercase mb-8 ${outfit.className}`}>Discovery</h4>
             <ul className={`space-y-4 text-sm font-light text-black/70 ${outfit.className}`}>
-              <li><Link href="/templates/horizon/products" className="hover:text-black transition-colors pointer-events-auto" style={{ cursor: "none" }}>The Vault</Link></li>
-              <li><Link href="/templates/horizon/about" className="hover:text-black transition-colors pointer-events-auto" style={{ cursor: "none" }}>Manifesto</Link></li>
-              <li><Link href="/templates/horizon/contact" className="hover:text-black transition-colors pointer-events-auto" style={{ cursor: "none" }}>Inquiries</Link></li>
+              <li><Link href={`${basePath}/products`} className="hover:text-black transition-colors pointer-events-auto" style={{ cursor: "none" }}>The Vault</Link></li>
+              <li><Link href={`${basePath}/about`} className="hover:text-black transition-colors pointer-events-auto" style={{ cursor: "none" }}>Manifesto</Link></li>
+              <li><Link href={`${basePath}/contact`} className="hover:text-black transition-colors pointer-events-auto" style={{ cursor: "none" }}>Inquiries</Link></li>
             </ul>
           </div>
           <div>
@@ -604,6 +611,8 @@ function HorizonFooter() {
 }
 
 function ToastContainer() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { toastMessage } = useHorizon();
   return (
     <AnimatePresence>
@@ -625,6 +634,8 @@ function ToastContainer() {
 
 // Global Custom Cursor for the entire layout
 function GlobalCursor() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -665,6 +676,8 @@ function GlobalCursor() {
 }
 
 export default function HorizonLayout({ children }: { children: ReactNode }) {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const pathname = usePathname();
   const isAuthPage = pathname?.includes('/auth/');
 

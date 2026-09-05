@@ -1,5 +1,7 @@
 "use client";
 
+import { useCustomizationContext } from "@/context/CustomizationContext";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { HORIZON_PRODUCTS, useHorizon, HorizonReview } from "../../HorizonContext";
 import { ArrowLeft, ChevronLeft, ChevronRight, Heart, Maximize2, Star } from "lucide-react";
@@ -8,6 +10,8 @@ import { notFound, useParams } from "next/navigation";
 import { useState } from "react";
 
 export default function HorizonProductDetail({ initialProducts }: { initialProducts?: any[] }) {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const params = useParams();
   const { toggleWishlist, wishlist } = useHorizon();
   const id = params?.id as string;
@@ -97,7 +101,7 @@ export default function HorizonProductDetail({ initialProducts }: { initialProdu
     <div className="bg-[#FAFAFA] min-h-screen text-[#111] pt-32 pb-40">
       <div className="max-w-[1600px] mx-auto px-6 md:px-12">
         
-        <Link href="/templates/horizon/products" className="group inline-flex items-center gap-4 pointer-events-auto mb-20" style={{ cursor: "none" }}>
+        <Link href={`${basePath}/products`} className="group inline-flex items-center gap-4 pointer-events-auto mb-20" style={{ cursor: "none" }}>
           <ArrowLeft className="w-4 h-4 text-black/40 group-hover:text-black transition-all group-hover:-translate-x-2" strokeWidth={1.5} />
           <span className="font-outfit text-[10px] uppercase tracking-[0.3em] text-black/50 group-hover:text-black transition-colors duration-500 font-medium">
             Return to Archive

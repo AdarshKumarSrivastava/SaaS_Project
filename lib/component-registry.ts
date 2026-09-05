@@ -45,11 +45,21 @@ export const COMPONENT_REGISTRY: ComponentRegistry = {
   },
   'About': {
     type: 'About',
-    label: 'About Section',
+    label: 'About & Philosophy Section',
     fields: [
-      { id: 'aboutTitle', type: 'text', label: 'About Title' },
-      { id: 'aboutSubtitle', type: 'textarea', label: 'About Subtitle' },
-      { id: 'aboutImage', type: 'image', label: 'About Image' }
+      { id: 'aboutEyebrow', type: 'text', label: 'Eyebrow' },
+      { id: 'aboutHeading', type: 'text', label: 'Main Heading' },
+      { id: 'aboutDescription', type: 'textarea', label: 'Supporting Description' },
+      { id: 'aboutHeroImage', type: 'image', label: 'Hero Image' },
+      { id: 'phil1Number', type: 'text', label: 'Item 1 Number' },
+      { id: 'phil1Title', type: 'text', label: 'Item 1 Title' },
+      { id: 'phil1Desc', type: 'textarea', label: 'Item 1 Description' },
+      { id: 'phil2Number', type: 'text', label: 'Item 2 Number' },
+      { id: 'phil2Title', type: 'text', label: 'Item 2 Title' },
+      { id: 'phil2Desc', type: 'textarea', label: 'Item 2 Description' },
+      { id: 'phil3Number', type: 'text', label: 'Item 3 Number' },
+      { id: 'phil3Title', type: 'text', label: 'Item 3 Title' },
+      { id: 'phil3Desc', type: 'textarea', label: 'Item 3 Description' }
     ]
   },
   'Marquee': {

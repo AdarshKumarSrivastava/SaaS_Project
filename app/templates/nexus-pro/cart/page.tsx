@@ -4,8 +4,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, X, Minus, Plus } from "lucide-react";
 import { useShop } from "../ShopContext";
+import { useCustomizationContext } from "@/context/CustomizationContext";
 
 export default function NexusProCartPage() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { cartItems, updateCartQuantity, removeFromCart, totalPrice , currencySymbol } = useShop();
 
   const tax = totalPrice * 0.08;
@@ -38,7 +41,7 @@ export default function NexusProCartPage() {
               <h3 className="text-2xl font-black uppercase tracking-tighter mb-4">Cart is Empty</h3>
               <p className="text-white/50 text-sm mb-8">You haven't added any items to your cart yet.</p>
               <Link 
-                href="/templates/nexus-pro/products"
+                href={`${basePath}/products`}
                 className="inline-block px-8 py-4 bg-white text-black font-bold uppercase tracking-widest text-xs hover:bg-[#d4af37] hover:text-white transition-colors rounded-full"
               >
                 Return to Archive
@@ -70,7 +73,7 @@ export default function NexusProCartPage() {
                         />
                       </div>
                       <div className="flex flex-col gap-1">
-                        <Link href={`/templates/nexus-pro/products/${item.product.id}`}>
+                        <Link href={`${basePath}/products/${item.product.id}`}>
                           <h3 className="text-lg font-bold group-hover:text-[#d4af37] transition-colors">{item.product.name}</h3>
                         </Link>
                         <p className="text-[10px] text-white/50 uppercase tracking-widest">{item.product.category}</p>
@@ -137,7 +140,7 @@ export default function NexusProCartPage() {
             </div>
 
             <Link 
-              href={cartItems.length > 0 ? "/templates/nexus-pro/checkout" : "#"}
+              href={cartItems.length > 0 ? `${basePath}/checkout` : "#"}
               className={`w-full py-5 rounded-full font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 transition-all duration-300 ${cartItems.length === 0 ? 'bg-white/10 text-white/30 cursor-not-allowed' : 'bg-white text-black hover:bg-[#d4af37] hover:text-white'}`}
             >
               Proceed to Checkout <ArrowRight className="w-4 h-4" />

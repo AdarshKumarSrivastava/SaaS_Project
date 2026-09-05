@@ -1,4 +1,7 @@
 "use client";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
+import { useRouter, usePathname } from "next/navigation";
+import { useCustomizationContext } from "@/context/CustomizationContext";
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useCustomization } from "@/hooks/useCustomization";
@@ -168,6 +171,12 @@ type ShopContextType = {
 const ShopContext = createContext<ShopContextType | undefined>(undefined);
 
 export function ShopProvider({ children , initialCustomData }: { children: ReactNode, initialCustomData?: any  }) {
+  const { customer, isAuthenticated, siteId, openAuthModal, registerCartHandler } = useCustomerAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
+  const storageKey = `cart_${siteId || 'default'}_${customer?.id || 'guest'}`;
 
   const symbolMap: Record<string, string> = {
     USD: "$", EUR: "€", GBP: "£", CAD: "C$", AUD: "A$", INR: "₹"
@@ -238,6 +247,15 @@ export function ShopProvider({ children , initialCustomData }: { children: React
 
   // Cart logic
   const addToCart = (product: Product, quantity = 1) => {
+    if (!isAuthenticated) {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('pending_cart_add', JSON.stringify({ product, quantity }));
+      }
+      const currentPath = pathname || '/';
+      router.push(`${basePath}/auth/login?return=${encodeURIComponent(currentPath)}&action=add-to-cart&productId=${encodeURIComponent(product.id)}`);
+      return;
+    }
+
     setCartItems((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {
@@ -305,6 +323,14 @@ export function ShopProvider({ children , initialCustomData }: { children: React
     setOrders((prev) => [order, ...prev]);
     clearCart();
   };
+
+  useEffect(() => {
+    if (registerCartHandler) {
+      return registerCartHandler((p: any, q?: number) => {
+        addToCart(p, q || 1);
+      });
+    }
+  }, [registerCartHandler]);
 
   return (
     <ShopContext.Provider

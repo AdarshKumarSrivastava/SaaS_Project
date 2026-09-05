@@ -15,9 +15,11 @@ export default function OrdersTab({ siteId }: { siteId: string }) {
   const fetchOrders = async () => {
     try {
       const data = await apiClient.get(`/api/sites/${siteId}/orders`);
-      setOrders(data);
+      const list = Array.isArray(data?.orders) ? data.orders : Array.isArray(data) ? data : [];
+      setOrders(list);
     } catch (err) {
       console.error(err);
+      setOrders([]);
     } finally {
       setLoading(false);
     }

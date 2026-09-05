@@ -1,5 +1,7 @@
 "use client";
+
 import { useCustomizationContext } from "@/context/CustomizationContext";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 
 
 import Link from "next/link";
@@ -17,7 +19,8 @@ import { useCustomization } from "@/hooks/useCustomization";
 
 function Header() {
   const __customContext = useCustomizationContext();
-  const basePath = __customContext?.basePath || "/templates/origin";
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
+  const { isAuthenticated, openAuthModal } = useCustomerAuth();
 
 
   const { totalItems, searchQuery, setSearchQuery, wishlist } = useCart();
@@ -57,7 +60,7 @@ function Header() {
         <div className="max-w-[1400px] mx-auto">
           <div className="flex items-center justify-between bg-[#fdfbf7]/90 backdrop-blur-xl border border-[#402c21]/10 rounded-full px-4 md:px-8 py-2 md:py-3 shadow-lg">
             <div className="flex items-center gap-4 md:gap-12 flex-shrink-0">
-              <Link href={`\${basePath}`} className="font-serif text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[#402c21] whitespace-nowrap">
+              <Link href={`${basePath}`} className="font-serif text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[#402c21] whitespace-nowrap">
                 {logoUrl ? <img src={logoUrl} alt={brandName} className="h-6 md:h-8 w-auto object-contain" /> : <div className="flex items-center gap-1.5 md:gap-2"><Leaf className="w-4 h-4 md:w-6 md:h-6 flex-shrink-0" /><span className="truncate">{brandName}</span></div>}
               </Link>
               <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-[#402c21]/70">
@@ -92,7 +95,7 @@ function Header() {
                         value={searchQuery}
                         onChange={(e) => {
                           setSearchQuery(e.target.value);
-                          if (pathname !== `\${basePath}/products`) router.push(`\${basePath}/products`);
+                          if (pathname !== `${basePath}/products`) router.push(`${basePath}/products`);
                         }}
                         className="bg-transparent pb-1 text-sm focus:outline-none text-[#402c21] placeholder:text-[#402c21]/40 w-24 sm:w-48"
                       />
@@ -115,18 +118,18 @@ function Header() {
                 </AnimatePresence>
               </div>
 
-              <Link href={`\${basePath}/profile`} className="group flex items-center gap-2 text-sm font-medium text-[#402c21] transition-colors hover:text-[#a38c7f] flex-shrink-0">
+              <button type="button" onClick={() => openAuthModal(isAuthenticated ? 'account' : 'login')} aria-label="Customer Account" className="group flex items-center gap-2 text-sm font-medium text-[#402c21] transition-colors hover:text-[#a38c7f] flex-shrink-0">
                 <User className="w-4 h-4 md:w-5 md:h-5" />
-              </Link>
+              </button>
 
-              <Link href={`\${basePath}/wishlist`} className="group flex items-center gap-1.5 md:gap-2 text-sm font-medium text-[#402c21] transition-colors hover:text-[#a38c7f] flex-shrink-0">
+              <Link href={`${basePath}/wishlist`} className="group flex items-center gap-1.5 md:gap-2 text-sm font-medium text-[#402c21] transition-colors hover:text-[#a38c7f] flex-shrink-0">
                 <Heart className="w-4 h-4 md:w-5 md:h-5" />
                 <span className="bg-[#402c21] text-[#fdfbf7] text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-full transition-colors group-hover:bg-[#a38c7f]">
                   {wishlist.length}
                 </span>
               </Link>
 
-              <Link href={`\${basePath}/cart`} className="group flex items-center gap-1.5 md:gap-2 text-sm font-medium text-[#402c21] transition-colors hover:text-[#a38c7f] flex-shrink-0">
+              <Link href={`${basePath}/cart`} className="group flex items-center gap-1.5 md:gap-2 text-sm font-medium text-[#402c21] transition-colors hover:text-[#a38c7f] flex-shrink-0">
                 <span className="hidden lg:block">Cart</span>
                 <span className="bg-[#402c21] text-[#fdfbf7] text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-full transition-colors group-hover:bg-[#a38c7f]">
                   {totalItems}
@@ -184,7 +187,7 @@ function Header() {
 
 function Footer() {
   const __customContext = useCustomizationContext();
-  const basePath = __customContext?.basePath || "/templates/origin";
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
 
 
   const customData = useCustomization();
@@ -211,10 +214,10 @@ function Footer() {
         <div className="md:col-span-1">
           <h4 className="text-sm font-bold mb-6 text-[#a38c7f]">{footerCol1}</h4>
           <ul className="space-y-3 text-sm text-[#fdfbf7]/80">
-            <li><Link href={`\${basePath}`} className="hover:text-white transition-colors">Home</Link></li>
-            <li><Link href={`\${basePath}/products`} className="hover:text-white transition-colors">Shop</Link></li>
-            <li><Link href={`\${basePath}/about`} className="hover:text-white transition-colors">About</Link></li>
-            <li><Link href={`\${basePath}/contact`} className="hover:text-white transition-colors">Contact</Link></li>
+            <li><Link href={`${basePath}`} className="hover:text-white transition-colors">Home</Link></li>
+            <li><Link href={`${basePath}/products`} className="hover:text-white transition-colors">Shop</Link></li>
+            <li><Link href={`${basePath}/about`} className="hover:text-white transition-colors">About</Link></li>
+            <li><Link href={`${basePath}/contact`} className="hover:text-white transition-colors">Contact</Link></li>
           </ul>
         </div>
 
@@ -247,7 +250,7 @@ function Footer() {
 
 export default function OriginPreviewLayout({ children }: { children: ReactNode }) {
   const __customContext = useCustomizationContext();
-  const basePath = __customContext?.basePath || "/templates/origin";
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
 
 
 
@@ -269,6 +272,8 @@ export default function OriginPreviewLayout({ children }: { children: ReactNode 
 }
 
 function ToastContainer() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
 
   const { toastMessage, clearToast } = useCart();
 

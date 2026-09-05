@@ -1,4 +1,5 @@
 "use client";
+
 import { useCustomizationContext } from "@/context/CustomizationContext";
 
 import Link from "next/link";
@@ -7,7 +8,7 @@ import { Heart } from "lucide-react";
 
 export default function OriginWishlistPage() {
   const __customContext = useCustomizationContext();
-  const basePath = __customContext?.basePath || "/templates/origin";
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
 
 
 
@@ -32,7 +33,7 @@ export default function OriginWishlistPage() {
                 key={product.id}
                 className="group flex flex-col gap-4 animate-in fade-in duration-700"
               >
-                <Link href={`\${basePath}/products/${product.id}`} className="block relative aspect-[4/5] overflow-hidden bg-[#e5e0dc] rounded-sm">
+                <Link href={`${basePath}/products/${product.id}`} className="block relative aspect-[4/5] overflow-hidden bg-[#e5e0dc] rounded-sm">
                   <img 
                     src={product.image} 
                     alt={product.name} 
@@ -42,7 +43,7 @@ export default function OriginWishlistPage() {
                 </Link>
                 <div className="flex flex-col">
                   <div className="text-[10px] uppercase tracking-widest text-[#a38c7f] font-bold mb-1">{product.category}</div>
-                  <Link href={`\${basePath}/products/${product.id}`}>
+                  <Link href={`${basePath}/products/${product.id}`}>
                     <h3 className="font-serif text-xl font-bold text-[#402c21] group-hover:text-[#a38c7f] transition-colors mb-2">{product.name}</h3>
                   </Link>
                   <div className="text-base font-bold text-[#402c21]/80 mb-4">{currencySymbol}{product.price.toFixed(2)}</div>
@@ -76,7 +77,7 @@ export default function OriginWishlistPage() {
             <h2 className="font-serif text-2xl text-[#402c21] font-bold mb-4">Your wishlist is empty</h2>
             <p className="text-[#402c21]/70 font-medium mb-8">Save goods you love and they will appear here.</p>
             <Link 
-              href={`\${basePath}/products`}
+              href={`${basePath}/products`}
               className="inline-block bg-[#402c21] text-[#fdfbf7] px-10 py-5 text-xs font-bold tracking-widest uppercase hover:bg-[#a38c7f] transition-colors rounded-sm"
             >
               Explore Ceramics

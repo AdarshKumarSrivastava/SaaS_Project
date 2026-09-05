@@ -133,7 +133,7 @@ export function BuilderProvider({ children, siteId }: { children: ReactNode; sit
       }
     };
     fetchSite();
-  }, [siteId, router]);
+  }, [siteId, router, searchParams]);
 
   // Sync schema to iframe when it changes
   useEffect(() => {
@@ -188,7 +188,7 @@ export function BuilderProvider({ children, siteId }: { children: ReactNode; sit
     
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [siteData, currentStepIndex, siteId, router]);
+  }, [siteData, products, currentStepIndex, siteId, router]);
 
   // Dirty state listener
   useEffect(() => {
@@ -225,37 +225,6 @@ export function BuilderProvider({ children, siteId }: { children: ReactNode; sit
     });
   }, [siteData]);
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setCmdKOpen(o => !o);
-      }
-      if (e.key === 'Escape') {
-        setSelectedElement(null);
-        setCmdKOpen(false);
-        if (iframeRef.current?.contentWindow) {
-           iframeRef.current.contentWindow.postMessage({ type: 'CLEAR_SELECTION' }, '*');
-        }
-      }
-      if (e.key === 'z' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
-        e.preventDefault();
-        undo();
-      }
-      if (e.key === 'z' && (e.metaKey || e.ctrlKey) && e.shiftKey) {
-        e.preventDefault();
-        redo();
-      }
-      if (e.key === 's' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        handleSave();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [historyIndex, history]);
-
   const undo = () => {
     if (historyIndex > 0) {
       skipHistoryRecord.current = true;
@@ -288,6 +257,37 @@ export function BuilderProvider({ children, siteId }: { children: ReactNode; sit
       setSaving(false);
     }
   };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setCmdKOpen(o => !o);
+      }
+      if (e.key === 'Escape') {
+        setSelectedElement(null);
+        setCmdKOpen(false);
+        if (iframeRef.current?.contentWindow) {
+          iframeRef.current.contentWindow.postMessage({ type: 'CLEAR_SELECTION' }, '*');
+        }
+      }
+      if (e.key === 'z' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      }
+      if (e.key === 'z' && (e.metaKey || e.ctrlKey) && e.shiftKey) {
+        e.preventDefault();
+        redo();
+      }
+      if (e.key === 's' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [historyIndex, history, siteData, saving, siteId, router]);
 
   const moveSection = (pageId: string, sectionId: string, direction: 'up' | 'down') => {
     if (!siteData) return;

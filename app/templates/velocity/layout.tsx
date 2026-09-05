@@ -9,12 +9,16 @@ import { useState, useEffect, ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useCustomizationContext } from "@/context/CustomizationContext";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { useCustomization } from "@/hooks/useCustomization";
 
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: '--font-space' });
 const orbitron = Orbitron({ subsets: ["latin"], variable: '--font-orbitron' });
 
 function VelocityNavigation() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
+  const { isAuthenticated, openAuthModal } = useCustomerAuth();
   const { cart, wishlist, isCartOpen, setIsCartOpen, clearCart , currencySymbol } = useVelocity();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -22,8 +26,6 @@ function VelocityNavigation() {
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
   const pathname = usePathname();
   const customData = useCustomization();
-  const __customContext = useCustomizationContext();
-  const basePath = __customContext?.basePath || "/templates/velocity";
 
   const brandName = customData?.formData?.brandName;
   const logoUrl = customData?.formData?.logoUrl;
@@ -85,9 +87,9 @@ function VelocityNavigation() {
           </nav>
 
           <div className="flex items-center gap-6">
-            <Link href={`${basePath}/profile`} className="relative group hidden md:block">
+            <button type="button" onClick={() => openAuthModal(isAuthenticated ? 'account' : 'login')} aria-label="Customer Account" className="relative group hidden md:block">
               <User className="w-5 h-5 text-white/70 group-hover:text-[#00f0ff] transition-colors" />
-            </Link>
+            </button>
 
             <Link href={`${basePath}/wishlist`} className="relative group hidden md:block">
               <Heart className="w-5 h-5 text-white/70 group-hover:text-[#ff003c] transition-colors" />
@@ -184,7 +186,7 @@ function VelocityNavigation() {
                     </span>
                   </div>
                   <Link 
-                    href="/templates/velocity/checkout"
+                    href={`${basePath}/checkout`}
                     onClick={() => setIsCartOpen(false)}
                     className={`w-full py-4 font-black uppercase tracking-[0.2em] text-sm transition-colors flex items-center justify-center gap-2 group bg-[#00f0ff] text-black hover:bg-white`}
                   >
@@ -201,6 +203,8 @@ function VelocityNavigation() {
 }
 
 function VelocityFooter() {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const customData = useCustomization();
   const brandName = customData?.formData?.brandName;
   const logoUrl = customData?.formData?.logoUrl;
@@ -213,8 +217,6 @@ function VelocityFooter() {
   const footerCol2 = customData?.formData?.footerCol2;
   const footerCol3 = customData?.formData?.footerCol3;
 
-  const __customContext = useCustomizationContext();
-  const basePath = __customContext?.basePath || "/templates/velocity";
 
   return (
     <footer className="bg-[#050505] border-t border-[#00f0ff]/20 pt-24 pb-12 relative overflow-hidden">
@@ -251,7 +253,7 @@ function VelocityFooter() {
             <h4 className="text-[#00f0ff] text-[10px] font-black tracking-widest uppercase mb-6 font-space">{footerCol1}</h4>
             <ul className="space-y-4 font-space">
               <li><Link href={`${basePath}/products`} className="text-xs font-bold uppercase tracking-widest hover:text-[#00f0ff] transition-colors text-white/50 hover:shadow-[0_0_10px_rgba(0,240,255,0.5)]">Hardware</Link></li>
-              <li><Link href="/templates/velocity/products" className="text-xs font-bold uppercase tracking-widest hover:text-[#00f0ff] transition-colors text-white/50">Enhancements</Link></li>
+              <li><Link href={`${basePath}/products`} className="text-xs font-bold uppercase tracking-widest hover:text-[#00f0ff] transition-colors text-white/50">Enhancements</Link></li>
               <li><Link href="#" className="text-xs font-bold uppercase tracking-widest hover:text-[#00f0ff] transition-colors text-white/50">Techwear</Link></li>
               <li><Link href="#" className="text-xs font-bold uppercase tracking-widest hover:text-[#ff003c] transition-colors text-[#ff003c]/70">Classified</Link></li>
             </ul>
@@ -260,8 +262,8 @@ function VelocityFooter() {
           <div className="col-span-1 md:col-span-2">
             <h4 className="text-[#00f0ff] text-[10px] font-black tracking-widest uppercase mb-6 font-space">{footerCol2}</h4>
             <ul className="space-y-4 font-space">
-              <li><Link href="/templates/velocity/about" className="text-xs font-bold uppercase tracking-widest hover:text-[#00f0ff] transition-colors text-white/50">Origin Log</Link></li>
-              <li><Link href="/templates/velocity/contact" className="text-xs font-bold uppercase tracking-widest hover:text-[#00f0ff] transition-colors text-white/50">Comm Link</Link></li>
+              <li><Link href={`${basePath}/about`} className="text-xs font-bold uppercase tracking-widest hover:text-[#00f0ff] transition-colors text-white/50">Origin Log</Link></li>
+              <li><Link href={`${basePath}/contact`} className="text-xs font-bold uppercase tracking-widest hover:text-[#00f0ff] transition-colors text-white/50">Comm Link</Link></li>
               <li><Link href="#" className="text-xs font-bold uppercase tracking-widest hover:text-[#00f0ff] transition-colors text-white/50">Returns</Link></li>
               <li><Link href="#" className="text-xs font-bold uppercase tracking-widest hover:text-[#00f0ff] transition-colors text-white/50">Support</Link></li>
             </ul>
@@ -270,9 +272,9 @@ function VelocityFooter() {
           <div className="col-span-1 md:col-span-2">
             <h4 className="text-[#00f0ff] text-[10px] font-black tracking-widest uppercase mb-6 font-space">{footerCol3}</h4>
             <ul className={`space-y-4 text-sm text-white/60 uppercase tracking-widest ${spaceGrotesk.className}`}>
-              <li><Link href="/templates/velocity/products" className="hover:text-[#00f0ff] transition-colors">Products</Link></li>
-              <li><Link href="/templates/velocity/about" className="hover:text-[#00f0ff] transition-colors">About Us</Link></li>
-              <li><Link href="/templates/velocity/contact" className="hover:text-[#00f0ff] transition-colors">Contact</Link></li>
+              <li><Link href={`${basePath}/products`} className="hover:text-[#00f0ff] transition-colors">Products</Link></li>
+              <li><Link href={`${basePath}/about`} className="hover:text-[#00f0ff] transition-colors">About Us</Link></li>
+              <li><Link href={`${basePath}/contact`} className="hover:text-[#00f0ff] transition-colors">Contact</Link></li>
             </ul>
             <ul className={`space-y-4 text-sm text-white/60 uppercase tracking-widest ${spaceGrotesk.className}`}>
               <li><Link href="#" className="hover:text-[#00f0ff] transition-colors">Terms of Service</Link></li>
@@ -290,6 +292,8 @@ function VelocityFooter() {
 }
 
 export default function VelocityLayout({ children }: { children: ReactNode }) {
+  const __customContext = useCustomizationContext();
+  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const pathname = usePathname();
   const isAuthPage = pathname?.includes('/auth/');
 
