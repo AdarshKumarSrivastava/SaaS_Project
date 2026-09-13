@@ -51,7 +51,7 @@ export default function BYOKVault() {
     }
   };
 
-  const handleSetupPin = async (e: React.FormEvent) => {
+  const handleSetupPin = async (e: React.FormEvent) => {  
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
@@ -196,7 +196,7 @@ export default function BYOKVault() {
                 </button>
               </form>
             </motion.div>
-          )}
+          )}          
 
           {/* FORGOT OTP STATE */}
           {viewState === 'forgot_otp' && (

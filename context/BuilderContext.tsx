@@ -47,20 +47,20 @@ interface BuilderContextType {
   setSelectedElement: (el: SelectedElement | null) => void;
   cmdKOpen: boolean;
   setCmdKOpen: (open: boolean | ((prev: boolean) => boolean)) => void;
-  
+
   handleSave: () => Promise<void>;
   undo: () => void;
   redo: () => void;
   canUndo: boolean;
   canRedo: boolean;
-  
+
   updatePropByFieldKey: (fieldKey: string, value: any) => void;
   moveSection: (pageId: string, sectionId: string, direction: 'up' | 'down') => void;
   addSection: (pageId: string, sectionType: string) => void;
   deleteSection: (pageId: string, sectionId: string) => void;
   updateTheme: (newTheme: any) => void;
   updateProduct: (updatedProduct: any) => Promise<void>;
-  
+
   focusPreviewElement: (fieldKey: string | null, sectionId: string | null) => void;
   iframeRef: React.RefObject<HTMLIFrameElement | null>;
   editorScrollRef: React.RefObject<HTMLDivElement | null>;
@@ -76,13 +76,13 @@ export function BuilderProvider({ children, siteId }: { children: ReactNode; sit
   const [saving, setSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  
+
   const [siteData, setSiteData] = useState<SiteData | null>(null);
   const [products, setProducts] = useState<any[]>([]);
-  
+
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [device, setDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
-  
+
   const [history, setHistory] = useState<SiteData[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const historyIndexRef = useRef(-1);
@@ -108,7 +108,7 @@ export function BuilderProvider({ children, siteId }: { children: ReactNode; sit
           apiClient.get(`/api/sites/${siteId}`),
           apiClient.get(`/api/sites/${siteId}/products`).catch(() => [])
         ]);
-        
+
         if (Array.isArray(productsRes)) setProducts(productsRes);
 
         let loadedData: SiteData;
@@ -117,9 +117,9 @@ export function BuilderProvider({ children, siteId }: { children: ReactNode; sit
         } else {
           throw new Error("Site lacks an initialized schema.");
         }
-        
+
         setSiteData(loadedData);
-        
+
         const pageQuery = searchParams?.get('page');
         if (pageQuery) {
           const idx = loadedData.pages.findIndex((p: any) => p.path === pageQuery || p.id === pageQuery);
@@ -133,9 +133,9 @@ export function BuilderProvider({ children, siteId }: { children: ReactNode; sit
       }
     };
     fetchSite();
-  }, [siteId, router, searchParams]);
+  }, [siteId, router]);
 
-  // Sync schema to iframe when it changes
+  // Sync schema to iframe when it changes  
   useEffect(() => {
     if (iframeRef.current && iframeRef.current.contentWindow && siteData) {
       const activePage = siteData.pages[currentStepIndex];
@@ -161,7 +161,7 @@ export function BuilderProvider({ children, siteId }: { children: ReactNode; sit
   useEffect(() => {
     const handleMessage = (e: MessageEvent) => {
       if (!siteData) return;
-      
+
       if (e.data?.type === 'ELEMENT_SELECTED') {
         setSelectedElement(e.data);
       } else if (e.data?.type === 'TEMPLATE_READY') {
@@ -185,10 +185,10 @@ export function BuilderProvider({ children, siteId }: { children: ReactNode; sit
         }
       }
     };
-    
+
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [siteData, products, currentStepIndex, siteId, router]);
+  }, [siteData, currentStepIndex, siteId, router]);
 
   // Dirty state listener
   useEffect(() => {
@@ -206,24 +206,55 @@ export function BuilderProvider({ children, siteId }: { children: ReactNode; sit
   useEffect(() => {
     if (!siteData) return;
     if (skipHistoryRecord.current) {
-       skipHistoryRecord.current = false;
-       return;
+      skipHistoryRecord.current = false;
+      return;
     }
-    
+
     setHistory(prev => {
-       const newHistory = prev.slice(0, historyIndexRef.current + 1);
-       newHistory.push(JSON.parse(JSON.stringify(siteData)));
-       
-       if (newHistory.length > 50) {
-           newHistory.shift(); 
-       }
-       
-       setHistoryIndex(newHistory.length - 1);
-       setIsDirty(true);
-       
-       return newHistory;
+      const newHistory = prev.slice(0, historyIndexRef.current + 1);
+      newHistory.push(JSON.parse(JSON.stringify(siteData)));
+
+      if (newHistory.length > 50) {
+        newHistory.shift();
+      }
+
+      setHistoryIndex(newHistory.length - 1);
+      setIsDirty(true);
+
+      return newHistory;
     });
   }, [siteData]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setCmdKOpen(o => !o);
+      }
+      if (e.key === 'Escape') {
+        setSelectedElement(null);
+        setCmdKOpen(false);
+        if (iframeRef.current?.contentWindow) {
+          iframeRef.current.contentWindow.postMessage({ type: 'CLEAR_SELECTION' }, '*');
+        }
+      }
+      if (e.key === 'z' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      }
+      if (e.key === 'z' && (e.metaKey || e.ctrlKey) && e.shiftKey) {
+        e.preventDefault();
+        redo();
+      }
+      if (e.key === 's' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [historyIndex, history]);
 
   const undo = () => {
     if (historyIndex > 0) {
@@ -258,37 +289,6 @@ export function BuilderProvider({ children, siteId }: { children: ReactNode; sit
     }
   };
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setCmdKOpen(o => !o);
-      }
-      if (e.key === 'Escape') {
-        setSelectedElement(null);
-        setCmdKOpen(false);
-        if (iframeRef.current?.contentWindow) {
-          iframeRef.current.contentWindow.postMessage({ type: 'CLEAR_SELECTION' }, '*');
-        }
-      }
-      if (e.key === 'z' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
-        e.preventDefault();
-        undo();
-      }
-      if (e.key === 'z' && (e.metaKey || e.ctrlKey) && e.shiftKey) {
-        e.preventDefault();
-        redo();
-      }
-      if (e.key === 's' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        handleSave();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [historyIndex, history, siteData, saving, siteId, router]);
-
   const moveSection = (pageId: string, sectionId: string, direction: 'up' | 'down') => {
     if (!siteData) return;
     setSiteData(prev => {
@@ -301,12 +301,12 @@ export function BuilderProvider({ children, siteId }: { children: ReactNode; sit
           if (idx === -1) return page;
           if (direction === 'up' && idx === 0) return page;
           if (direction === 'down' && idx === page.sections.length - 1) return page;
-          
+
           const newSections = [...page.sections];
           const temp = newSections[idx];
           newSections[idx] = newSections[direction === 'up' ? idx - 1 : idx + 1];
           newSections[direction === 'up' ? idx - 1 : idx + 1] = temp;
-          
+
           return { ...page, sections: newSections };
         })
       };
@@ -382,9 +382,9 @@ export function BuilderProvider({ children, siteId }: { children: ReactNode; sit
     try {
       if (updatedProduct.id.startsWith('o') || updatedProduct.id.startsWith('v') || updatedProduct.id.startsWith('new-')) {
         const res = await apiClient.post(`/api/sites/${siteId}/products`, {
-           ...updatedProduct,
-           id: undefined,
-           slug: undefined
+          ...updatedProduct,
+          id: undefined,
+          slug: undefined
         });
         setProducts(prev => prev.map(p => p.id === updatedProduct.id ? res : p));
       } else {
@@ -397,7 +397,7 @@ export function BuilderProvider({ children, siteId }: { children: ReactNode; sit
 
   const updatePropByFieldKey = (fieldKey: string, value: any) => {
     if (!siteData) return;
-    
+
     const parts = fieldKey.split('.');
     const pageId = parts[0];
     const sectionId = parts[1];
