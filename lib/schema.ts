@@ -99,10 +99,11 @@ export function extractOverrides(defaultSchema: any, modifiedSchema: any) {
 /**
  * Convenience function to resolve a site's full schema directly from its DB schema object
  */
-export function resolveSiteData(siteSchema: any, siteName: string = 'My Site') {
+export function resolveSiteData(siteSchema: any, siteName: string = 'My Site', category?: string) {
   const rawSlug = siteSchema?.global?.templateSlug;
-  const templateSlug = normalizeTemplateKey(rawSlug, siteSchema || siteName);
-  const templateConfig = getTemplateConfig(templateSlug, siteSchema || siteName);
+  const hint = siteSchema || { name: siteName, category };
+  const templateSlug = normalizeTemplateKey(rawSlug, hint);
+  const templateConfig = getTemplateConfig(templateSlug, hint);
   const defaultSchema = templateConfig.defaultSchema(siteName);
   
   return mergeSchema(defaultSchema, siteSchema);

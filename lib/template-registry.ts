@@ -396,9 +396,25 @@ export const TEMPLATE_REGISTRY: Record<string, TemplateConfig> = {
           path: '/',
           sections: [
             { id: generateId(), type: 'Hero', props: { 
-              heroTitle: 'Next-Gen Performance Gear', 
-              heroSubtitle: 'Engineered for technical precision and urban resilience.', 
-              primaryCta: 'Explore Nexus' 
+              preTitle: 'Performance Engineered',
+              heroTitle1: 'NEXT-GEN',
+              heroTitle2: 'GEAR',
+              heroDesc: 'Engineered for technical precision and urban resilience. Premium materials meet cutting-edge design.',
+              heroCta: 'Explore Collection',
+              heroImage: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?q=80&w=2000&auto=format&fit=crop',
+              marqueeText1: 'Performance Engineered',
+              marqueeText2: 'Urban Resilience',
+              marqueeText3: 'Precision Crafted',
+              featuredTitle: 'Latest Drops',
+              featuredSubtitle: 'Curated Selection',
+              viewAllText: 'View All Gear',
+              featureTitle: 'Engineered\nPerformance',
+              featureDesc: 'Every piece in our collection is designed with purpose — from military-grade fabrics to ergonomic fits that move with your body.',
+              featureBullet1: 'Military-Grade Durability',
+              featureBullet2: 'Adaptive Climate Control',
+              featureBullet3: 'Ergonomic Performance Fit',
+              featureCta: 'Our Story',
+              featureImage: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2000&auto=format&fit=crop'
             } }
           ]
         },
@@ -415,7 +431,15 @@ export const TEMPLATE_REGISTRY: Record<string, TemplateConfig> = {
           name: 'About',
           path: '/about',
           sections: [
-            { id: generateId(), type: 'About', props: { aboutTitle: 'The Nexus Vision' } }
+            { id: generateId(), type: 'About', props: { 
+              aboutTitle: 'The Nexus Vision',
+              aboutHeroImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2000&auto=format&fit=crop',
+              aboutText1: 'We started Nexus with a single belief: gear should work as hard as you do. Born from a passion for urban exploration and technical innovation.',
+              aboutText2: 'Our R&D team pushes boundaries with proprietary fabric technologies and construction methods that outlast conventional approaches.',
+              aboutText3: 'Every product undergoes 200+ hours of field testing across extreme conditions before it earns the Nexus stamp.',
+              feature1Title: 'Innovation Lab',
+              feature2Title: 'Field Tested'
+            } }
           ]
         },
         {
@@ -423,7 +447,14 @@ export const TEMPLATE_REGISTRY: Record<string, TemplateConfig> = {
           name: 'Contact',
           path: '/contact',
           sections: [
-            { id: generateId(), type: 'Contact', props: { contactTitle: 'Connect with Nexus' } }
+            { id: generateId(), type: 'Contact', props: { 
+              contactPreTitle: 'Get in Touch',
+              contactTitle: 'Connect with Nexus',
+              contactAddress: '42 Tech District, Innovation Quarter, NY 10012',
+              contactEmail: 'hello@nexuspro.com',
+              contactPhone: '+1 (555) 0142',
+              contactHours: 'Mon–Fri: 9AM–6PM EST'
+            } }
           ]
         }
       ],
@@ -851,8 +882,9 @@ function normalizeFromHint(hint: string): string {
   if (lower.includes('aurelia') || lower.includes('fashion')) return 'aurelia';
   if (lower.includes('noire') || lower.includes('noir') || lower.includes('skincare')) return 'noire';
   if (lower.includes('monument')) return 'monument';
-  if (lower.includes('vanta')) return 'vanta';
-  if (lower.includes('atelier')) return 'atelier';
+  if (lower.includes('vanta') || lower.includes('tech')) return 'vanta';
+  if (lower.includes('atelier') || lower.includes('studio')) return 'atelier';
+  if (lower.includes('ecommerce') || lower.includes('store') || lower.includes('shop')) return 'nexus-pro';
   return 'velocity';
 }
 

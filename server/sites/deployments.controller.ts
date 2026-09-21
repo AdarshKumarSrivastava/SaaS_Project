@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
+import { resolveSiteData } from '../../lib/schema';
 
 // POST /api/sites/:siteId/deploy
 export const triggerDeployment = async (req: Request, res: Response) => {
@@ -15,14 +16,24 @@ export const triggerDeployment = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Site not found' });
     }
 
-    if (!site.schema) {
-       return res.status(400).json({ error: 'Cannot deploy empty site schema. Please build the site first.' });
+    let snapshotSchema = site.schema as any;
+
+    // Check if schema is empty, null, or has no pages defined
+    const hasPages = snapshotSchema?.pages && Array.isArray(snapshotSchema.pages) && snapshotSchema.pages.length > 0;
+    if (!snapshotSchema || !hasPages) {
+      // Auto-generate canonical default schema for this site template
+      snapshotSchema = resolveSiteData(snapshotSchema, site.name, site.category);
+
+      // Persist the resolved schema back to the site so it is permanently populated
+      await prisma.site.update({
+        where: { id: siteId },
+        data: { schema: snapshotSchema }
+      });
     }
 
     // 2. We take a snapshot of the current configuration. 
     // We do NOT snapshot products here because products are managed by Admin Panel and should be live.
     // The schema alone dictates the template, layout, and static text.
-    const snapshotSchema = site.schema;
 
     // 3. Create the deployment record
     const deployment = await prisma.deployment.create({
