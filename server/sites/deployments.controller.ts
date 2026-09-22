@@ -18,18 +18,14 @@ export const triggerDeployment = async (req: Request, res: Response) => {
 
     let snapshotSchema = site.schema as any;
 
-    // Check if schema is empty, null, or has no pages defined
-    const hasPages = snapshotSchema?.pages && Array.isArray(snapshotSchema.pages) && snapshotSchema.pages.length > 0;
-    if (!snapshotSchema || !hasPages) {
-      // Auto-generate canonical default schema for this site template
-      snapshotSchema = resolveSiteData(snapshotSchema, site.name, site.category);
+    // Always resolve canonical schema for this site template, ensuring all section props exist
+    snapshotSchema = resolveSiteData(snapshotSchema, site.name, site.category);
 
-      // Persist the resolved schema back to the site so it is permanently populated
-      await prisma.site.update({
-        where: { id: siteId },
-        data: { schema: snapshotSchema }
-      });
-    }
+    // Persist the resolved schema back to the site so it is permanently populated
+    await prisma.site.update({
+      where: { id: siteId },
+      data: { schema: snapshotSchema }
+    });
 
     // 2. We take a snapshot of the current configuration. 
     // We do NOT snapshot products here because products are managed by Admin Panel and should be live.

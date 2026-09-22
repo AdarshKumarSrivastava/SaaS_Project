@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { prisma } from '@/server/lib/prisma';
 import { TemplateRenderer } from '@/components/TemplateRenderer';
+import { resolveSiteData } from '@/lib/schema';
 import type { Metadata } from 'next';
 
 export async function generateMetadata({ 
@@ -26,7 +27,7 @@ export async function generateMetadata({
     orderBy: { createdAt: 'desc' }
   });
 
-  const schema = deployment?.schema as any;
+  const schema = resolveSiteData(deployment?.schema, site.name, site.category);
   const siteName = schema?.global?.name || site.name;
   const description = schema?.global?.description || `Welcome to ${siteName}, powered by BuildSpace.`;
 
@@ -85,10 +86,12 @@ export default async function PublicSitePage({
   // 4. Determine active path
   const activePath = path && path.length > 0 ? `/${path.join('/')}` : '/';
 
-  // 5. Render directly through centralized TemplateRenderer
+  // 5. Resolve canonical schema with defaults and render directly through centralized TemplateRenderer
+  const siteData = resolveSiteData(deployment.schema, site.name, site.category);
+
   return (
     <TemplateRenderer
-      siteData={deployment.schema as any}
+      siteData={siteData}
       products={products as any}
       activePath={activePath}
       basePath=""
