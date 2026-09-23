@@ -324,9 +324,9 @@ function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center pt-8 border-t border-white/10 text-[10px] uppercase tracking-[0.2em] text-white/30">
           <p>{copyrightText}</p>
           <div className="flex items-center gap-8 mt-6 md:mt-0">
-            {socialInsta && socialInsta !== "#" && <a href={socialInsta} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Instagram</a>}
-            {socialTwitter && socialTwitter !== "#" && <a href={socialTwitter} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Twitter</a>}
-            {socialFacebook && socialFacebook !== "#" && <a href={socialFacebook} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Facebook</a>}
+            {socialInsta && <a href={socialInsta} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Instagram</a>}
+            {socialTwitter && <a href={socialTwitter} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Twitter</a>}
+            {socialFacebook && <a href={socialFacebook} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Facebook</a>}
           </div>
         </div>
       </div>

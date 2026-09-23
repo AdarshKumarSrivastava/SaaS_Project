@@ -37,6 +37,7 @@ export const useCustomization = () => {
       }) || siteData.pages[0];
 
       activePage?.sections?.forEach((section: any) => {
+        if (section.isHidden) return; // Skip soft-deleted sections
         flattenedFormData = { ...flattenedFormData, ...section.props };
       });
     }

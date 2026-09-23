@@ -310,9 +310,9 @@ function QuantumFooter() {
         <div className={`pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400 ${inter.className}`}>
           <p>{copyrightText}</p>
           <div className="flex gap-6">
-            {socialInsta && socialInsta !== "#" && <a href={socialInsta} target="_blank" rel="noopener noreferrer" className="hover:text-[#121212] transition-colors">Instagram</a>}
-            {socialTwitter && socialTwitter !== "#" && <a href={socialTwitter} target="_blank" rel="noopener noreferrer" className="hover:text-[#121212] transition-colors">Twitter</a>}
-            {socialFacebook && socialFacebook !== "#" && <a href={socialFacebook} target="_blank" rel="noopener noreferrer" className="hover:text-[#121212] transition-colors">Facebook</a>}
+            {socialInsta && <a href={socialInsta} target="_blank" rel="noopener noreferrer" className="hover:text-[#121212] transition-colors">Instagram</a>}
+            {socialTwitter && <a href={socialTwitter} target="_blank" rel="noopener noreferrer" className="hover:text-[#121212] transition-colors">Twitter</a>}
+            {socialFacebook && <a href={socialFacebook} target="_blank" rel="noopener noreferrer" className="hover:text-[#121212] transition-colors">Facebook</a>}
           </div>
         </div>
       </div>

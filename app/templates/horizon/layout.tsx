@@ -591,9 +591,9 @@ function HorizonFooter() {
           <div>
             <h4 className={`text-[10px] text-black/40 tracking-[0.3em] font-medium uppercase mb-8 ${outfit.className}`}>Connect</h4>
             <ul className={`space-y-4 text-sm font-light text-black/70 ${outfit.className}`}>
-              {socialInsta && socialInsta !== "#" && <li><a href={socialInsta} target="_blank" rel="noopener noreferrer" className="hover:text-black transition-colors pointer-events-auto" style={{ cursor: "none" }}>Instagram</a></li>}
-              {socialTwitter && socialTwitter !== "#" && <li><a href={socialTwitter} target="_blank" rel="noopener noreferrer" className="hover:text-black transition-colors pointer-events-auto" style={{ cursor: "none" }}>Twitter (X)</a></li>}
-              {socialFacebook && socialFacebook !== "#" && <li><a href={socialFacebook} target="_blank" rel="noopener noreferrer" className="hover:text-black transition-colors pointer-events-auto" style={{ cursor: "none" }}>Facebook</a></li>}
+              {socialInsta && <li><a href={socialInsta} target="_blank" rel="noopener noreferrer" className="hover:text-black transition-colors pointer-events-auto" style={{ cursor: "none" }}>Instagram</a></li>}
+              {socialTwitter && <li><a href={socialTwitter} target="_blank" rel="noopener noreferrer" className="hover:text-black transition-colors pointer-events-auto" style={{ cursor: "none" }}>Twitter (X)</a></li>}
+              {socialFacebook && <li><a href={socialFacebook} target="_blank" rel="noopener noreferrer" className="hover:text-black transition-colors pointer-events-auto" style={{ cursor: "none" }}>Facebook</a></li>}
             </ul>
           </div>
         </div>

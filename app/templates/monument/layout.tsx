@@ -229,17 +229,17 @@ function Footer({ initialCustomData, basePath }: { initialCustomData?: any, base
           </div>
           <div className="flex flex-col gap-3">
             <span className="font-bold tracking-widest uppercase text-xs mb-1">{footerCol3}</span>
-            {socialInsta && socialInsta !== "#" && (
+            {socialInsta && (
               <a href={socialInsta} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-black/50 transition-colors">
                 <InstagramIcon className="w-4 h-4" /> Instagram
               </a>
             )}
-            {socialTwitter && socialTwitter !== "#" && (
+            {socialTwitter && (
               <a href={socialTwitter} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-black/50 transition-colors">
                 <TwitterIcon className="w-4 h-4" /> Twitter
               </a>
             )}
-            {socialFacebook && socialFacebook !== "#" && (
+            {socialFacebook && (
               <a href={socialFacebook} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-black/50 transition-colors">
                 <FacebookIcon className="w-4 h-4" /> Facebook
               </a>

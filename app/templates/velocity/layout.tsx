@@ -232,17 +232,17 @@ function VelocityFooter() {
               {footerText}
             </p>
             <div className="flex gap-4">
-              {socialInsta && socialInsta !== "#" && (
+              {socialInsta && (
                 <a href={socialInsta} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-[#00f0ff]/30 flex items-center justify-center hover:bg-[#00f0ff] hover:text-black hover:border-transparent transition-all">
                   Insta
                 </a>
               )}
-              {socialTwitter && socialTwitter !== "#" && (
+              {socialTwitter && (
                 <a href={socialTwitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-[#00f0ff]/30 flex items-center justify-center hover:bg-[#00f0ff] hover:text-black hover:border-transparent transition-all">
                   X
                 </a>
               )}
-              {socialFacebook && socialFacebook !== "#" && (
+              {socialFacebook && (
                 <a href={socialFacebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-[#00f0ff]/30 flex items-center justify-center hover:bg-[#00f0ff] hover:text-black hover:border-transparent transition-all">
                   FB
                 </a>

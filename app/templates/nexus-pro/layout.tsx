@@ -282,17 +282,17 @@ function Footer() {
               {footerText}
             </p>
             <div className="flex gap-4">
-              {socialInsta && socialInsta !== "#" && (
+              {socialInsta && (
                 <a href={socialInsta} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#d4af37] hover:text-black transition-colors">
                   <Globe className="w-4 h-4" />
                 </a>
               )}
-              {socialTwitter && socialTwitter !== "#" && (
+              {socialTwitter && (
                 <a href={socialTwitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#d4af37] hover:text-black transition-colors">
                   <MessageCircle className="w-4 h-4" />
                 </a>
               )}
-              {socialFacebook && socialFacebook !== "#" && (
+              {socialFacebook && (
                 <a href={socialFacebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#d4af37] hover:text-black transition-colors">
                   <Mail className="w-4 h-4" />
                 </a>

@@ -199,9 +199,9 @@ function Footer() {
         <div className="md:col-span-2">
           <h4 className="text-[10px] tracking-[0.2em] uppercase text-[#F3EDE2]/40 mb-6 font-bold">{footerCol3 || 'Connect'}</h4>
           <ul className="space-y-4 text-sm text-[#F3EDE2]/80">
-            {socialInsta && socialInsta !== "#" && <li><a href={socialInsta} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Instagram</a></li>}
-            {socialTwitter && socialTwitter !== "#" && <li><a href={socialTwitter} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Twitter</a></li>}
-            {socialFacebook && socialFacebook !== "#" && <li><a href={socialFacebook} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Facebook</a></li>}
+            {socialInsta && <li><a href={socialInsta} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Instagram</a></li>}
+            {socialTwitter && <li><a href={socialTwitter} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Twitter</a></li>}
+            {socialFacebook && <li><a href={socialFacebook} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Facebook</a></li>}
           </ul>
         </div>
       </div>

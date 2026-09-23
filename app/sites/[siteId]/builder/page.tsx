@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { RightSidebar } from '@/components/builder/RightSidebar';
 import { useBuilder } from '@/context/BuilderContext';
+import { getTemplateConfig } from '@/lib/template-registry';
 
 export default function BuilderPage() {
   const router = useRouter();
@@ -44,7 +45,11 @@ export default function BuilderPage() {
           </button>
           <div className="h-4 w-[1px] bg-white/10" />
           <div className="text-sm font-semibold tracking-wide text-white/90">
-            {siteData.global?.brandName || 'Untitled Project'}
+            {siteData.global?.brandName && siteData.global.brandName !== 'Template Preview' 
+              ? siteData.global.brandName 
+              : siteData.global?.templateSlug 
+                ? (getTemplateConfig(siteData.global.templateSlug)?.name || 'Untitled Project') 
+                : 'Untitled Project'}
           </div>
         </div>
 
