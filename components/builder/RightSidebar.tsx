@@ -139,9 +139,25 @@ export function RightSidebar({
               </div>
 
               {activePage?.sections?.map((section: any, index: number) => {
+                if (section.isHidden) return null;
                 const isOpen = !!openSections[section.id || section.type];
-                const schema = COMPONENT_REGISTRY[section.type];
+                let schema = COMPONENT_REGISTRY[section.type];
                 const sId = section.id || section.type;
+                
+                // Automatically generate schema for undeclared sections based on their props
+                if (!schema && section.props) {
+                  schema = {
+                    type: section.type,
+                    label: section.type,
+                    fields: Object.keys(section.props).map(key => ({
+                      id: key,
+                      type: (typeof section.props[key] === 'string' && section.props[key].length > 60) ? 'textarea' 
+                            : (typeof section.props[key] === 'string' && (section.props[key].startsWith('http') || section.props[key].startsWith('data:image'))) ? 'image' 
+                            : 'text',
+                      label: key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()) // basic camelCase to Title Case
+                    }))
+                  };
+                }
 
                 return (
                   <div 
@@ -157,7 +173,7 @@ export function RightSidebar({
                       <div className="flex items-center gap-3">
                         <GripVertical className="w-4 h-4 text-white/20 cursor-grab active:cursor-grabbing" />
                         <span className="text-xs font-bold uppercase tracking-widest text-white/80">
-                          {schema?.label || section.type} Block
+                          {schema?.label || section.type}
                         </span>
                       </div>
                       {isOpen ? <ChevronDown className="w-4 h-4 text-white/40" /> : <ChevronRight className="w-4 h-4 text-white/40" />}
@@ -254,7 +270,7 @@ export function RightSidebar({
                                 );
                               })
                             ) : (
-                              <div className="text-xs text-white/40 text-center py-4">No schema defined for {section.type}</div>
+                              <div className="text-xs text-white/40 text-center py-4">No schema or props defined for {section.type}</div>
                             )}
 
                             {/* Section Controls */}

@@ -812,17 +812,94 @@ export const TEMPLATE_REGISTRY: Record<string, TemplateConfig> = {
     id: 'starter-minimalist',
     slug: 'minimalist',
     name: 'Minimalist',
-    description: 'Default project renderer.',
+    description: 'Clean, focused e-commerce storefront with high conversion primitives.',
     category: 'ecommerce',
     defaultProducts: [
-      { id: "m1", name: "Minimalist Oversized Tee", price: 65.00, image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=2000&auto=format&fit=crop", category: "Apparel" }
+      { id: "m1", name: "Minimalist Oversized Tee", price: 65.00, image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=2000&auto=format&fit=crop", category: "Apparel" },
+      { id: "m2", name: "Essential Hoodie", price: 95.00, image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=2000&auto=format&fit=crop", category: "Apparel" },
+      { id: "m3", name: "Canvas Sneakers", price: 120.00, image: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?q=80&w=2000&auto=format&fit=crop", category: "Footwear" },
+      { id: "m4", name: "Utility Crossbody Bag", price: 85.00, image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=2000&auto=format&fit=crop", category: "Accessories" }
     ],
     defaultSchema: (projectName: string) => ({
-      pages: [{ id: 'home', name: 'Home', path: '/', sections: [{ id: generateId(), type: 'Hero', props: { heroTitle: 'Welcome to ' + projectName } }] }],
-      global: { brandName: projectName, templateSlug: 'minimalist' }
+      pages: [
+        {
+          id: 'home',
+          name: 'Home',
+          path: '/',
+          sections: [
+            { id: generateId(), type: 'Hero', props: { 
+              heroTitle: 'ESSENTIAL SIMPLICITY', 
+              tagline: 'Timeless essentials designed for modern living. Curated with precision, crafted for permanence.',
+              primaryCta: 'Shop Collection'
+            } },
+            { id: generateId(), type: 'FeaturedProducts', props: { 
+              featuredTitle: 'Featured Collection',
+              viewAllText: 'View All'
+            } },
+            { id: generateId(), type: 'About', props: { 
+              aboutTitle: 'Less, But Better.',
+              aboutDescription: 'We believe in the power of restraint. Every piece in our collection is designed to be timeless, versatile, and enduring — because the best things in life are the ones that last.'
+            } }
+          ]
+        },
+        {
+          id: 'shop',
+          name: 'Shop',
+          path: '/products',
+          sections: [
+            { id: generateId(), type: 'Shop', props: { 
+              shopTitle: 'All Products',
+              shopCategories: 'All, Apparel, Footwear, Accessories'
+            } }
+          ]
+        },
+        {
+          id: 'about',
+          name: 'About',
+          path: '/about',
+          sections: [
+            { id: generateId(), type: 'About', props: { 
+              aboutEyebrow: 'OUR PHILOSOPHY',
+              aboutHeading: 'Designed for permanence.\nCrafted with intention.',
+              aboutDescription: 'We strip away everything unnecessary. What remains is pure, honest, and built to last. Our commitment to minimalism is more than an aesthetic — it\'s a way of living better with less.',
+              aboutHeroImage: 'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?q=80&w=2940&auto=format&fit=crop'
+            } }
+          ]
+        },
+        {
+          id: 'contact',
+          name: 'Contact',
+          path: '/contact',
+          sections: [
+            { id: generateId(), type: 'Contact', props: { 
+              contactTitle: 'Get in Touch',
+              contactPreTitle: 'Contact',
+              contactAddress: 'Brooklyn, NY 11201\nUnited States',
+              contactEmail: 'hello@minimalist.com',
+              contactPhone: '+1 (555) 000-0000'
+            } }
+          ]
+        }
+      ],
+      global: { 
+        brandName: projectName, 
+        templateSlug: 'minimalist',
+        announcementText: 'Free shipping on orders over $100',
+        footerText: 'Timeless essentials designed for modern living. Curated with precision, crafted for permanence.',
+        copyrightText: `© 2026 ${projectName}. All rights reserved.`,
+        footerCol1: 'Shop',
+        footerCol2: 'Company',
+        footerCol3: 'Social',
+        socialInsta: '#',
+        socialTwitter: '#',
+        socialFacebook: '#'
+      }
     })
   }
 };
+
+// Canonical alias: 'minimalist' -> 'default' entry (which IS the minimalist template)
+TEMPLATE_REGISTRY['minimalist'] = TEMPLATE_REGISTRY['default'];
 
 /**
  * Normalizes any template identifier (id, slug, category, name) into a canonical template key.

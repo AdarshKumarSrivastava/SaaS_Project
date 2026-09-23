@@ -5,6 +5,7 @@ import { useCustomizationContext } from "@/context/CustomizationContext";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { useRouter, usePathname } from "next/navigation";
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { useCustomization } from "@/hooks/useCustomization";
 export type Product = {
   id: string;
   name: string;
@@ -80,7 +81,8 @@ export function CartProvider({ children, initialBasePath, initialCustomData }: {
   const symbolMap: Record<string, string> = {
     USD: "$", EUR: "€", GBP: "£", CAD: "C$", AUD: "A$", INR: "₹"
   };
-  const initCurrency = initialCustomData?.formData?.currency;
+  const customData = useCustomization();
+  const initCurrency = customData?.formData?.currency;
   const [currencySymbol, setCurrencySymbol] = useState(symbolMap[initCurrency] || "$");
 
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
@@ -88,19 +90,7 @@ export function CartProvider({ children, initialBasePath, initialCustomData }: {
 
   const [reviews, setReviews] = useState<Review[]>([]);
 
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === "MONOLITH_CUSTOMIZATION") {
-        const currency = event.data.data?.formData?.currency;
-        setCurrencySymbol(symbolMap[currency] || "$");
-      }
-    };
-    window.addEventListener("message", handleMessage);
-    if (window.parent && window.parent !== window) {
-      window.parent.postMessage({ type: "MONOLITH_REQUEST_STATE" }, "*");
-    }
-    return () => window.removeEventListener("message", handleMessage);
-  }, []);
+  
 
   // Load from local storage on mount
   useEffect(() => {

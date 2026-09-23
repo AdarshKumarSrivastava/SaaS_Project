@@ -8,6 +8,7 @@ import { useCart } from "../CartContext";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { defaultMonumentProducts } from "../data";
+import { useCustomization } from "@/hooks/useCustomization";
 
 export default function StarterProductsPage({ initialProducts }: { initialProducts?: any[] }) {
   const { addToCart, searchQuery, currencySymbol, toggleWishlist, isInWishlist, basePath } = useCart();
@@ -16,20 +17,7 @@ export default function StarterProductsPage({ initialProducts }: { initialProduc
   const [customData, setCustomData] = useState<any>(null);
   
 
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === "MONOLITH_CUSTOMIZATION") {
-        setCustomData(event.data.data);
-      }
-    };
-    window.addEventListener("message", handleMessage);
-    
-    if (window.parent && window.parent !== window) {
-      window.parent.postMessage({ type: "MONOLITH_REQUEST_STATE" }, "*");
-    }
-    
-    return () => window.removeEventListener("message", handleMessage);
-  }, []);
+  
 
   const productSource = displayProducts.map(p => ({
     id: p.product_id || p.id,

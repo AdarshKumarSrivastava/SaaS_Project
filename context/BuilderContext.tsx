@@ -346,7 +346,12 @@ export function BuilderProvider({ children, siteId }: { children: ReactNode; sit
           if (page.id !== pageId) return page;
           return {
             ...page,
-            sections: page.sections.filter(s => s.id !== sectionId && s.type.toLowerCase() !== sectionId.toLowerCase())
+            sections: page.sections.map(s => {
+              if (s.id === sectionId || s.type.toLowerCase() === sectionId.toLowerCase()) {
+                return { ...s, isHidden: true };
+              }
+              return s;
+            })
           };
         })
       };

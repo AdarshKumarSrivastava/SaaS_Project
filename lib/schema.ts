@@ -36,6 +36,22 @@ export function mergeSchema(defaultSchema: any, overrides: any) {
         ...(overrides.global?.theme || {})
       }
     };
+
+    // Apply asset resolution to global keys
+    for (const key of Object.keys(merged.global)) {
+      if (key === 'theme') continue;
+      const lowerKey = key.toLowerCase();
+      if (lowerKey.includes('image') || lowerKey.includes('logo') || lowerKey.includes('url') || lowerKey.includes('bg') || lowerKey.includes('icon') || lowerKey.includes('avatar')) {
+        const val = merged.global[key];
+        if (typeof val === 'string' && val.trim() !== '') {
+          if (!val.startsWith('http') && !val.startsWith('data:') && !val.startsWith('/')) {
+            merged.global[key] = defaultSchema.global[key];
+          }
+        } else if (!val) {
+          merged.global[key] = defaultSchema.global[key];
+        }
+      }
+    }
   }
 
   if (overrides.pages && Array.isArray(overrides.pages) && overrides.pages.length > 0) {
@@ -44,9 +60,7 @@ export function mergeSchema(defaultSchema: any, overrides: any) {
       
       if (!defaultPage) return overridePage;
 
-      return {
-        ...overridePage,
-        sections: (overridePage.sections || []).map((overrideSection: any) => {
+      const mergedSections = (overridePage.sections || []).map((overrideSection: any) => {
           // Find matching default section by type
           // We match by relative order of that type in the page
           const defaultSectionsOfType = defaultPage.sections.filter((s: any) => s.type === overrideSection.type);
@@ -56,16 +70,59 @@ export function mergeSchema(defaultSchema: any, overrides: any) {
           const defaultSection = defaultSectionsOfType[typeIndex];
 
           if (defaultSection) {
+            const mergedProps = {
+              ...defaultSection.props,
+              ...(overrideSection.props || {})
+            };
+
+            // Global Asset Resolver Pipeline
+            // If a project override provides a generic label like "Editorial" or a broken path,
+            // we fall back to the safe default template asset to guarantee a valid URL.
+            for (const key of Object.keys(mergedProps)) {
+              const lowerKey = key.toLowerCase();
+              if (lowerKey.includes('image') || lowerKey.includes('logo') || lowerKey.includes('url') || lowerKey.includes('bg') || lowerKey.includes('icon') || lowerKey.includes('avatar')) {
+                const val = mergedProps[key];
+                if (typeof val === 'string' && val.trim() !== '') {
+                  // A valid URL must start with http, https, data:, or a root path /
+                  if (!val.startsWith('http') && !val.startsWith('data:') && !val.startsWith('/')) {
+                    // Invalid/unresolved asset reference (e.g. "Editorial", "Hero Image")
+                    mergedProps[key] = defaultSection.props[key];
+                  }
+                } else if (!val) {
+                  // Empty or undefined
+                  mergedProps[key] = defaultSection.props[key];
+                }
+              }
+            }
+
             return {
               ...overrideSection,
-              props: {
-                ...defaultSection.props,
-                ...(overrideSection.props || {})
-              }
+              props: mergedProps
             };
           }
           return overrideSection;
         })
+        
+      // Resilient Restore Pipeline
+      // If a default section is missing from the overrides (e.g., due to template updates or past data corruption),
+      // and it was NOT explicitly marked as isHidden by the user (which keeps it in the array), we restore it.
+      if (defaultPage.sections) {
+        defaultPage.sections.forEach((defaultSection: any) => {
+          const defaultSectionsOfType = defaultPage.sections.filter((s: any) => s.type === defaultSection.type);
+          const typeIndex = defaultSectionsOfType.indexOf(defaultSection);
+          
+          const mergedSectionsOfType = mergedSections.filter((s: any) => s.type === defaultSection.type);
+          
+          if (typeIndex >= mergedSectionsOfType.length) {
+            // Missing from overrides, restore it!
+            mergedSections.push({ ...defaultSection });
+          }
+        });
+      }
+
+      return {
+        ...overridePage,
+        sections: mergedSections
       };
     });
   }

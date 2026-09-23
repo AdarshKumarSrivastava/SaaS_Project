@@ -1,4 +1,6 @@
 "use client";
+import { useCustomization } from "@/hooks/useCustomization";
+
 
 import { useCustomizationContext } from "@/context/CustomizationContext";
 
@@ -11,21 +13,10 @@ import { defaultMonumentProducts } from "./data";
 
 export default function MonumentTemplateHome({ initialCustomData, initialProducts }: { initialCustomData?: any, initialProducts?: any[] }) {
   const { basePath } = useCart();
-  const [customData, setCustomData] = useState<any>(initialCustomData || null);
+  const customData = useCustomization();
   const displayProducts = initialProducts && initialProducts.length > 0 ? initialProducts : defaultMonumentProducts;
 
-  useEffect(() => {
-    if (window.parent && window.parent !== window) {
-      const handleMessage = (event: MessageEvent) => {
-        if (event.data?.type === "MONOLITH_CUSTOMIZATION") {
-          setCustomData(event.data.data);
-        }
-      };
-      window.addEventListener("message", handleMessage);
-      window.parent.postMessage({ type: "MONOLITH_REQUEST_STATE" }, "*");
-      return () => window.removeEventListener("message", handleMessage);
-    }
-  }, []);
+  
 
   const tHeroTitle = customData?.formData?.heroTitle;
   const tTagline = customData?.formData?.tagline;

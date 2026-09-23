@@ -23,7 +23,16 @@ export const useCustomization = () => {
 
     if (siteData?.pages) {
       const activePage = siteData.pages.find((p: any) => {
-         if (p.path === '/') return resolvedPath === '/' || resolvedPath.endsWith('/origin') || resolvedPath.endsWith('/velocity');
+         if (p.path === '/') {
+           // Home page matches: exact '/', or path ending with the template slug
+           // e.g. '/templates/minimalist', '/templates/origin', etc.
+           if (resolvedPath === '/') return true;
+           const segments = resolvedPath.split('/').filter(Boolean);
+           // If last segment is the template slug and there's nothing after it, it's the home page
+           const templateSlug = siteData?.global?.templateSlug;
+           if (templateSlug && segments.length > 0 && segments[segments.length - 1] === templateSlug) return true;
+           return false;
+         }
          return resolvedPath.includes(p.path);
       }) || siteData.pages[0];
 

@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { useRouter, usePathname } from "next/navigation";
 import { useCustomizationContext } from "@/context/CustomizationContext";
+import { useCustomization } from "@/hooks/useCustomization";
 
 export interface VelocityProduct {
   id: string;
@@ -136,19 +137,15 @@ export function VelocityProvider({ children , initialCustomData }: { children: R
   const symbolMap: Record<string, string> = {
     USD: "$", EUR: "€", GBP: "£", CAD: "C$", AUD: "A$", INR: "₹"
   };
-  const initCurrency = initialCustomData?.formData?.currency;
+  const customData = useCustomization();
+  const initCurrency = customData?.formData?.currency;
   const [currencySymbol, setCurrencySymbol] = useState(symbolMap[initCurrency] || "$");
 
   useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === "MONOLITH_CUSTOMIZATION") {
-        const currency = event.data.data?.formData?.currency;
-        setCurrencySymbol(symbolMap[currency] || "$");
-      }
-    };
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, []);
+    setCurrencySymbol(symbolMap[initCurrency] || "$");
+  }, [initCurrency]);
+
+  
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<VelocityProduct[]>([]);

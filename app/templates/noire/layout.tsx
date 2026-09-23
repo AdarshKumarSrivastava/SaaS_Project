@@ -1,4 +1,6 @@
 "use client";
+import { useCustomization } from "@/hooks/useCustomization";
+
 
 import { useCustomizationContext } from "@/context/CustomizationContext";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
@@ -22,20 +24,9 @@ function Header({ initialCustomData, basePath }: { initialCustomData?: any, base
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const [customData, setCustomData] = useState<any>(initialCustomData || null);
+  const customData = useCustomization();
 
-  useEffect(() => {
-    if (window.parent && window.parent !== window) {
-      const handleMessage = (event: MessageEvent) => {
-        if (event.data?.type === "MONOLITH_CUSTOMIZATION") {
-          setCustomData(event.data.data);
-        }
-      };
-      window.addEventListener("message", handleMessage);
-      window.parent.postMessage({ type: "MONOLITH_REQUEST_STATE" }, "*");
-      return () => window.removeEventListener("message", handleMessage);
-    }
-  }, []);
+  
 
   const tBrandName = customData?.formData?.brandName;
   const tLogoUrl = customData?.formData?.logoUrl;
@@ -203,20 +194,9 @@ const FacebookIcon = ({ className }: { className?: string }) => (
 );
 
 function Footer({ initialCustomData, basePath }: { initialCustomData?: any, basePath: string }) {
-  const [customData, setCustomData] = useState<any>(initialCustomData || null);
+  const customData = useCustomization();
 
-  useEffect(() => {
-    if (window.parent && window.parent !== window) {
-      const handleMessage = (event: MessageEvent) => {
-        if (event.data?.type === "MONOLITH_CUSTOMIZATION") {
-          setCustomData(event.data.data);
-        }
-      };
-      window.addEventListener("message", handleMessage);
-      window.parent.postMessage({ type: "MONOLITH_REQUEST_STATE" }, "*");
-      return () => window.removeEventListener("message", handleMessage);
-    }
-  }, []);
+  
 
   const tBrandName = customData?.formData?.brandName;
   const tLogoUrl = customData?.formData?.logoUrl;

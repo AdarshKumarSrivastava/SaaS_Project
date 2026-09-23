@@ -5,6 +5,7 @@ import { useCustomizationContext } from "@/context/CustomizationContext";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { useRouter, usePathname } from "next/navigation";
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { useCustomization } from "@/hooks/useCustomization";
 
 const basePath = "";
 
@@ -91,20 +92,11 @@ export function CartProvider({ children , initialCustomData }: { children: React
   const symbolMap: Record<string, string> = {
     USD: "$", EUR: "€", GBP: "£", CAD: "C$", AUD: "A$", INR: "₹"
   };
-  const initCurrency = initialCustomData?.formData?.currency;
+  const customData = useCustomization();
+  const initCurrency = customData?.formData?.currency;
   const [currencySymbol, setCurrencySymbol] = useState(symbolMap[initCurrency] || "$");
 
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-
-      if (event.data?.type === "MONOLITH_CUSTOMIZATION") {
-        const currency = event.data.data?.formData?.currency;
-        setCurrencySymbol(symbolMap[currency] || "$");
-      }
-    };
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, []);
+  
   const [wishlist, setWishlist] = useState<Product[]>([]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");

@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { defaultAureliaProducts } from "../data";
+import { useCustomization } from "@/hooks/useCustomization";
 
 export default function StarterProductsPage({ initialProducts }: { initialProducts?: any[] }) {
   const { addToCart, searchQuery, currencySymbol, toggleWishlist, isInWishlist, basePath } = useCart();
@@ -17,20 +18,7 @@ export default function StarterProductsPage({ initialProducts }: { initialProduc
   
   const displayProducts = initialProducts && initialProducts.length > 0 ? initialProducts : defaultAureliaProducts;
 
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === "MONOLITH_CUSTOMIZATION") {
-        setCustomData(event.data.data);
-      }
-    };
-    window.addEventListener("message", handleMessage);
-    
-    if (window.parent && window.parent !== window) {
-      window.parent.postMessage({ type: "MONOLITH_REQUEST_STATE" }, "*");
-    }
-    
-    return () => window.removeEventListener("message", handleMessage);
-  }, []);
+  
 
   const productSource = displayProducts.map(p => ({
     id: p.product_id || p.id,
