@@ -24,7 +24,7 @@ export default function BYOKVault() {
   const [newPin, setNewPin] = useState('');
 
   // Credentials State
-  const [credentials, setCredentials] = useState<Array<{keyName: string, preview: string}>>([]);
+  const [credentials, setCredentials] = useState<Array<{ keyName: string, preview: string }>>([]);
   const [imageKitPublic, setImageKitPublic] = useState('');
   const [imageKitPrivate, setImageKitPrivate] = useState('');
   const [razorpayId, setRazorpayId] = useState('');
@@ -51,7 +51,7 @@ export default function BYOKVault() {
     }
   };
 
-  const handleSetupPin = async (e: React.FormEvent) => {  
+  const handleSetupPin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
@@ -133,8 +133,8 @@ export default function BYOKVault() {
 
   const renderPinInput = (value: string, onChange: (v: string) => void, placeholder = "Enter 4-8 digit PIN") => (
     <div className="relative">
-      <input 
-        type={showPin ? "text" : "password"} 
+      <input
+        type={showPin ? "text" : "password"}
         value={value}
         onChange={e => onChange(e.target.value)}
         maxLength={8}
@@ -155,7 +155,7 @@ export default function BYOKVault() {
         </button>
 
         <AnimatePresence mode="wait">
-          
+
           {/* SETUP STATE */}
           {viewState === 'setup' && (
             <motion.div key="setup" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="bg-bg-elevated border border-line p-10 rounded-3xl text-center shadow-[0_4px_24px_rgb(0,0,0,0.06)]">
@@ -164,7 +164,7 @@ export default function BYOKVault() {
               </div>
               <h1 className="text-3xl font-medium mb-4 tracking-tight">Secure your Vault</h1>
               <p className="text-ink-soft mb-8 max-w-md mx-auto leading-relaxed">Create a 4 to 8 character Master PIN to encrypt and protect access to your API keys across all your sites.</p>
-              
+
               <form onSubmit={handleSetupPin} className="max-w-xs mx-auto space-y-6">
                 {renderPinInput(pin, setPin)}
                 {error && <p className="text-red-600 bg-red-50 py-2 rounded-xl border border-red-100 text-sm flex items-center justify-center gap-2"><AlertCircle className="w-4 h-4" /> {error}</p>}
@@ -184,7 +184,7 @@ export default function BYOKVault() {
               </div>
               <h1 className="text-3xl font-medium mb-4 tracking-tight">Vault Locked</h1>
               <p className="text-ink-soft mb-8 max-w-md mx-auto leading-relaxed">Enter your Master PIN to access your API keys.</p>
-              
+
               <form onSubmit={handleUnlock} className="max-w-xs mx-auto space-y-6">
                 {renderPinInput(pin, setPin, "Enter PIN")}
                 {error && <p className="text-red-600 bg-red-50 py-2 rounded-xl border border-red-100 text-sm flex items-center justify-center gap-2"><AlertCircle className="w-4 h-4" /> {error}</p>}
@@ -196,7 +196,7 @@ export default function BYOKVault() {
                 </button>
               </form>
             </motion.div>
-          )}          
+          )}
 
           {/* FORGOT OTP STATE */}
           {viewState === 'forgot_otp' && (
@@ -206,11 +206,11 @@ export default function BYOKVault() {
               </div>
               <h1 className="text-3xl font-medium mb-4 tracking-tight">Check your Email</h1>
               <p className="text-ink-soft mb-8 max-w-md mx-auto leading-relaxed">We sent a 6-digit OTP to your registered email address.</p>
-              
+
               <form onSubmit={handleResetPin} className="max-w-xs mx-auto space-y-4">
                 <input type="text" value={otp} onChange={e => setOtp(e.target.value)} maxLength={6} placeholder="6-digit OTP" className="w-full bg-bg-base border border-line rounded-xl px-4 py-4 text-center tracking-widest text-ink focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink/20 transition-all placeholder:text-ink-soft/40 placeholder:tracking-normal placeholder:text-base" />
                 {renderPinInput(newPin, setNewPin, "New Master PIN")}
-                
+
                 {error && <p className="text-red-600 bg-red-50 py-2 rounded-xl border border-red-100 text-sm flex items-center justify-center gap-2"><AlertCircle className="w-4 h-4" /> {error}</p>}
                 <button disabled={isSubmitting || otp.length < 6 || newPin.length < 4} className="w-full bg-ink text-bg-elevated px-6 py-4 rounded-xl font-medium hover:bg-ink/90 transition-colors disabled:opacity-50 shadow-sm">
                   {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Reset PIN'}
@@ -221,7 +221,7 @@ export default function BYOKVault() {
               </form>
             </motion.div>
           )}
-
+          {/* user function*/}
           {/* UNLOCKED STATE (VAULT) */}
           {viewState === 'unlocked' && (
             <motion.div key="vault" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 pb-20">
@@ -229,7 +229,7 @@ export default function BYOKVault() {
                 <div>
                   <h1 className="text-3xl font-bold flex items-center gap-3 tracking-tight text-ink">
                     <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-100">
-                      <Key className="w-6 h-6 text-emerald-600" /> 
+                      <Key className="w-6 h-6 text-emerald-600" />
                     </div>
                     API Keys Vault
                   </h1>
@@ -246,6 +246,7 @@ export default function BYOKVault() {
                   <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center">
                     <ShieldCheck className="w-5 h-5 text-blue-600" />
                   </div>
+
                   <h2 className="text-xl font-semibold text-ink tracking-tight">ImageKit (Media)</h2>
                 </div>
                 <div className="space-y-5">

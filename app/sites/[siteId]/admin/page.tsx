@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  ArrowLeft, Settings, LayoutTemplate, Box, MessageSquare, 
+import {
+  ArrowLeft, Settings, LayoutTemplate, Box, MessageSquare,
   ChevronRight, Loader2, Users, Receipt
 } from 'lucide-react';
 import { getLiveSiteUrl } from '@/lib/utils';
@@ -26,13 +26,13 @@ const FallbackTab = ({ name }: { name: string }) => (
     </div>
   </div>
 );
-
+// user function
 export default function AdminPanelPage() {
   const router = useRouter();
   const params = useParams();
   const siteId = params?.siteId as string;
   const { user } = useAuth();
-  
+
   const [site, setSite] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'products' | 'customers' | 'inbox' | 'settings'>('overview');
@@ -52,6 +52,7 @@ export default function AdminPanelPage() {
     fetchSite();
   }, [siteId]);
 
+
   if (loading || !site) {
     return (
       <div className="min-h-screen bg-[#020202] flex items-center justify-center font-sans">
@@ -64,7 +65,7 @@ export default function AdminPanelPage() {
 
   return (
     <div className="min-h-screen bg-[#020202] text-white font-sans selection:bg-white/20 overflow-x-hidden">
-      
+
       {/* Background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-[url('/images/noise.png')] opacity-[0.03] mix-blend-overlay" />
@@ -97,7 +98,7 @@ export default function AdminPanelPage() {
 
       {/* Main Layout */}
       <div className="max-w-[1600px] mx-auto px-6 pt-32 pb-24 relative z-10 flex flex-col xl:flex-row gap-12">
-        
+
         {/* Dock Navigation */}
         <nav className="xl:w-64 shrink-0 flex flex-row xl:flex-col gap-2 overflow-x-auto xl:overflow-visible pb-4 xl:pb-0 scrollbar-none sticky top-32 h-fit">
           <div className="text-[9px] font-bold text-white/30 uppercase tracking-[0.3em] mb-4 hidden xl:block pl-4">Commerce OS</div>
@@ -115,9 +116,8 @@ export default function AdminPanelPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`relative flex items-center gap-4 px-4 py-3 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap ${
-                  isActive ? 'text-white' : 'text-white/40 hover:text-white/80 hover:bg-white/5'
-                }`}
+                className={`relative flex items-center gap-4 px-4 py-3 rounded-2xl text-[11px] font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap ${isActive ? 'text-white' : 'text-white/40 hover:text-white/80 hover:bg-white/5'
+                  }`}
               >
                 {isActive && (
                   <motion.div layoutId="activeTabBg" className="absolute inset-0 bg-white/10 border border-white/20 rounded-2xl" transition={{ type: "spring", bounce: 0.2, duration: 0.6 }} />
