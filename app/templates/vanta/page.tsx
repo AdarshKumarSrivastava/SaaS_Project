@@ -51,7 +51,8 @@ export default function VantaTemplateHome({ initialCustomData, initialProducts }
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="text-6xl md:text-[100px] lg:text-[130px] font-semibold tracking-tighter leading-[1.05] bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-white/50 pb-2 whitespace-pre-line"
+            className="font-semibold tracking-tighter leading-[1.05] bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-white/50 pb-2 whitespace-pre-line"
+            style={{ fontSize: 'clamp(3.75rem, 10vw, 8.125rem)' }}
           >
             {tHeroTitle}
           </motion.h1>
@@ -90,9 +91,17 @@ export default function VantaTemplateHome({ initialCustomData, initialProducts }
           className="absolute bottom-[-10%] md:bottom-[-20%] w-full max-w-[1400px] aspect-video z-10 flex justify-center"
         >
           <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/40 to-transparent z-20" />
-          <img 
-            src="https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?q=80&w=2000&auto=format&fit=crop" 
-            alt="Premium Hardware" 
+          <img
+            src="https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?q=80&w=2000&auto=format&fit=crop"
+            alt="Premium Hardware"
+            loading="eager"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              if (!target.dataset.fallbackAttempted) {
+                target.dataset.fallbackAttempted = 'true';
+                target.src = 'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?q=80&w=2000&auto=format&fit=crop';
+              }
+            }}
             className="w-[80%] h-full object-cover rounded-t-[3rem] border-t border-x border-white/10 shadow-[0_0_100px_rgba(255,255,255,0.1)]"
           />
         </motion.div>

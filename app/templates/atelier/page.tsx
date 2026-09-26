@@ -63,7 +63,7 @@ export default function AtelierTemplateHome({ initialCustomData, initialProducts
       </motion.div>
 
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] w-full flex flex-col justify-center px-6 md:px-12 pt-32 overflow-hidden">
+      <section className="relative min-h-[100svh] w-full flex flex-col justify-center px-6 md:px-12 pt-32 overflow-hidden">
         
         {/* Kinetic Marquee Background */}
         <motion.div 
@@ -84,7 +84,8 @@ export default function AtelierTemplateHome({ initialCustomData, initialProducts
               initial={{ opacity: 0, rotate: 5, y: 50 }}
               animate={{ opacity: 1, rotate: 0, y: 0 }}
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-              className="text-[12vw] lg:text-[180px] leading-[0.8] tracking-tighter uppercase font-black mix-blend-color-burn"
+              className="leading-[0.8] tracking-tighter uppercase font-black mix-blend-color-burn"
+              style={{ fontSize: 'clamp(3.75rem, 12vw, 11.25rem)' }}
             >
               {tHeroTitle}
             </motion.h1>

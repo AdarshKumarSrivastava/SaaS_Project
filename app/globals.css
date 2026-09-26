@@ -25,11 +25,22 @@ html {
   touch-action: manipulation;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);
   overflow-x: hidden;
-  min-height: 100vh;
+  min-height: 100svh;
 }
 
 /* GPU Accelerated Smooth Animation */
@@ -49,6 +60,14 @@ body {
   will-change: opacity, transform;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .animate-section-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* Universal Smooth Micro-Interactions */
 a, button {
   -webkit-tap-highlight-color: transparent;
@@ -57,6 +76,16 @@ a, button {
 img {
   image-rendering: -webkit-optimize-contrast;
   transition: opacity 0.2s ease-in-out;
+}
+
+img[loading="lazy"] {
+  content-visibility: auto;
+}
+
+/* Image fallback - prevent broken image icon */
+img {
+  background-color: var(--color-bg-subtle);
+  min-height: 1px;
 }
 
 *:focus-visible {

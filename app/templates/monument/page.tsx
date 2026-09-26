@@ -52,10 +52,18 @@ export default function MonumentTemplateHome({ initialCustomData, initialProduct
           transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
           className="absolute inset-0 w-full h-[120%] -top-[10%] -z-10 overflow-hidden"
         >
-          <motion.img 
+          <motion.img
             style={{ opacity: opacityImage }}
-            src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2000&auto=format&fit=crop" 
-            alt="Monumental Architecture" 
+            src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2000&auto=format&fit=crop"
+            alt="Monumental Architecture"
+            loading="eager"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              if (!target.dataset.fallbackAttempted) {
+                target.dataset.fallbackAttempted = 'true';
+                target.src = 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2000&auto=format&fit=crop';
+              }
+            }}
             className="w-full h-full object-cover grayscale-[0.2]"
           />
           {/* Very subtle 15% overlay to guarantee readability without destroying the image */}
@@ -70,7 +78,7 @@ export default function MonumentTemplateHome({ initialCustomData, initialProduct
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
             className="lg:col-span-8"
           >
-            <h1 className="text-6xl md:text-[90px] lg:text-[130px] font-bold leading-[0.85] tracking-tighter uppercase whitespace-pre-line text-[#1A1A1A]">
+            <h1 className="font-bold leading-[0.85] tracking-tighter uppercase whitespace-pre-line text-[#1A1A1A]" style={{ fontSize: 'clamp(3.75rem, 10vw, 8.125rem)' }}>
               {tHeroTitle}
             </h1>
           </motion.div>

@@ -26,14 +26,14 @@ export default function StarterTemplateHome({ initialCustomData, initialProducts
   return (
     <>
       {/* Hero Section */}
-      <section className="px-6 py-24 md:py-40 max-w-7xl mx-auto flex flex-col items-center text-center relative overflow-hidden">
+      <section className="px-6 min-h-[100svh] flex flex-col items-center justify-center text-center relative overflow-hidden">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           className="relative z-10"
         >
-          <h1 className="font-heading text-5xl md:text-[80px] lg:text-[100px] mb-8 max-w-4xl leading-[0.9] tracking-tighter uppercase text-[#111111]">
+          <h1 className="font-heading mb-8 max-w-4xl leading-[0.9] tracking-tighter uppercase text-[#111111]" style={{ fontSize: 'clamp(3rem, 8vw, 6.25rem)' }}>
             {tHeroTitle}
           </h1>
         </motion.div>
@@ -79,7 +79,7 @@ export default function StarterTemplateHome({ initialCustomData, initialProducts
               <p className="text-sm text-black/40">Check back later for new arrivals.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-16">
               {(initialProducts || []).slice(0, 4).map((product, i) => {
                 const mappedProduct = {
                   id: product.product_id || product.id,
@@ -99,9 +99,17 @@ export default function StarterTemplateHome({ initialCustomData, initialProducts
                   >
                     <Link href={`${basePath}/products/${mappedProduct.id}`} className="group flex flex-col">
                       <div className="aspect-[3/4] bg-[#F8F7F5] mb-6 relative overflow-hidden rounded-sm">
-                        <img 
-                          src={mappedProduct.image} 
+                        <img
+                          src={mappedProduct.image}
                           alt={mappedProduct.name}
+                          loading="lazy"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            if (!target.dataset.fallbackAttempted) {
+                              target.dataset.fallbackAttempted = 'true';
+                              target.src = 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=2000&auto=format&fit=crop';
+                            }
+                          }}
                           className="absolute inset-0 w-full h-full object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-[0.16,1,0.3,1]"
                         />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500" />

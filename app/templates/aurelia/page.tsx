@@ -66,7 +66,7 @@ export default function StarterTemplateHome({ initialCustomData, initialProducts
               transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
               className="max-w-2xl mix-blend-difference text-white"
             >
-              <h1 className="font-serif text-6xl md:text-[90px] lg:text-[110px] leading-[0.85] tracking-tight uppercase mb-6 whitespace-pre-line">
+              <h1 className="font-serif leading-[0.85] tracking-tight uppercase mb-6 whitespace-pre-line" style={{ fontSize: 'clamp(3.75rem, 10vw, 6.875rem)' }}>
                 {tHeroTitle}
               </h1>
             </motion.div>

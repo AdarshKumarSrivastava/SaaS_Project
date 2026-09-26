@@ -39,7 +39,7 @@ export default function NoireTemplateHome({ initialCustomData, initialProducts }
   return (
     <div ref={containerRef} className="bg-[#FCFBF8] text-[#2A2A2A] overflow-hidden font-sans">
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] w-full flex flex-col justify-center overflow-hidden px-6 pt-32 pb-24">
+      <section className="relative min-h-[100svh] w-full flex flex-col justify-center overflow-hidden px-6 pt-32 pb-24">
         
         {/* Soft Ambient Background Elements */}
         <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-[#E8DCCB]/30 rounded-full blur-3xl -z-10 mix-blend-multiply" />
@@ -103,9 +103,17 @@ export default function NoireTemplateHome({ initialCustomData, initialProducts }
               transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
               className="absolute bottom-[10%] left-[5%] w-[45%] aspect-square rounded-full overflow-hidden shadow-2xl border-4 border-[#FCFBF8]"
             >
-              <img 
-                src="https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?q=80&w=1500&auto=format&fit=crop" 
+              <img
+                src="https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?q=80&w=1500&auto=format&fit=crop"
                 alt="Natural Texture"
+                loading="lazy"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  if (!target.dataset.fallbackAttempted) {
+                    target.dataset.fallbackAttempted = 'true';
+                    target.src = 'https://images.unsplash.com/photo-1615751072497-5f5169febe17?q=80&w=1500&auto=format&fit=crop';
+                  }
+                }}
                 className="w-full h-full object-cover"
               />
             </motion.div>

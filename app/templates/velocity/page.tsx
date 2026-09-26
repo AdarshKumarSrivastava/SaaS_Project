@@ -55,9 +55,17 @@ function ProductCard3D({ product }: { product: any }) {
         />
         
         <div className="absolute inset-0 overflow-hidden" style={{ transform: "translateZ(0px)" }}>
-          <img 
-            src={product.image || (product.images && product.images[0]) || "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2000&auto=format&fit=crop"} 
+          <img
+            src={product.image || (product.images && product.images[0]) || "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2000&auto=format&fit=crop"}
             alt={product.name}
+            loading="lazy"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              if (!target.dataset.fallbackAttempted) {
+                target.dataset.fallbackAttempted = 'true';
+                target.src = 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2000&auto=format&fit=crop';
+              }
+            }}
             className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 mix-blend-lighten"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent opacity-90" />
@@ -125,9 +133,17 @@ export default function VelocityHomePage() {
       {/* Glitch Hero */}
       <section className="relative h-[100svh] min-h-[100svh] w-full flex items-center justify-center overflow-hidden pt-20 md:pt-0">
         <motion.div style={{ scale, y: yOffset }} className="absolute inset-0 z-0">
-          <img 
-            src={heroImage} 
-            alt="Cyberpunk City" 
+          <img
+            src={heroImage}
+            alt="Cyberpunk City"
+            loading="eager"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              if (!target.dataset.fallbackAttempted) {
+                target.dataset.fallbackAttempted = 'true';
+                target.src = 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2000&auto=format&fit=crop';
+              }
+            }}
             className="w-full h-full object-cover md:object-center object-[center_top] opacity-30"
           />
           {/* Cyberpunk grid overlay */}
@@ -141,14 +157,14 @@ export default function VelocityHomePage() {
             transition={{ type: "spring", bounce: 0.5 }}
             className="relative"
           >
-            <h1 className="text-5xl sm:text-7xl md:text-[10rem] font-black uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] via-white to-[#ff003c] font-orbitron drop-shadow-[0_0_30px_rgba(0,240,255,0.3)] max-w-[95vw] md:max-w-none break-words">
+            <h1 className="font-black uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] via-white to-[#ff003c] font-orbitron drop-shadow-[0_0_30px_rgba(0,240,255,0.3)] max-w-[95vw] md:max-w-none break-words" style={{ fontSize: 'clamp(3rem, 12vw, 10rem)' }}>
               {brandName}
             </h1>
             {/* Glitch layers */}
-            <h1 className="absolute inset-0 text-5xl sm:text-7xl md:text-[10rem] font-black uppercase tracking-tighter text-[#00f0ff] font-orbitron opacity-50 mix-blend-screen translate-x-1 animate-pulse max-w-[95vw] md:max-w-none break-words">
+            <h1 className="absolute inset-0 font-black uppercase tracking-tighter text-[#00f0ff] font-orbitron opacity-50 mix-blend-screen translate-x-1 animate-pulse max-w-[95vw] md:max-w-none break-words" style={{ fontSize: 'clamp(3rem, 12vw, 10rem)' }}>
               {brandName}
             </h1>
-            <h1 className="absolute inset-0 text-5xl sm:text-7xl md:text-[10rem] font-black uppercase tracking-tighter text-[#ff003c] font-orbitron opacity-50 mix-blend-screen -translate-x-1 animate-pulse max-w-[95vw] md:max-w-none break-words" style={{ animationDelay: '100ms' }}>
+            <h1 className="absolute inset-0 font-black uppercase tracking-tighter text-[#ff003c] font-orbitron opacity-50 mix-blend-screen -translate-x-1 animate-pulse max-w-[95vw] md:max-w-none break-words" style={{ fontSize: 'clamp(3rem, 12vw, 10rem)', animationDelay: '100ms' }}>
               {brandName}
             </h1>
           </motion.div>
@@ -218,8 +234,8 @@ export default function VelocityHomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
-          {(customData?.products?.length > 0 ? customData.products : VELOCITY_PRODUCTS).slice(0, 3).map((product: any) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 relative z-10">
+          {(customData?.products?.length > 0 ? customData.products : VELOCITY_PRODUCTS).slice(0, 4).map((product: any) => (
             <ProductCard3D key={product.id} product={product} />
           ))}
         </div>

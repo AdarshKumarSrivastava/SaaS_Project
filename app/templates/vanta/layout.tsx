@@ -261,11 +261,11 @@ export default function StarterPreviewLayout({ children, initialCustomData, base
   return (
     <CartProvider initialBasePath={basePath} initialCustomData={initialCustomData}>
       <div className="min-h-screen flex flex-col bg-[#F8F7F5] font-body text-[#111111] selection:bg-[#FF4D00] selection:text-white relative">
-        {!isAuthPage && <Header initialCustomData={initialCustomData} basePath={basePath !== undefined ? basePath : `${basePath}`} />}
+        {!isAuthPage && <Header initialCustomData={initialCustomData} basePath={typeof basePath === "string" ? basePath : ""} />}
         <main className="flex-grow flex flex-col">
           {children}
         </main>
-        {!isAuthPage && <Footer initialCustomData={initialCustomData} basePath={basePath !== undefined ? basePath : `${basePath}`} />}
+        {!isAuthPage && <Footer initialCustomData={initialCustomData} basePath={typeof basePath === "string" ? basePath : ""} />}
         <ToastContainer />
       </div>
     </CartProvider>

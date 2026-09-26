@@ -99,9 +99,17 @@ export default function CanvasHomePage({ initialCustomData, initialProducts }: {
           viewport={{ once: true }}
           className="absolute inset-0 w-full h-full"
         >
-          <img 
-            src={editorialImage1} 
+          <img
+            src={editorialImage1}
             alt="Architecture"
+            loading="lazy"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              if (!target.dataset.fallbackAttempted) {
+                target.dataset.fallbackAttempted = 'true';
+                target.src = 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2000&auto=format&fit=crop';
+              }
+            }}
             className="w-full h-full object-cover grayscale opacity-80"
           />
         </motion.div>

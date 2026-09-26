@@ -5,8 +5,16 @@ import { CommandPalette } from "@/components/ui/CommandPalette";
 import { StarBackground } from "@/components/ui/StarBackground";
 import { SmoothScrollProvider } from "@/components/ui/SmoothScrollProvider";
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
-const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-serif' });
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap'
+});
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-serif',
+  display: 'swap'
+});
 
 export const metadata: Metadata = {
   title: 'BuildSpace',

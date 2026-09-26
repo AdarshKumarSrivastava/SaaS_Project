@@ -36,10 +36,18 @@ export default function OriginHomePage() {
       {/* Hero Section */}
       <section data-page-id="home" data-section-id="Hero" className="relative w-full bg-[#402c21] text-[#fdfbf7] min-h-[100svh] flex items-center pt-24 pb-12 md:py-0">
         <div className="absolute inset-0 z-0">
-          <img 
-            src={heroImage} 
+          <img
+            src={heroImage}
             data-field-key="home.Hero.heroImage"
-            alt="Hero Background" 
+            alt="Hero Background"
+            loading="eager"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              if (!target.dataset.fallbackAttempted) {
+                target.dataset.fallbackAttempted = 'true';
+                target.src = 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=2000&auto=format&fit=crop';
+              }
+            }}
             className="w-full h-full object-cover md:object-center object-[center_top] opacity-30 mix-blend-overlay"
           />
         </div>
@@ -90,9 +98,17 @@ export default function OriginHomePage() {
                 style={{ animationDelay: `${idx * 150}ms`, animationFillMode: 'both' }}
               >
                 <Link href={`${basePath}/products/${product.id}`} className="block relative aspect-[4/5] overflow-hidden bg-[#e5e0dc] rounded-sm">
-                  <img 
-                    src={product.image || (product.images && product.images[0]) || "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=2000&auto=format&fit=crop"} 
-                    alt={product.name} 
+                  <img
+                    src={product.image || (product.images && product.images[0]) || "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=2000&auto=format&fit=crop"}
+                    alt={product.name}
+                    loading="lazy"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      if (!target.dataset.fallbackAttempted) {
+                        target.dataset.fallbackAttempted = 'true';
+                        target.src = 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=2000&auto=format&fit=crop';
+                      }
+                    }}
                     className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-[#402c21]/0 group-hover:bg-[#402c21]/5 transition-colors duration-300" />

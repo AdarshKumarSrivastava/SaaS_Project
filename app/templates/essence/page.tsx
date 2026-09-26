@@ -42,7 +42,7 @@ export default function EssenceHomePage() {
   return (
     <div ref={containerRef} className="w-full">
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center justify-center pt-24 pb-12 px-6 overflow-hidden">
+      <section className="relative min-h-[100svh] flex items-center justify-center pt-24 pb-12 px-6 overflow-hidden">
         <div className="absolute inset-0 z-0 flex md:flex-row flex-col">
           <div className="w-full md:w-1/2 h-full bg-[#F3EDE2]" />
           <div className="w-full md:w-1/2 h-full relative">
@@ -53,9 +53,17 @@ export default function EssenceHomePage() {
               transition={{ duration: 1.5, ease: [0.77, 0, 0.175, 1], delay: 0.2 }}
               style={{ transformOrigin: "bottom" }}
             />
-            <img 
-              src={heroImage} 
-              alt="Hero Interior" 
+            <img
+              src={heroImage}
+              alt="Hero Interior"
+              loading="eager"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                if (!target.dataset.fallbackAttempted) {
+                  target.dataset.fallbackAttempted = 'true';
+                  target.src = 'https://images.unsplash.com/photo-1615874694520-474822394e73?q=80&w=2000&auto=format&fit=crop';
+                }
+              }}
               className="w-full h-full object-cover"
             />
           </div>
@@ -77,7 +85,8 @@ export default function EssenceHomePage() {
                 initial={{ y: "100%" }}
                 animate={{ y: 0 }}
                 transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.7 }}
-                className="font-serif text-5xl md:text-7xl lg:text-8xl text-[#4A3F35] leading-[1.1]"
+                className="font-serif text-[#4A3F35] leading-[1.1]"
+                style={{ fontSize: 'clamp(2.5rem, 8vw, 6rem)' }}
               >
                 {heroTitle} <br/>
                 <span className="italic text-[#A69684]">{heroTitleItalic}</span>
@@ -150,8 +159,8 @@ export default function EssenceHomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
-            {featuredProducts.map((product, idx) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-16">
+            {(customData?.products?.length > 0 ? customData.products.slice(0, 4) : featuredProducts).map((product, idx) => (
               <motion.div
                 key={product.id}
                 initial={{ opacity: 0, y: 40 }}
@@ -162,9 +171,17 @@ export default function EssenceHomePage() {
               >
                 <Link href={`${basePath}/products/${product.id}`}>
                   <div className="relative aspect-[3/4] mb-6 overflow-hidden bg-[#E3D8C8]">
-                    <img 
-                      src={product.image} 
-                      alt={product.name} 
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      loading="lazy"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        if (!target.dataset.fallbackAttempted) {
+                          target.dataset.fallbackAttempted = 'true';
+                          target.src = 'https://images.unsplash.com/photo-1615874694520-474822394e73?q=80&w=2000&auto=format&fit=crop';
+                        }
+                      }}
                       className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500" />
@@ -195,11 +212,19 @@ export default function EssenceHomePage() {
       </section>
 
       {/* Editorial Section */}
-      <section className="py-0 flex flex-col md:flex-row h-auto md:h-[80vh]">
-        <div className="w-full md:w-1/2 h-[50vh] md:h-full">
-          <img 
-            src={editorialImage} 
-            alt="Editorial" 
+      <section className="py-0 flex flex-col md:flex-row min-h-[60vh] md:min-h-[80vh]">
+        <div className="w-full md:w-1/2 min-h-[50vh] md:h-full">
+          <img
+            src={editorialImage}
+            alt="Editorial"
+            loading="lazy"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              if (!target.dataset.fallbackAttempted) {
+                target.dataset.fallbackAttempted = 'true';
+                target.src = 'https://images.unsplash.com/photo-1615874694520-474822394e73?q=80&w=2000&auto=format&fit=crop';
+              }
+            }}
             className="w-full h-full object-cover"
           />
         </div>

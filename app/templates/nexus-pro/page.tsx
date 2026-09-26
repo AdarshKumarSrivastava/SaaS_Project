@@ -57,9 +57,17 @@ export default function NexusProHomePage() {
           style={{ y: heroY, opacity: heroOpacity }}
           className="absolute inset-0 z-0"
         >
-          <img 
-            src={heroImage} 
-            alt="Nexus Texture" 
+          <img
+            src={heroImage}
+            alt="Nexus Texture"
+            loading="eager"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              if (!target.dataset.fallbackAttempted) {
+                target.dataset.fallbackAttempted = 'true';
+                target.src = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2000&auto=format&fit=crop';
+              }
+            }}
             className="w-full h-full object-cover opacity-60 mix-blend-luminosity"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a0a0a]/50 to-[#0a0a0a]" />
@@ -76,11 +84,12 @@ export default function NexusProHomePage() {
             </span>
           </motion.div>
           
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
-            className="text-6xl md:text-8xl lg:text-[10rem] font-black uppercase tracking-tighter leading-[0.85] text-white mb-8"
+            className="font-black uppercase tracking-tighter leading-[0.85] text-white mb-8"
+            style={{ fontSize: 'clamp(3.75rem, 10vw, 10rem)' }}
           >
             {heroTitle1} <br/> {heroTitle2}
           </motion.h1>

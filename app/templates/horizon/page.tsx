@@ -113,7 +113,7 @@ function KineticHero() {
           <span className="font-outfit text-[10px] uppercase tracking-[0.6em] text-black/60 mb-6 block font-medium">
             {brandName} Studio
           </span>
-          <h1 className="font-cormorant text-7xl md:text-9xl font-light tracking-tight leading-none text-[#111] mix-blend-difference mb-6">
+          <h1 className="font-cormorant font-light tracking-tight leading-none text-[#111] mix-blend-difference mb-6" style={{ fontSize: 'clamp(4.375rem, 10vw, 7rem)' }}>
             {initialTitle} <span className="italic font-medium">{lastWord}</span>
           </h1>
           {heroSubtitle && (
