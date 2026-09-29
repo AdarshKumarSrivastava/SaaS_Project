@@ -44,7 +44,7 @@ export default function OrdersTab({ siteId }: { siteId: string }) {
   const getStatusIcon = (status: string) => {
     switch(status) {
       case 'PENDING': return <Clock className="w-4 h-4 text-yellow-500" />;
-      case 'PROCESSING': return <Package className="w-4 h-4 text-blue/500" />;
+      case 'PROCESSING': return <Package className="w-4 h-4 text-blue-500" />;
       case 'SHIPPED': return <Truck className="w-4 h-4 text-purple-500" />;
       case 'DELIVERED': return <CheckCircle2 className="w-4 h-4 text-green-500" />;
       case 'CANCELLED': return <XCircle className="w-4 h-4 text-red-500" />;
