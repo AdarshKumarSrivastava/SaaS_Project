@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, memo } from 'react';
+import React, { useState, useRef, memo, useTransition } from 'react';
 import { motion } from 'framer-motion';
 import { ExternalLink, Sparkles, ArrowRight, Check, Eye, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -28,6 +28,7 @@ export const InteractiveTemplateCard = memo(function InteractiveTemplateCard({
   isCreating = false,
 }: InteractiveTemplateCardProps) {
   const router = useRouter();
+  const [, startTransition] = useTransition();
   const cardRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
@@ -48,7 +49,7 @@ export const InteractiveTemplateCard = memo(function InteractiveTemplateCard({
     e.stopPropagation();
     setIsOpening(true);
     setTimeout(() => {
-      router.push(template.href);
+      startTransition(() => router.push(template.href));
     }, 280);
   };
 

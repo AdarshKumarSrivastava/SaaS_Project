@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Loader2, Globe, ArrowRight } from 'lucide-react';
@@ -15,6 +15,7 @@ export const CommandPalette = () => {
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const router = useRouter();
+  const [, startTransition] = useTransition();
   
   // Ref for debouncing search input
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -68,8 +69,8 @@ export const CommandPalette = () => {
   const handleSelect = React.useCallback((site: { id: string }) => {
     setIsOpen(false);
     // Instantly teleport the user to the visual builder for this site
-    router.push(`/sites/${site.id}/builder`);
-  }, [router]);
+    startTransition(() => router.push(`/sites/${site.id}/builder`));
+  }, [router, startTransition]);
 
   // Handle Keyboard Navigation within the Modal
   useEffect(() => {

@@ -78,7 +78,7 @@ export const TransitionLink = ({ children, className, onClick, ...props }: Trans
     const overlay = document.createElement('div');
     overlay.className = 'fixed inset-0 z-[99999] pointer-events-none overflow-hidden';
     
-    const numCols = 5;
+    const numCols = 4;
     const layer1: HTMLDivElement[] = [];
     const layer2: HTMLDivElement[] = [];
 
@@ -89,8 +89,8 @@ export const TransitionLink = ({ children, className, onClick, ...props }: Trans
         col1.style.left = `${(i * 100) / numCols}%`;
         col1.style.width = `${100 / numCols + 0.5}%`; // prevent subpixel gaps
         col1.style.transform = 'translateY(100%)';
-        col1.style.transition = `transform 0.7s cubic-bezier(0.85, 0, 0.15, 1)`;
-        col1.style.transitionDelay = `${i * 0.05}s`;
+        col1.style.transition = `transform 0.5s cubic-bezier(0.85, 0, 0.15, 1)`;
+        col1.style.transitionDelay = `${i * 0.04}s`;
         
         // Dark Column (Foreground layer)
         const col2 = document.createElement('div');
@@ -98,8 +98,8 @@ export const TransitionLink = ({ children, className, onClick, ...props }: Trans
         col2.style.left = `${(i * 100) / numCols}%`;
         col2.style.width = `${100 / numCols + 0.5}%`;
         col2.style.transform = 'translateY(100%)';
-        col2.style.transition = `transform 0.8s cubic-bezier(0.85, 0, 0.15, 1)`;
-        col2.style.transitionDelay = `${0.1 + (i * 0.05)}s`; 
+        col2.style.transition = `transform 0.6s cubic-bezier(0.85, 0, 0.15, 1)`;
+        col2.style.transitionDelay = `${0.06 + (i * 0.04)}s`; 
 
         overlay.appendChild(col1);
         overlay.appendChild(col2);
@@ -134,8 +134,8 @@ export const TransitionLink = ({ children, className, onClick, ...props }: Trans
             char.style.transform = 'translateY(120%) scaleY(1.3) rotate(10deg)';
             char.style.filter = 'blur(12px)';
             char.style.opacity = '0';
-            char.style.transition = `transform 0.9s cubic-bezier(0.7, 0, 0.2, 1), opacity 0.8s cubic-bezier(0.7, 0, 0.2, 1), filter 0.9s cubic-bezier(0.7, 0, 0.2, 1), -webkit-text-stroke 0.8s ease, color 0.8s ease`;
-            char.style.transitionDelay = `${0.3 + (globalIndex * 0.04)}s`;
+            char.style.transition = `transform 0.6s cubic-bezier(0.7, 0, 0.2, 1), opacity 0.5s cubic-bezier(0.7, 0, 0.2, 1), filter 0.6s cubic-bezier(0.7, 0, 0.2, 1), -webkit-text-stroke 0.5s ease, color 0.5s ease`;
+            char.style.transitionDelay = `${0.2 + (globalIndex * 0.03)}s`;
             
             wordContainer.appendChild(char);
             chars.push(char);
@@ -149,7 +149,7 @@ export const TransitionLink = ({ children, className, onClick, ...props }: Trans
     const subtext = document.createElement('div');
     subtext.textContent = 'ESTABLISHING CONNECTION...';
     subtext.className = 'mt-12 text-[#a0a0a0] text-[10px] md:text-xs uppercase tracking-[0.5em] font-mono opacity-0';
-    subtext.style.transition = 'opacity 0.8s ease 0.8s';
+    subtext.style.transition = 'opacity 0.5s ease 0.5s';
 
     textContainer.appendChild(textWrapper);
     textContainer.appendChild(subtext);
@@ -180,13 +180,13 @@ export const TransitionLink = ({ children, className, onClick, ...props }: Trans
     subtext.style.opacity = '1';
 
     // Wait for animation to finish
-    await sleep(1500);
+    await sleep(900);
 
     // Route change happens silently behind the black screen
     router.push(targetUrl);
 
     // Wait a brief moment for the new page DOM to mount
-    await sleep(300);
+    await sleep(200);
 
     // Animate text out
     chars.forEach((char, i) => {
@@ -201,7 +201,7 @@ export const TransitionLink = ({ children, className, onClick, ...props }: Trans
     subtext.style.transitionDuration = '0.3s';
     subtext.style.opacity = '0';
 
-    await sleep(400);
+    await sleep(250);
 
     // Animate columns out (sliding up)
     layer2.forEach((col, i) => {
@@ -214,7 +214,7 @@ export const TransitionLink = ({ children, className, onClick, ...props }: Trans
     });
 
     // Wait for columns to slide out
-    await sleep(1000);
+    await sleep(600);
     
     // Cleanup
     if (document.body.contains(overlay)) {

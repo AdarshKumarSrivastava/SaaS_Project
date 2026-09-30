@@ -49,4 +49,9 @@ export default function RootLayout({
             <CommandPalette />
             <Chatbot />
             <Toaster theme="light" position="bottom-right" />
-          </PageTransi
+          </PageTransitionProvider>
+        </SmoothScrollProvider>
+      </body>
+    </html>
+  );
+}

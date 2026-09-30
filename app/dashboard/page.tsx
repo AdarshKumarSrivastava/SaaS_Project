@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -56,6 +56,7 @@ const templatesList = [
 
 export default function DashboardPage() {
   const router = useRouter();
+  const [isNavPending, startTransition] = useTransition();
   const { user, logout } = useAuth();
    
   const [sites, setSites] = useState<any[]>([]);
@@ -124,7 +125,7 @@ export default function DashboardPage() {
         setSites(data);
       } catch (err) {
         console.warn('Dashboard auth check:', err);
-        router.push('/login');
+        startTransition(() => router.push('/login'));
       } finally {
         setLoading(false);
       }
@@ -140,7 +141,7 @@ export default function DashboardPage() {
         name: newSiteName,
         category: newSiteCategory
       });
-      router.push(`/sites/${data.id}/setup`);
+      startTransition(() => router.push(`/sites/${data.id}/setup`));
     } catch (err: any) {
       console.error(err);
       toast.error(err?.message || 'Failed to create project');
@@ -171,7 +172,7 @@ export default function DashboardPage() {
         products: productsToSeed
       });
 
-      router.push(`/sites/${data.id}/builder`);
+      startTransition(() => router.push(`/sites/${data.id}/builder`));
     } catch (err: any) {
       console.error('Template creation error:', err);
       toast.error(err?.message || 'Failed to create project from template');
@@ -617,7 +618,7 @@ export default function DashboardPage() {
                                   className="absolute top-10 right-0 w-48 bg-bg-elevated border border-line rounded-xl shadow-xl z-20 py-1 overflow-hidden"
                                 >
                                   <button 
-                                    onClick={() => router.push(`/sites/${site.id}/admin`)}
+                                    onClick={() => startTransition(() => router.push(`/sites/${site.id}/admin`))}
                                     className="w-full px-4 py-2 text-left text-xs text-ink hover:bg-bg-subtle flex items-center gap-2 transition-colors"
                                   >
                                     <Settings className="w-3.5 h-3.5 text-ink-soft" /> Manage Site (Admin)
@@ -651,13 +652,13 @@ export default function DashboardPage() {
                         
                         <div className="mt-auto flex items-center gap-2.5">
                           <button 
-                            onClick={() => router.push(`/sites/${site.id}/setup`)} 
+                            onClick={() => startTransition(() => router.push(`/sites/${site.id}/setup`))} 
                             className="flex-1 bg-bg-subtle hover:bg-bg-base text-ink text-xs py-2 rounded-xl transition-colors flex justify-center items-center gap-1.5 border border-line font-medium"
                           >
                             <Settings className="w-3.5 h-3.5" /> Setup
                           </button>
                           <button 
-                            onClick={() => router.push(`/sites/${site.id}/builder`)} 
+                            onClick={() => startTransition(() => router.push(`/sites/${site.id}/builder`))} 
                             className="flex-1 bg-ink text-bg-elevated hover:bg-ink/90 text-xs py-2 rounded-xl transition-colors font-medium shadow-sm"
                           >
                             Builder
@@ -699,13 +700,13 @@ export default function DashboardPage() {
                           {(!site.deployments || site.deployments.length === 0 || site.deployments[0].status !== 'LIVE') ? 'Deploy Live' : 'Redeploy'}
                         </button>
                         <button 
-                          onClick={() => router.push(`/sites/${site.id}/admin`)}
+                          onClick={() => startTransition(() => router.push(`/sites/${site.id}/admin`))}
                           className="px-3 py-1.5 text-xs bg-bg-subtle hover:bg-bg-base border border-line rounded-lg font-medium"
                         >
                           Manage
                         </button>
                         <button 
-                          onClick={() => router.push(`/sites/${site.id}/builder`)}
+                          onClick={() => startTransition(() => router.push(`/sites/${site.id}/builder`))}
                           className="px-3 py-1.5 text-xs bg-ink text-bg-elevated rounded-lg font-medium shadow-sm"
                         >
                           Builder
@@ -817,7 +818,7 @@ export default function DashboardPage() {
               category,
               subdomain,
             });
-            router.push(`/sites/${data.id}/setup`);
+            startTransition(() => router.push(`/sites/${data.id}/setup`));
           } catch (err: any) {
             console.error(err);
             setIsModalCreating(false);

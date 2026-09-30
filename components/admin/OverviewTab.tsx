@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useTransition } from 'react';
 import { motion, useMotionTemplate, useMotionValue } from 'framer-motion';
 import { Activity, Box, Zap, Sparkles, ChevronRight, Users, TrendingUp, ArrowUpRight } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
@@ -43,6 +43,7 @@ function PremiumCard({ children, gradient = "rgba(255,255,255,0.1)" }: { childre
 
 export default function OverviewTab({ siteId, site }: { siteId: string, site: any }) {
   const router = useRouter();
+  const [, startTransition] = useTransition();
   const [metrics, setMetrics] = useState({ revenue: 0, orders: 0, customers: 0, products: 0 });
   const [loading, setLoading] = useState(true);
 
@@ -209,7 +210,7 @@ export default function OverviewTab({ siteId, site }: { siteId: string, site: an
         {/* Action Button: Right (CTA) */}
         <div className="relative z-20 shrink-0">
           <button 
-            onClick={() => router.push(`/sites/${siteId}/builder`)}
+            onClick={() => startTransition(() => router.push(`/sites/${siteId}/builder`))}
             className="group/btn relative overflow-hidden bg-white text-black px-7 sm:px-8 py-3.5 sm:py-4 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-[0.16em] flex items-center gap-3 shrink-0 shadow-[0_4px_24px_rgba(139,92,246,0.18)] hover:shadow-[0_4px_32px_rgba(255,255,255,0.25)] hover:bg-white/95 active:scale-[0.98] transition-all duration-300"
           >
             <span>Enter Builder</span>
