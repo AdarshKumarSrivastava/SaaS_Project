@@ -4,6 +4,7 @@ import './globals.css';
 import { CommandPalette } from "@/components/ui/CommandPalette";
 import { StarBackground } from "@/components/ui/StarBackground";
 import { SmoothScrollProvider } from "@/components/ui/SmoothScrollProvider";
+import { PageTransitionProvider } from "@/components/ui/PageTransitionProvider";
 
 const inter = Inter({
   subsets: ['latin'],
@@ -43,12 +44,9 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body className={`font-sans antialiased selection:bg-accent/30 selection:text-ink`}>
         <SmoothScrollProvider>
-          {children}
-          <CommandPalette />
-          <Chatbot />
-          <Toaster theme="light" position="bottom-right" />
-        </SmoothScrollProvider>
-      </body>
-    </html>
-  );
-}
+          <PageTransitionProvider>
+            {children}
+            <CommandPalette />
+            <Chatbot />
+            <Toaster theme="light" position="bottom-right" />
+          </PageTransi

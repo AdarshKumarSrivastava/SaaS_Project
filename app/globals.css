@@ -138,3 +138,116 @@ input:focus-visible, textarea:focus-visible {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 }
+
+/* =============================================
+   PAGE TRANSITION PROGRESS BAR
+   ============================================= */
+.page-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 999999;
+  pointer-events: none;
+}
+
+.page-progress-bar__track {
+  height: 100%;
+  width: var(--progress, 0%);
+  background: linear-gradient(90deg, var(--color-accent), #ff7a4d, var(--color-accent));
+  background-size: 200% 100%;
+  animation: progressShimmer 1.5s ease-in-out infinite;
+  border-radius: 0 2px 2px 0;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: width;
+}
+
+.page-progress-bar__glow {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 80px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+  opacity: 0.6;
+  filter: blur(4px);
+  animation: progressPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes progressShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes progressPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* =============================================
+   VIEW TRANSITIONS API (Progressive Enhancement)
+   ============================================= */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root) {
+  animation: viewFadeOut 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+::view-transition-new(root) {
+  animation: viewFadeIn 0.3s cubic-bezier(0, 0, 0.2, 1) forwards;
+}
+
+@keyframes viewFadeOut {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.998); }
+}
+
+@keyframes viewFadeIn {
+  from { opacity: 0; transform: scale(1.002); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* =============================================
+   ROUTE CHANGE ELEMENT ANIMATIONS
+   ============================================= */
+@keyframes routeFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-route-in {
+  animation: routeFadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: opacity, transform;
+}
+
+/* Stagger children on route mount */
+.stagger-children > * {
+  opacity: 0;
+  animation: routeFadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0.04s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.08s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.12s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.16s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.24s; }
+.stagger-children > *:nth-child(7) { animation-delay: 0.28s; }
+.stagger-children > *:nth-child(8) { animation-delay: 0.32s; }
+.stagger-children > *:nth-child(n+9) { animation-delay: 0.36s; }
+
+/* =============================================
+   OFF-SCREEN CONTENT OPTIMIZATION
+   ============================================= */
+section, .content-block {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
