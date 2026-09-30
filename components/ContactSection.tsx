@@ -167,7 +167,7 @@ export function ContactSection({ siteId }: { siteId?: string }) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-10%" }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-5xl bg-bg-elevated/90 backdrop-blur-xl rounded-[2.5rem] p-10 md:p-16 flex flex-col md:flex-row gap-16 justify-between text-ink relative overflow-hidden border border-line/70 shadow-[0_20px_50px_rgba(0,0,0,0.03)] hover:shadow-[0_30px_70px_rgba(229,82,37,0.08),0_15px_35px_rgba(0,0,0,0.04)] hover:border-accent/30 hover:-translate-y-1 transition-all duration-500 ease-out group"
+        className="w-full max-w-5xl bg-bg-elevated/90 backdrop-blur-xl rounded-[2.5rem] p-10 md:p-16 flex flex-col md:flex-row gap-16 justify-between text-ink relative overflow-hidden border border-line/70 hover:border-accent/30 premium-hover-card group"
       >
         {/* Subtle Mouse-Following Light Spotlight */}
         <div 

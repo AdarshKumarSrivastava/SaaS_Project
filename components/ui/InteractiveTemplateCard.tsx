@@ -71,7 +71,7 @@ export const InteractiveTemplateCard = memo(function InteractiveTemplateCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className={`group relative bg-bg-elevated border border-line/70 rounded-[2rem] overflow-hidden flex flex-col h-full select-none transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-accent/40 hover:shadow-[0_24px_60px_rgba(0,0,0,0.08),0_0_30px_rgba(229,82,37,0.08)] outline-none ${
+      className={`group relative bg-bg-elevated border border-line/70 rounded-[2rem] overflow-hidden flex flex-col h-full select-none premium-hover-card hover:border-accent/40 outline-none ${
         isOpening ? 'scale-95 opacity-90' : ''
       }`}
     >

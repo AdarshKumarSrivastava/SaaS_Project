@@ -579,7 +579,7 @@ export default function DashboardPage() {
                   const CatIcon = cat?.icon || Globe;
                   return (
                     <ScrollReveal key={site.id} delay={i * 0.05}>
-                      <div className="group bg-bg-elevated border border-line/80 rounded-2xl p-6 hover:-translate-y-1 hover:shadow-xl hover:border-line transition-all duration-300 flex flex-col h-full">
+                      <div className="group bg-bg-elevated border border-line/80 rounded-2xl p-6 premium-hover-card flex flex-col h-full hover:border-line">
                         <div className="flex justify-between items-start mb-5 relative site-menu-container">
                           <div className={`p-2.5 rounded-xl border ${cat?.accent || 'bg-bg-subtle text-ink-soft border-line'}`}>
                             <CatIcon className="w-4 h-4" />

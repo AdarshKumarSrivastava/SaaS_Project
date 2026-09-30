@@ -245,6 +245,27 @@ input:focus-visible, textarea:focus-visible {
 .stagger-children > *:nth-child(n+9) { animation-delay: 0.36s; }
 
 /* =============================================
+   PREMIUM CARD HOVER
+   ============================================= */
+.premium-hover-card {
+  transform: translateY(0px);
+  box-shadow: 
+    0 0px 0px rgba(0, 0, 0, 0),
+    0 0px 0px rgba(0, 0, 0, 0);
+  transition: 
+    transform 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 700ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+  will-change: transform, box-shadow;
+}
+
+.premium-hover-card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 
+    0 12px 30px rgba(0, 0, 0, 0.06),
+    0 30px 70px rgba(0, 0, 0, 0.10) !important;
+}
+
+/* =============================================
    OFF-SCREEN CONTENT OPTIMIZATION
    ============================================= */
 section, .content-block {
