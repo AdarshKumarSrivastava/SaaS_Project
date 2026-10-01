@@ -4,7 +4,7 @@ import { Cormorant_Garamond, Outfit } from "next/font/google";
 import { HorizonProvider, useHorizon } from "./HorizonContext";
 import Link from "next/link";
 import { ShoppingBag, Heart, Menu, X, ArrowRight, User, Check, CreditCard, Banknote, Smartphone , Sun} from "lucide-react";
-import { useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, useRef, ReactNode } from "react";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useCustomization } from "@/hooks/useCustomization";
@@ -632,45 +632,33 @@ function ToastContainer() {
   );
 }
 
-// Global Custom Cursor for the entire layout
+// Global Custom Cursor — ref-based, no re-renders on mouse move
 function GlobalCursor() {
-  const __customContext = useCustomizationContext();
-  const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
+  const cursorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const updateMousePosition = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-      if (!isVisible) setIsVisible(true);
+    const cursor = cursorRef.current;
+    if (!cursor) return;
 
+    const updateMousePosition = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const isActionable = target.closest('a, button, input, textarea, select, [role="button"], label') !== null;
-      setIsHovering(isActionable);
+      const size = isActionable ? 64 : 16;
+      const offset = isActionable ? 32 : 8;
+      
+      cursor.style.width = `${size}px`;
+      cursor.style.height = `${size}px`;
+      cursor.style.transform = `translate(${e.clientX - offset}px, ${e.clientY - offset}px)`;
     };
     
     window.addEventListener('mousemove', updateMousePosition);
     return () => window.removeEventListener('mousemove', updateMousePosition);
-  }, [isVisible]);
-
-  if (!isVisible) return null;
+  }, []);
 
   return (
-    <motion.div
-      className="fixed top-0 left-0 rounded-full mix-blend-difference pointer-events-none z-[9999] flex items-center justify-center bg-white"
-      animate={{
-        x: mousePosition.x - (isHovering ? 32 : 8),
-        y: mousePosition.y - (isHovering ? 32 : 8),
-        width: isHovering ? 64 : 16,
-        height: isHovering ? 64 : 16,
-      }}
-      transition={{
-        type: "spring",
-        stiffness: 400,
-        damping: 28,
-        mass: 0.5
-      }}
+    <div
+      ref={cursorRef}
+      className="fixed top-0 left-0 w-4 h-4 rounded-full mix-blend-difference pointer-events-none z-[9999] bg-white"
     />
   );
 }

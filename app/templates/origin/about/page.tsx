@@ -173,7 +173,7 @@ export default function OriginAboutPage() {
           </p>
           <Link 
             href={`${basePath}/products`} 
-            className="inline-flex items-center gap-3.5 bg-[var(--color-background,#fdfbf7)] text-[var(--color-foreground,#402c21)] px-9 py-4 text-xs font-bold tracking-[0.18em] uppercase hover:bg-[var(--color-accent,#a38c7f)] hover:text-white transition-all duration-300 group shadow-sm hover:shadow-md"
+            className="inline-flex items-center gap-3.5 bg-[var(--color-background,#fdfbf7)] text-[var(--color-foreground,#402c21)] px-9 py-4 text-xs font-bold tracking-[0.18em] uppercase hover:bg-[var(--color-accent,#a38c7f)] hover:text-white smooth-btn-hover group shadow-sm hover:shadow-md"
           >
             <span>Shop Now</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />

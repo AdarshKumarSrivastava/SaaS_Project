@@ -174,7 +174,7 @@ export default function NexusProHomePage() {
                         addToCart(product);
                         setIsCartOpen(true);
                       }}
-                      className="relative overflow-hidden group/btn px-8 py-4 bg-white text-black font-black uppercase tracking-widest text-xs rounded-full w-full shadow-2xl"
+                      className="relative overflow-hidden group/btn px-8 py-4 bg-white text-black font-black uppercase tracking-widest text-xs rounded-full w-full shadow-2xl smooth-btn-hover"
                     >
                       <span className="absolute inset-0 w-full h-full bg-[#d4af37] translate-y-[100%] group-hover/btn:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)]" />
                       <span className="relative z-10 block transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] group-hover/btn:-translate-y-[200%]">

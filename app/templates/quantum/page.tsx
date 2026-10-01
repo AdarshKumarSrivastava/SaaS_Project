@@ -9,34 +9,15 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { QUANTUM_PRODUCTS, useQuantum } from "./QuantumContext";
 import { useCustomization } from "@/hooks/useCustomization";
 
-// Component for a magnetic button effect
+// Magnetic button — CSS-based, no re-renders on mouse move
 function MagneticButton({ children, className, onClick }: { children: React.ReactNode, className?: string, onClick?: () => void }) {
-  const ref = useRef<HTMLButtonElement>(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-
-  const handleMouse = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const { clientX, clientY } = e;
-    const { height, width, left, top } = ref.current!.getBoundingClientRect();
-    const middleX = clientX - (left + width / 2);
-    const middleY = clientY - (top + height / 2);
-    setPosition({ x: middleX * 0.1, y: middleY * 0.1 });
-  };
-
-  const reset = () => setPosition({ x: 0, y: 0 });
-
-  const { x, y } = position;
   return (
-    <motion.button
-      ref={ref}
-      onMouseMove={handleMouse}
-      onMouseLeave={reset}
-      animate={{ x, y }}
-      transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
-      className={className}
+    <button
+      className={`quantum-magnetic-btn ${className || ''}`}
       onClick={onClick}
     >
       {children}
-    </motion.button>
+    </button>
   );
 }
 
@@ -149,7 +130,7 @@ export default function QuantumHome() {
                 }}
               >
                 <Link href={`${basePath}/products`}>
-                  <MagneticButton className="group relative overflow-hidden rounded-full bg-[#121212] px-8 py-4 text-white transition-all hover:bg-[#111111] hover:shadow-[0_0_40px_rgba(17,17,17,0.3)]">
+                  <MagneticButton className="group relative overflow-hidden rounded-full bg-[#121212] px-8 py-4 text-white smooth-btn-hover hover:bg-[#111111] hover:shadow-[0_0_40px_rgba(17,17,17,0.3)]">
                     <span className="relative z-10 flex items-center gap-2 font-bold uppercase tracking-wider text-sm font-inter">
                       {primaryCta} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </span>

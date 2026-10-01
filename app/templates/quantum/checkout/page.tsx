@@ -227,7 +227,7 @@ export default function QuantumCheckoutPage() {
               <button 
               type="submit" 
               disabled={isProcessing}
-              className={`w-full py-5 rounded-xl font-bold font-inter uppercase tracking-widest text-xs flex items-center justify-center transition-all duration-300 ${isProcessing ? 'bg-gray-200 text-gray-400 cursor-wait' : 'bg-[#111111] text-white hover:bg-gray-800 shadow-lg hover:shadow-xl'}`}
+              className={`w-full py-5 rounded-xl font-bold font-inter uppercase tracking-widest text-xs flex items-center justify-center smooth-btn-hover ${isProcessing ? 'bg-gray-200 text-gray-400 cursor-wait' : 'bg-[#111111] text-white hover:bg-gray-800 shadow-lg hover:shadow-xl'}`}
             >{isPlacingOrder ? "Processing..." : "{isProcessing ? 'Processing...' : paymentMethod === 'cod' ? 'Confirm Order' : `Pay $${finalTotal.toFixed(2)}`}"}</button>
           </form>
         </div>

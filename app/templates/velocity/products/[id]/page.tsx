@@ -22,7 +22,6 @@ export default function VelocityProductDetails() {
   const product = displayProducts.find((p: any) => p.id === id);
   const [selectedSize, setSelectedSize] = useState("L");
   const [isAdding, setIsAdding] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     if (!product) {
@@ -39,11 +38,6 @@ export default function VelocityProductDetails() {
       setIsAdding(false);
       setIsCartOpen(true);
     }, 600);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const { left, top } = e.currentTarget.getBoundingClientRect();
-    setMousePos({ x: e.clientX - left, y: e.clientY - top });
   };
 
   return (
@@ -71,12 +65,11 @@ export default function VelocityProductDetails() {
             className="relative"
           >
             <div 
-              onMouseMove={handleMouseMove}
               className="relative aspect-square overflow-hidden border border-[#00f0ff]/30 bg-[#0a0a0a] group"
             >
               <div 
-                className="absolute w-[300px] h-[300px] bg-[#00f0ff]/20 rounded-full blur-[100px] pointer-events-none transition-transform duration-300 ease-out z-10"
-                style={{ transform: `translate(${mousePos.x - 150}px, ${mousePos.y - 150}px)` }}
+                className="absolute w-[300px] h-[300px] bg-[#00f0ff]/20 rounded-full blur-[100px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-out z-10"
+                style={{ transform: "translate(-50%, -50%)" }}
               />
               <img 
                 src={product.image || (product.images && product.images[0]) || "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2000&auto=format&fit=crop"} 

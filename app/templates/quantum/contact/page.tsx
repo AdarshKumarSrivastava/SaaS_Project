@@ -132,7 +132,7 @@ export default function QuantumContactPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-5 bg-[#121212] text-white rounded-full font-bold font-inter uppercase tracking-widest text-sm hover:bg-[#111111] transition-all shadow-xl hover:shadow-[#111111]/40 relative overflow-hidden group mt-4"
+                  className="w-full py-5 bg-[#121212] text-white rounded-full font-bold font-inter uppercase tracking-widest text-sm hover:bg-[#111111] smooth-btn-hover shadow-xl hover:shadow-[#111111]/40 relative overflow-hidden group mt-4"
                 >
                   <span className={`transition-opacity ${isSubmitting ? 'opacity-0' : 'opacity-100'}`}>
                     Send Message

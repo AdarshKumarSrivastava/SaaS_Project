@@ -102,7 +102,7 @@ export default function LandingPage() {
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="md:col-span-7 relative group premium-hover-card rounded-[2.5rem]"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-bg-elevated/80 to-bg-subtle/40 backdrop-blur-3xl rounded-[2.5rem] border border-white/40 shadow-xl overflow-hidden z-10 group-hover:border-white/60 transition-colors duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-bg-elevated/80 to-bg-subtle/40 backdrop-blur-3xl rounded-[2.5rem] border border-white/40 overflow-hidden z-10 group-hover:border-white/60 transition-colors duration-500"></div>
               <img src="/images/shapes_bg.jpg" alt="Abstract Shapes" className="absolute inset-0 w-full h-full object-cover rounded-[2.5rem] opacity-30 group-hover:scale-105 group-hover:opacity-40 transition-all duration-700 ease-out" />
               
               <div className="relative z-20 p-12 md:p-16 h-full flex flex-col justify-end min-h-[500px]">
@@ -120,7 +120,7 @@ export default function LandingPage() {
               transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
               className="md:col-span-5 relative group premium-hover-card rounded-[2.5rem]"
             >
-              <div className="absolute inset-0 bg-bg-elevated/90 backdrop-blur-2xl rounded-[2.5rem] border border-white/50 shadow-lg z-10 group-hover:bg-bg-elevated/100 transition-colors duration-500"></div>
+              <div className="absolute inset-0 bg-bg-elevated/90 backdrop-blur-2xl rounded-[2.5rem] border border-white/50 z-10 group-hover:bg-bg-elevated/100 transition-colors duration-500"></div>
               <div className="relative z-20 p-12 h-full flex flex-col min-h-[500px]">
                 <Shield className="w-10 h-10 text-ink mb-auto group-hover:scale-110 group-hover:text-accent transition-all duration-500" />
                 <div>
@@ -138,7 +138,7 @@ export default function LandingPage() {
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="md:col-span-5 relative group premium-hover-card rounded-[2.5rem]"
             >
-              <div className="absolute inset-0 bg-bg-elevated/90 backdrop-blur-2xl rounded-[2.5rem] border border-white/50 shadow-lg z-10 group-hover:bg-bg-elevated/100 transition-colors duration-500"></div>
+              <div className="absolute inset-0 bg-bg-elevated/90 backdrop-blur-2xl rounded-[2.5rem] border border-white/50 z-10 group-hover:bg-bg-elevated/100 transition-colors duration-500"></div>
               <div className="relative z-20 p-12 h-full flex flex-col min-h-[500px]">
                 <Globe className="w-10 h-10 text-ink mb-auto group-hover:scale-110 group-hover:text-accent transition-all duration-500" />
                 <div>
@@ -156,7 +156,7 @@ export default function LandingPage() {
               transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
               className="md:col-span-7 relative group premium-hover-card rounded-[2.5rem]"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-bg-elevated/80 to-bg-subtle/40 backdrop-blur-3xl rounded-[2.5rem] border border-white/40 shadow-xl overflow-hidden z-10 group-hover:border-white/60 transition-colors duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-bg-elevated/80 to-bg-subtle/40 backdrop-blur-3xl rounded-[2.5rem] border border-white/40 overflow-hidden z-10 group-hover:border-white/60 transition-colors duration-500"></div>
               <img src="/images/shapes_bg.jpg" alt="Abstract Dark" className="absolute inset-0 w-full h-full object-cover rounded-[2.5rem] opacity-30 group-hover:scale-105 group-hover:opacity-40 transition-all duration-700 ease-out" />
               
               <div className="relative z-20 p-12 md:p-16 h-full flex flex-col justify-end min-h-[500px]">

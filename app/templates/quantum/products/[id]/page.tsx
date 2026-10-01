@@ -74,7 +74,7 @@ export default function QuantumProductDetails({ params }: { params: Promise<{ id
             <div className="flex flex-col sm:flex-row gap-4 mb-16">
               <button
                 onClick={() => addToCart(product)}
-                className="flex-1 py-5 bg-[#121212] hover:bg-[#111111] text-white rounded-full font-bold font-inter uppercase tracking-widest text-sm transition-all shadow-xl hover:shadow-[#111111]/40 group flex items-center justify-center gap-3 overflow-hidden relative"
+                className="flex-1 py-5 bg-[#121212] hover:bg-[#111111] text-white rounded-full font-bold font-inter uppercase tracking-widest text-sm smooth-btn-hover shadow-xl hover:shadow-[#111111]/40 group flex items-center justify-center gap-3 overflow-hidden relative"
               >
                 <motion.span 
                   className="absolute inset-0 bg-white/20 -translate-x-full group-hover:animate-[shimmer_1s_forwards]"

@@ -30,19 +30,7 @@ export const InteractiveTemplateCard = memo(function InteractiveTemplateCard({
   const router = useRouter();
   const [, startTransition] = useTransition();
   const cardRef = useRef<HTMLDivElement>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
-
-  // Mouse tracking for subtle 3D glass glare
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    setMousePos({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
-  };
 
   // Primary action: Open live website preview
   const handleOpenWebsite = (e: React.MouseEvent | React.KeyboardEvent) => {
@@ -64,9 +52,6 @@ export const InteractiveTemplateCard = memo(function InteractiveTemplateCard({
   return (
     <motion.div
       ref={cardRef}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       initial={{ opacity: 0, y: 25 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
@@ -75,14 +60,6 @@ export const InteractiveTemplateCard = memo(function InteractiveTemplateCard({
         isOpening ? 'scale-95 opacity-90' : ''
       }`}
     >
-      {/* Dynamic Cursor Light Spotlight */}
-      <div
-        className="pointer-events-none absolute -inset-px rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-30"
-        style={{
-          background: `radial-gradient(400px circle at ${mousePos.x}px ${mousePos.y}px, rgba(255,255,255,0.4), transparent 70%)`,
-        }}
-      />
-
       {/* Browser Window Frame */}
       <div className="relative w-full aspect-[16/10] bg-[#EAE8E4] border-b border-line/60 overflow-hidden flex flex-col">
         {/* Browser Top Chrome Header */}
@@ -120,22 +97,13 @@ export const InteractiveTemplateCard = memo(function InteractiveTemplateCard({
           {/* Subtle Dark Gradient Overlay on Hover */}
           <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-ink/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400 z-10" />
 
-          {/* Floating "Open Website" Action Badge */}
+          {/* Floating "Open Website" Action Badge — CSS-only hover */}
           <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
-            <motion.div
-              initial={false}
-              animate={{
-                scale: isHovered ? 1 : 0.85,
-                opacity: isHovered ? 1 : 0,
-                y: isHovered ? 0 : 10,
-              }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="inline-flex items-center gap-2.5 bg-ink text-bg-elevated px-5 py-2.5 rounded-full text-xs font-semibold shadow-2xl backdrop-blur-md border border-white/20 group-hover:scale-105 transition-transform"
-            >
+            <div className="inline-flex items-center gap-2.5 bg-ink text-bg-elevated px-5 py-2.5 rounded-full text-xs font-semibold shadow-2xl backdrop-blur-md border border-white/20 opacity-0 scale-90 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-500 ease-[0.16,1,0.3,1] group-hover:scale-105">
               <Eye className="w-3.5 h-3.5 text-accent" />
               <span>Open Website</span>
               <ExternalLink className="w-3.5 h-3.5 opacity-70 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>

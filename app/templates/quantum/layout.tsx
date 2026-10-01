@@ -251,7 +251,7 @@ function QuantumNavigation() {
                   <Link 
                     href={`${basePath}/checkout`}
                     onClick={() => setIsCartOpen(false)}
-                    className="w-full py-4 rounded-full font-bold text-sm tracking-wide transition-all flex items-center justify-center gap-2 group overflow-hidden relative bg-[#111111] text-white hover:bg-gray-800 shadow-lg shadow-black/20 hover:shadow-black/40"
+                    className="w-full py-4 rounded-full font-bold text-sm tracking-wide smooth-btn-hover flex items-center justify-center gap-2 group overflow-hidden relative bg-[#111111] text-white hover:bg-gray-800 shadow-lg shadow-black/20 hover:shadow-black/40"
                   >
                     Checkout <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </Link>

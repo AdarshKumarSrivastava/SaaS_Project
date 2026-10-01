@@ -55,7 +55,7 @@ export default function StarterTemplateHome({ initialCustomData, initialProducts
         >
           <Link 
             href={`${basePath}/products`}
-            className="bg-[#111111] text-white px-10 py-5 rounded-full text-xs font-bold tracking-widest uppercase hover:bg-[#FF4D00] hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 flex items-center gap-3 group"
+            className="bg-[#111111] text-white px-10 py-5 rounded-full text-xs font-bold tracking-widest uppercase hover:bg-[#FF4D00] hover:-translate-y-1 hover:shadow-2xl smooth-btn-hover flex items-center gap-3 group"
           >
             {tCta} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>

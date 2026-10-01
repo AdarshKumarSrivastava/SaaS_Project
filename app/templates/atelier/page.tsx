@@ -34,13 +34,14 @@ export default function AtelierTemplateHome({ initialCustomData, initialProducts
   const yMarquee = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
   const yContent = useTransform(scrollYProgress, [0, 1], ["0%", "-10%"]);
   
-  // Interactive Cursor logic
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
+  // Interactive Cursor logic — using refs to avoid re-renders
+  const cursorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
+      if (cursorRef.current) {
+        cursorRef.current.style.transform = `translate(${e.clientX - 16}px, ${e.clientY - 16}px)`;
+      }
     };
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
@@ -49,18 +50,11 @@ export default function AtelierTemplateHome({ initialCustomData, initialProducts
   return (
     <div ref={containerRef} className="bg-[#FF4D00] text-[#111111] overflow-hidden">
       
-      {/* Custom Cursor */}
-      <motion.div 
+      {/* Custom Cursor — ref-based, no re-renders */}
+      <div 
+        ref={cursorRef}
         className="fixed top-0 left-0 w-8 h-8 rounded-full bg-white mix-blend-difference pointer-events-none z-[100] hidden lg:flex items-center justify-center font-bold text-[#FF4D00] text-[8px] uppercase tracking-widest"
-        animate={{
-          x: mousePosition.x - 16,
-          y: mousePosition.y - 16,
-          scale: isHovered ? 4 : 1,
-        }}
-        transition={{ type: "spring", stiffness: 400, damping: 28, mass: 0.5 }}
-      >
-        {isHovered && "Play"}
-      </motion.div>
+      />
 
       {/* Hero Section */}
       <section className="relative min-h-[100svh] w-full flex flex-col justify-center px-6 md:px-12 pt-32 overflow-hidden">
@@ -107,8 +101,6 @@ export default function AtelierTemplateHome({ initialCustomData, initialProducts
               transition={{ duration: 1, delay: 0.5 }}
             >
               <button 
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
                 className="group flex items-center justify-center w-32 h-32 md:w-40 md:h-40 rounded-full border border-[#111111] hover:bg-[#111111] hover:text-[#FF4D00] transition-colors duration-500 relative overflow-hidden"
               >
                 <div className="absolute inset-0 flex items-center justify-center opacity-100 group-hover:opacity-0 transition-opacity duration-300">

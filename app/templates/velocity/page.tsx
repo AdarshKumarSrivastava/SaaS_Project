@@ -9,51 +9,23 @@ import { useRef, useState } from "react";
 import { useVelocity, VELOCITY_PRODUCTS } from "./VelocityContext";
 import { useCustomization } from "@/hooks/useCustomization";
 
-// Crazy 3D Card component
+// 3D Card component — CSS-based, no re-renders on mouse move
 function ProductCard3D({ product }: { product: any }) {
   const __customContext = useCustomizationContext();
   const basePath = typeof __customContext?.basePath === "string" ? __customContext.basePath : "";
   const { currencySymbol } = useVelocity();
-  const [rotateX, setRotateX] = useState(0);
-  const [rotateY, setRotateY] = useState(0);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const card = e.currentTarget;
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    
-    const rotateXValue = ((y - centerY) / centerY) * -15;
-    const rotateYValue = ((x - centerX) / centerX) * 15;
-    
-    setRotateX(rotateXValue);
-    setRotateY(rotateYValue);
-  };
-
-  const handleMouseLeave = () => {
-    setRotateX(0);
-    setRotateY(0);
-  };
 
   return (
     <div data-component-id={`product-${product.id}`} className="block perspective-1000">
       <Link href={`${basePath}/products/${product.id}`}>
-        <motion.div
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          animate={{ rotateX, rotateY }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          style={{ transformStyle: "preserve-3d" }}
-          className="relative aspect-[3/4] rounded-sm border border-[#00f0ff]/20 bg-[#050505] overflow-visible group"
+        <div
+          className="velocity-3d-card relative aspect-[3/4] rounded-sm border border-[#00f0ff]/20 bg-[#050505] overflow-visible group"
         >
         <div 
           className="absolute inset-0 bg-[#00f0ff] opacity-0 group-hover:opacity-10 transition-opacity duration-300 blur-xl"
           style={{ transform: "translateZ(-20px)" }}
         />
-        
+         
         <div className="absolute inset-0 overflow-hidden" style={{ transform: "translateZ(0px)" }}>
           <img
             src={product.image || (product.images && product.images[0]) || "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2000&auto=format&fit=crop"}
@@ -98,7 +70,7 @@ function ProductCard3D({ product }: { product: any }) {
             V.2 Activated
           </div>
         )}
-        </motion.div>
+        </div>
       </Link>
     </div>
   );
@@ -182,6 +154,7 @@ export default function VelocityHomePage() {
             <motion.button 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
               className="relative overflow-hidden group border border-[#00f0ff] bg-[#050505]/50 backdrop-blur-sm px-10 py-5 flex items-center gap-4"
             >
               <span className="absolute inset-0 bg-[#00f0ff] translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500 ease-out skew-x-12 scale-150" />

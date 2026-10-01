@@ -85,7 +85,7 @@ export default function NoireTemplateHome({ initialCustomData, initialProducts }
             >
               <Link 
                 href={`${basePath}/products`}
-                className="bg-[#2A2A2A] text-[#FCFBF8] px-10 py-5 rounded-full text-xs font-medium tracking-[0.15em] uppercase hover:bg-[#A38D7D] hover:shadow-lg transition-all duration-500 flex items-center gap-3 group"
+                className="bg-[#2A2A2A] text-[#FCFBF8] px-10 py-5 rounded-full text-xs font-medium tracking-[0.15em] uppercase hover:bg-[#A38D7D] hover:shadow-lg smooth-btn-hover flex items-center gap-3 group"
               >
                 {tCta} <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform duration-300" />
               </Link>
@@ -158,7 +158,7 @@ export default function NoireTemplateHome({ initialCustomData, initialProducts }
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 1, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
                   >
-                    <Link href={`${basePath}/products/${mappedProduct.id}`} className="group flex flex-col h-full bg-[#FCFBF8] rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-500">
+                    <Link href={`${basePath}/products/${mappedProduct.id}`} className="group flex flex-col h-full bg-[#FCFBF8] rounded-2xl p-6 shadow-sm hover:shadow-xl smooth-card-hover">
                       <div className="aspect-square mb-8 relative flex items-center justify-center">
                         <img 
                           src={mappedProduct.image} 

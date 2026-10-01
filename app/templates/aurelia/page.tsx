@@ -187,7 +187,7 @@ export default function StarterTemplateHome({ initialCustomData, initialProducts
                               e.stopPropagation();
                               addToCart(mappedProduct);
                             }}
-                            className="bg-white text-black px-6 py-3 text-[10px] font-bold uppercase tracking-[0.2em] translate-y-4 group-hover:translate-y-0 transition-all duration-500 shadow-xl"
+                            className="bg-white text-black px-6 py-3 text-[10px] font-bold uppercase tracking-[0.2em] translate-y-4 group-hover:translate-y-0 smooth-btn-hover shadow-xl"
                           >
                             Add to Bag
                           </button>
