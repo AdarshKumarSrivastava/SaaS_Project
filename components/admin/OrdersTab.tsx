@@ -42,7 +42,7 @@ export default function OrdersTab({ siteId }: { siteId: string }) {
   };
 
   const getStatusIcon = (status: string) => {
-    switch(status) {
+    switch (status) {
       case 'PENDING': return <Clock className="w-4 h-4 text-yellow-500" />;
       case 'PROCESSING': return <Package className="w-4 h-4 text-blue-500" />;
       case 'SHIPPED': return <Truck className="w-4 h-4 text-purple-500" />;
@@ -51,9 +51,10 @@ export default function OrdersTab({ siteId }: { siteId: string }) {
       default: return <Box className="w-4 h-4 text-white/50" />;
     }
   };
+  // motion initial 
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}
       className="space-y-8"
     >
@@ -64,9 +65,9 @@ export default function OrdersTab({ siteId }: { siteId: string }) {
         </div>
         <div className="relative flex items-center w-full md:w-72">
           <Search className="w-4 h-4 text-white/40 absolute left-5 pointer-events-none" />
-          <input 
-            type="text" 
-            placeholder="Search orders..." 
+          <input
+            type="text"
+            placeholder="Search orders..."
             className="w-full bg-[#0a0a0a] border border-white/10 rounded-full px-6 py-3 pl-12 text-sm font-light focus:border-white/30 outline-none transition-all"
           />
         </div>
@@ -76,7 +77,7 @@ export default function OrdersTab({ siteId }: { siteId: string }) {
         {/* Order List */}
         <div className="lg:col-span-5 flex flex-col gap-3">
           {orders.map(order => (
-            <div 
+            <div
               key={order.id}
               onClick={() => setSelectedOrder(order)}
               className={`p-6 rounded-[1.5rem] border cursor-pointer transition-all duration-300 ${selectedOrder?.id === order.id ? 'bg-white/10 border-white/30' : 'bg-[#0a0a0a] border-white/10 hover:border-white/20'}`}
@@ -103,7 +104,7 @@ export default function OrdersTab({ siteId }: { siteId: string }) {
         <div className="lg:col-span-7">
           <AnimatePresence mode="wait">
             {selectedOrder ? (
-              <motion.div 
+              <motion.div
                 key={selectedOrder.id}
                 initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                 className="bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-8 md:p-12 sticky top-32"
@@ -114,7 +115,7 @@ export default function OrdersTab({ siteId }: { siteId: string }) {
                     <p className="text-white/50 text-sm">Customer: {selectedOrder.customer?.email || 'N/A'}</p>
                   </div>
                   <div className="flex gap-2">
-                    <select 
+                    <select
                       value={selectedOrder.status}
                       onChange={(e) => updateStatus(selectedOrder.id, e.target.value)}
                       className="bg-black border border-white/20 text-white rounded-full px-4 py-2 text-xs font-bold uppercase tracking-widest outline-none"

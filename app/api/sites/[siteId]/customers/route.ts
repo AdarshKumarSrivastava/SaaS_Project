@@ -9,7 +9,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ site
     const { siteId } = await params;
     
     // Verify Platform Admin session
-    const accessToken = req.cookies.get('accessToken')?.value;
+    const authHeader = req.headers.get('authorization');
+    const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
+    const cookieToken = req.cookies.get('accessToken')?.value;
+    const accessToken = bearerToken || cookieToken;
+    
     if (!accessToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
