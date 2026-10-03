@@ -2,13 +2,12 @@
 
 import { usePathname } from 'next/navigation';
 
+import { ReactLenis } from '@studio-freight/react-lenis';
+
 export function SmoothScrollProvider({ children }: { children: React.ReactNode }) {
-  // We have removed ReactLenis globally because it intercepts scroll events
-  // causing significant jittering in complex layouts (iframes, nested scroll containers)
-  // Native browser scrolling is preferred for maximum stability.
   return (
-    <>
+    <ReactLenis root options={{ lerp: 0.1, duration: 1.5, smoothWheel: true }}>
       {children}
-    </>
+    </ReactLenis>
   );
 }
